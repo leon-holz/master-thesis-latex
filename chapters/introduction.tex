@@ -1,18 +1,30 @@
 \chapter{Introduction}
-Reddit is a social media platform where users engage in discussions across various subreddits—dedicated communities focused on specific topics. 
-Posts within a subreddit can receive upvotes and downvotes, determining their visibility. 
-Meanwhile, karma serves as a numerical representation of a user's contributions through posts and comments, functioning similarly to likes on other social media platforms.
 
-Reddit has over 365 million active weekly users~\cite{redditinc}, with about 70\% of users in the U.S. reportedly using it as their primary news source~\cite{pewresearch}. 
-Politicians, including Barack Obama, Donald Trump, and Bernie Sanders, have recognized Reddit’s influence by hosting \textit{Ask Me Anything} (AMA) sessions~\cite{deaton2017using}.
+Reddit is a large-scale social media platform where users engage in discussions across topic-specific communities known as subreddits. Within these communities, posts are evaluated through explicit feedback mechanisms such as upvotes and downvotes, which collectively influence content visibility and shape ongoing discourse. With hundreds of millions of active users and a substantial role in political discussion and news consumption, Reddit has become an important object of study for understanding online engagement and information dynamics~\cite{redditinc,pewresearch}.
 
-The ability to predict the popularity of online content has significant implications for marketing, content optimization, and social media engagement strategies. 
-Companies invest heavily in predictive systems to maximize visibility and audience engagement~\cite{deaton2017using}. 
-However, prior studies on online content popularity often focus on other platforms, such as Twitter and Facebook, or rely on limited feature sets that overlook subreddit-specific dynamics. 
+The ability to anticipate how online content will be received has significant implications for marketing, recommendation systems, and the study of social media engagement. As a result, companies and platform operators invest heavily in predictive models to better understand user preferences and engagement dynamics~\cite{deaton2017using}. Such systems are commonly used to inform ranking, moderation, and content curation decisions across online platforms.
 
-Moreover, predictive models for content popularity raise ethical concerns. 
-The ability to manipulate a post’s visibility could be exploited for misinformation campaigns, artificially amplifying certain narratives under the guise of community approval~\cite{deaton2017using}. Understanding the underlying factors that drive Reddit post popularity is therefore essential, both for refining predictive models and for mitigating potential risks.
+At the same time, predictive models of content popularity raise important ethical concerns. Models that directly optimize for visibility or engagement can be misused to artificially amplify specific narratives, potentially facilitating misinformation or coordinated manipulation under the appearance of community approval~\cite{deaton2017using}. These risks are particularly salient on platforms such as Reddit, where voting mechanisms serve both as feedback signals and as drivers of content exposure.
 
-This study leverages a neural network model using text embeddings and numerical features, such as author karma and account age, to predict post popularity. 
-We analyze how subreddit-specific characteristics impact predictive performance, revealing key challenges in generalizing across different communities.
-Our findings contribute to the broader understanding of engagement patterns on Reddit and highlight potential strategies for improving predictive accuracy while addressing biases in content visibility.
+This thesis explicitly acknowledges these concerns and adopts a constrained modeling perspective. Rather than predicting absolute visibility or optimizing engagement, the focus lies on estimating relative community reception using signals that reflect approval rather than reach. By separating popularity prediction from content generation and avoiding adaptive optimization or feedback loops, the approach aims to contribute to a better understanding of engagement dynamics while limiting the potential for manipulative use.
+
+Importantly, popularity on social media platforms is not a monolithic concept. Absolute engagement measures such as raw score are heavily influenced by exposure effects, platform-specific ranking mechanisms, and timing. As a result, high engagement does not necessarily reflect positive community reception, nor are engagement metrics directly comparable across different communities. These challenges are particularly pronounced on Reddit, where subreddit size, norms, and moderation practices vary substantially.
+
+Accordingly, this thesis focuses on predicting how positively a post will be received by a community, rather than how much attention it will attract. Popularity is therefore treated as a relative measure of approval, operationalized through normalized upvote ratio values. By framing popularity as a continuous regression problem and restricting inputs to information available at post creation time, this work aims to capture community preference signals while reducing bias introduced by exposure and timing effects.
+
+Building on this formulation, the thesis investigates whether textual representations derived from Transformer-based language models, combined with static metadata, can be used to predict post reception across diverse subreddits. In addition to offline evaluation on historical data, this work extends beyond prior studies by assessing model generalization in a live deployment setting.
+
+To this end, posts are generated using a large language model and filtered using the trained popularity predictor before being published on Reddit. These AI-generated posts are not assumed to be equivalent to human-authored content. Instead, they serve as a controlled source of candidate posts that enables an external validity check: if content selected by the model is received at least as positively as typical user-generated posts, this provides evidence that the model captures meaningful patterns of community preference rather than artifacts of historical data.
+
+Importantly, this thesis does not aim to optimize engagement or manipulate user behavior. No adaptive feedback loop between prediction and generation is employed, and generated content is not iteratively refined based on observed outcomes. The live experiment is intended solely as a diagnostic evaluation of the predictive model’s robustness when applied beyond its training distribution.
+
+The contributions of this thesis are threefold:
+\begin{itemize}
+    \item the development of a popularity regression model that predicts relative community reception using only information available at post creation time,
+    \item a systematic evaluation of Transformer-based text embeddings and auxiliary features for popularity prediction across politically diverse subreddits, and
+    \item an external validation of the proposed approach through a controlled live deployment using AI-generated posts.
+\end{itemize}
+
+%TODO adjust refs and maybe change structur
+
+The remainder of this thesis is structured as follows. \autoref{chap:basics} introduces the conceptual and technical foundations required for understanding Reddit engagement dynamics and the employed modeling techniques. Chapter~3 reviews related work on popularity prediction and online engagement. Chapter~4 describes the dataset, feature extraction, and modeling methodology. Chapter~5 presents experimental results, followed by a discussion of limitations and implications in Chapter~6. Chapter~7 concludes the thesis.

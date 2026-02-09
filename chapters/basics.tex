@@ -1,20 +1,100 @@
 \chapter{Basics}
+\label{chap:basics}
+This chapter introduces the conceptual and technical foundations required to understand the methodology and experiments presented in this thesis. It covers the Reddit platform and its engagement mechanisms, behavioral aspects of online popularity, and the machine learning models used for textual representation and popularity prediction. The purpose of this chapter is to establish common terminology and assumptions, rather than to provide an exhaustive survey of the respective research fields.
 
-\section{Reddit}
+\section{Reddit as a Social Media Platform}
 
-% todo explanation reddit
-generell info regarding reddit
+Reddit is a large-scale social media platform organized into topic-specific communities known as \emph{subreddits}. Each subreddit defines its own moderation rules, content guidelines, and norms of discourse, resulting in substantial heterogeneity in user behavior across communities. Users can submit posts in multiple formats, most commonly \emph{selftext posts}, which consist of a title and a textual body, and \emph{link posts}, which consist of a title and a URL pointing to external content.
 
-model relevant inputs posts, title, content, score ...
+User interaction on Reddit is primarily expressed through upvotes and downvotes. The difference between these votes determines a post’s \emph{score}, which influences its visibility within the subreddit. In addition to score, Reddit exposes an \emph{upvote ratio}, representing the proportion of positive votes, and the number of comments, which serves as a complementary indicator of engagement. These signals capture different aspects of community response and are not interchangeable.
 
-\section{behavioral analytics}
+The exact mechanics of voting and ranking on Reddit are intentionally opaque. Historically, Reddit employed \emph{vote fuzzing}, a mechanism that added random noise to displayed vote counts in order to discourage spam and vote manipulation \cite{stoddard2015popularity}. While this behavior was reportedly reduced or discontinued after 2018, its existence complicates the interpretation of historical engagement data and motivates caution when treating vote-based signals as exact quantities.
 
-\section{Transformer}
+Importantly, content visibility on Reddit is determined at the subreddit level rather than globally. Ranking algorithms operate within individual communities, meaning that engagement outcomes are inherently context-dependent. A post that is successful in one subreddit may perform poorly in another due to differences in audience size, topical focus, and community norms. This community-specific nature of engagement is a central consideration throughout this thesis.
 
-- history
-- properties
 
-\subsection{LLMs}
+\section{Engagement and Popularity on Reddit}
 
-\section{XGboost/Gradient Boosting}
-kurz gradient boosting erklären
+Popularity on Reddit does not correspond to a single observable variable, but instead emerges from a combination of engagement signals such as score, upvote ratio, and comment volume. Prior work has shown that these signals are correlated but capture distinct phenomena, and that high engagement does not necessarily imply consensus or positive reception \cite{hessel2019something}.
+
+Empirical analyses of Reddit and similar platforms indicate that posts typically receive the majority of their engagement shortly after submission, after which attention decays as newer content replaces older posts in ranked listings \cite{terentiev2014predicting,wigsnes2019predicting}. Early visibility therefore plays a critical role in shaping long-term outcomes, reinforcing feedback loops in which initial engagement increases exposure and subsequent interaction.
+
+These dynamics imply that popularity is best treated as a continuous and noisy signal rather than a binary success criterion. Moreover, engagement outcomes are influenced not only by the intrinsic properties of a post, but also by temporal effects, subreddit-specific expectations, and platform-level ranking mechanisms. As a result, direct comparisons of popularity across different communities are inherently problematic without appropriate normalization or contextualization.
+
+\section{Behavioral Foundations of Online Popularity}
+
+Research in behavioral analytics and computational social science has demonstrated that online popularity is shaped by a combination of intrinsic content properties and social dynamics. Early exposure, conformity effects, and social reinforcement have been shown to significantly influence engagement outcomes on social media platforms \cite{stoddard2015popularity,waller2021quantifying}.
+
+On Reddit, users respond not only to the content of a post, but also to social signals such as existing votes and comments. This can give rise to herding effects, where users are more likely to engage positively with content that already appears popular. At the same time, ideological alignment and community-specific patterns of participation shape which topics and forms of political expression gain traction within a given subreddit \cite{waller2021quantifying}.
+
+These behavioral mechanisms imply that popularity cannot be fully explained by textual quality alone. Instead, it emerges from the interaction between content, audience expectations, and platform affordances. Understanding these dynamics is essential for interpreting the performance of predictive models and for assessing the limitations of approaches trained on historical engagement data.
+
+\section{Transformer-Based Text Representations}
+
+Transformer architectures have become the dominant modeling paradigm in natural language processing due to their ability to efficiently capture long-range contextual dependencies in text. Introduced by Vaswani et al.~\cite{Vaswani2017}, the Transformer replaces recurrent and convolutional structures with a self-attention mechanism that allows each token in a sequence to attend to all other tokens in parallel. This design enables scalable training on large corpora and facilitates the learning of rich contextual representations.
+
+Unlike traditional bag-of-words or n-gram models, Transformer-based approaches produce context-sensitive representations in which the meaning of a token depends on its surrounding text. Earlier contextual embedding models, such as ELMo \cite{Peters2018}, demonstrated the importance of context-aware representations, a principle that Transformer architectures generalize and extend. These properties are particularly relevant for social media content, where short texts, informal language, and implicit references are common.
+
+For downstream tasks, Transformer models are often used as encoders that map variable-length text into fixed-dimensional vector representations, commonly referred to as \emph{embeddings}. These embeddings can serve as input features for task-specific models, enabling a separation between representation learning and predictive modeling.
+
+\subsection{Large Language Models and Text Embeddings}
+
+Large Language Models (LLMs) are Transformer-based models trained on large-scale text corpora using self-supervised learning objectives. While many LLMs are optimized for text generation, a growing class of models is specifically designed to produce high-quality embeddings for downstream tasks. Sentence-BERT \cite{Reimers2019}, for example, demonstrated that embedding-specialized architectures can outperform generic language models on semantic similarity and clustering tasks.
+
+Recent benchmarks such as the Massive Text Embedding Benchmark (MTEB) provide systematic evaluations of embedding models across a wide range of tasks, including clustering, retrieval, and classification \cite{muennighoff2022mteb}. Results from MTEB indicate that embedding-specialized models often outperform generative LLMs when used purely as feature extractors, while also being more computationally efficient.
+
+A key practical consideration in large-scale embedding-based analyses is dimensionality. Higher-dimensional embeddings can capture more nuanced semantic information, but incur increased storage and computational costs. When encoding millions of documents, these trade-offs become critical. Consequently, embedding models that offer strong performance at moderate dimensionality are preferable for large-scale studies.
+
+In this thesis, Transformer-based embedding models are used exclusively as frozen encoders. No fine-tuning is performed on Reddit data, as the objective is to evaluate how well general-purpose semantic representations transfer to the task of popularity prediction. Among the evaluated models, \texttt{stella\_en\_400M\_v5} \cite{stella_en_400M_v5} was selected as a primary candidate due to its competitive performance on semantic benchmarks and its configurable embedding dimensionality, which allows balancing representational capacity and resource constraints.
+
+While embeddings capture semantic properties of text, they do not encode platform-specific dynamics such as ranking algorithms, voting behavior, or temporal effects. As a result, embeddings alone are insufficient to explain engagement outcomes, motivating their combination with additional features and predictive models in subsequent chapters.
+
+\section{Defining and Operationalizing Popularity}
+\label{chap:defining_popularity}
+
+In the context of social media platforms, the notion of \emph{popularity} is inherently ambiguous. On Reddit, multiple observable signals---including score, upvote ratio, and comment volume---reflect different aspects of how a community engages with a post. Prior work has shown that these signals are correlated but capture distinct engagement dynamics, and that models optimized for one signal do not necessarily generalize to others \cite{hessel2019something,stoddard2015popularity}.
+
+In this thesis, \textbf{absolute score is not treated as a prediction target}. While score is a common proxy for popularity, it is strongly influenced by factors that are largely orthogonal to content quality or community approval. These include subreddit size, overall activity levels, ranking algorithms, and temporal exposure effects. In particular, posts that are submitted at the ``right time'' or benefit from early visibility may accumulate high scores even if their reception among viewers is mixed, whereas well-received posts with limited exposure may achieve comparatively low scores.
+
+Moreover, historical mechanisms such as vote fuzzing introduce additional noise into score-based signals, especially in older Reddit data \cite{stoddard2015popularity}. As a result, absolute score values are not directly comparable across subreddits or time periods and conflate community approval with opportunity for exposure.
+
+Instead, this work focuses on predicting how positively a post would be \emph{received} by a community, independent of whether it gains widespread visibility. To this end, the \emph{upvote ratio} is used as the primary engagement signal. The upvote ratio reflects the proportion of positive votes among all votes cast and serves as a closer approximation of approval conditional on being seen. Unlike score, it is less sensitive to subreddit size and overall traffic volume, and it more directly captures evaluative judgment rather than raw attention.
+
+Comment volume is likewise not used as a primary target. While a high number of comments indicates engagement, it may reflect disagreement, controversy, or debate rather than positive reception \cite{hessel2019something}. Consequently, comment-based signals are better suited for modeling discussion intensity or polarization than popularity in the sense of approval.
+
+Given these considerations, popularity in this thesis is defined as a \emph{continuous, relative measure of positive reception}, operationalized through normalized upvote ratio values. Modeling popularity as a regression problem allows the capture of fine-grained differences in approval that would be obscured by threshold-based classification approaches.
+
+An additional constraint arises from the intended application of the model. In the context of predicting the popularity of newly generated posts, only information available at creation time can be used. Engagement-derived features such as early votes or initial comments, which are employed in some prior work \cite{terentiev2014predicting,wigsnes2019predicting}, are explicitly excluded to avoid information leakage. As a result, the target variable must be predictable solely from post content and static metadata.
+
+Overall, the operational definition of popularity adopted in this thesis prioritizes robustness to exposure bias and cross-subreddit comparability while remaining compatible with a regression-based modeling framework and a live deployment scenario in which predictions must be made prior to any user interaction.
+
+\section{Problem Formulation: Prediction, Selection, and Generation}
+
+The central objective of this thesis is to evaluate whether the popularity of Reddit posts can be predicted from information available at creation time, and whether such predictions remain meaningful when applied beyond historical data. To this end, it is important to distinguish between three related but conceptually distinct tasks: \emph{popularity prediction}, \emph{content selection}, and \emph{content generation}.
+
+\textbf{Popularity prediction} is formulated as a supervised regression problem. Given the textual content of a post and static metadata available prior to publication, the goal is to estimate a continuous measure of expected community reception, as defined in \autoref{chap:defining_popularity}. This task is purely predictive and does not involve any interaction with the platform or its users. The model is trained exclusively on historical data authored by human users and evaluated using held-out samples.
+
+\textbf{Content generation} introduces an important conceptual distinction. The posts used in the live deployment experiment are generated using a generative language model and are therefore not authored by human users. As a result, these posts may differ from typical user-generated content in terms of linguistic consistency, topical framing, or stylistic choices. Consequently, engagement outcomes for generated posts are not assumed to be directly comparable to those of human-authored posts in a strict causal sense.
+
+Rather than treating generated content as a proxy for human behavior, this thesis uses AI-generated posts as a controlled source of candidate content. This enables systematic probing of the popularity prediction model by evaluating whether posts that are predicted to be well-received also tend to receive comparatively positive feedback when exposed to real communities. In this sense, the live deployment experiment serves as a robustness and external validity check rather than a claim of equivalence between human and AI-authored content.
+
+\textbf{Content selection} connects prediction and generation. A set of candidate posts is generated independently of the popularity model, after which predicted popularity scores are used as a filtering or ranking signal. Only a subset of generated posts is selected for publication. This formulation mirrors common decision-making scenarios in information retrieval and recommendation systems, where models are used to prioritize items rather than to generate them directly.
+
+Importantly, the experiment also allows for a relative comparison between AI-generated posts selected by the popularity model and baseline user behavior within the same communities. While generated posts are not representative of an average user, their performance relative to typical posts provides insight into whether the model captures signals that align with community preferences. If selected generated posts are able to match or exceed baseline engagement metrics, this suggests that the model has learned meaningful patterns of positive reception rather than merely exploiting artifacts of historical data.
+
+Crucially, this thesis does not attempt to maximize engagement through adaptive optimization or to manipulate platform dynamics. The popularity predictor is not used to iteratively refine generated content based on observed outcomes, and no feedback loop between prediction and generation is established. By maintaining a strict separation between prediction, selection, and generation, the proposed framework limits intervention and avoids feedback-induced biases, while still enabling a principled evaluation of model generalization in a live setting.
+
+
+\section{Gradient Boosting and XGBoost}
+
+Gradient Boosting is an ensemble learning technique that constructs a predictive model by iteratively combining multiple weak learners, typically decision trees, into a single strong learner. Rather than training all models independently, Gradient Boosting builds models sequentially, where each new learner is trained to correct the errors made by the ensemble thus far. This is achieved by fitting each learner to the negative gradient of a loss function with respect to the current model predictions, hence the term \emph{gradient} boosting.
+
+One of the central advantages of Gradient Boosting is its ability to model complex, non-linear relationships without requiring explicit feature engineering. By combining many shallow decision trees, the model can capture interactions between features while remaining robust to noise and heterogeneous input types. These properties make Gradient Boosting particularly suitable for regression tasks involving a mixture of numerical features and high-dimensional representations.
+
+XGBoost (Extreme Gradient Boosting) is a widely used and highly optimized implementation of Gradient Boosting that introduces several practical improvements over earlier formulations. These include explicit regularization terms to control model complexity, efficient handling of sparse inputs, and scalable training procedures that allow the model to be applied to large datasets. As a result, XGBoost has become a standard choice for structured data regression tasks and has demonstrated strong performance across a wide range of applications.
+
+In the context of this thesis, popularity prediction is formulated as a regression problem with a continuous target variable representing relative community reception. Gradient Boosting models are well suited for this setting, as they can naturally accommodate non-linear relationships between textual embeddings, temporal features, and auxiliary metadata. Unlike linear regression models, Gradient Boosting does not assume additive or independent effects between features, which is particularly important given the complex and context-dependent nature of social media engagement.
+
+Another practical advantage of XGBoost is its flexibility with respect to feature scaling and distributional assumptions. Decision tree–based models are invariant to monotonic transformations of input features and do not require normalization to achieve stable training. This property is beneficial when combining dense text embeddings with heterogeneous metadata features.
+
+Finally, the use of Gradient Boosting as a downstream regressor allows for a clear separation between representation learning and prediction. Transformer-based models are employed solely to generate fixed text representations, while XGBoost operates on these representations to estimate popularity. This modular design simplifies analysis, enables controlled ablation studies, and facilitates comparison between different embedding models without altering the predictive framework.
