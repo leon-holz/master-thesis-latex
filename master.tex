@@ -1,0 +1,125 @@
+% !TeX program = latexmk
+\documentclass[10pt,a4paper,chapterprefix=false,openright,bibliography=totoc,headinclude,cleardoublepage=plain]{scrreprt}
+\input{cfg.tex}
+\input{tpl/pkg.tex}
+
+% ---------------------------------------------------------- Add .bib files here
+\addbibresource{bibliography.bib}
+% \addbibresource{second.bib}
+
+\begin{document}
+% ------------------------------------------------------------------------- Init
+\hypersetup{pageanchor=false}
+\sloppy
+\KOMAoptions{twoside = false}
+\input{tpl/titlepage.tex}
+\ifthenelse{\equal{\thesisprintingstyle}{twoside}}{
+    \KOMAoptions{twoside = true}
+    \cleardoublepage
+}{}
+\pagestyle{scrheadings}
+\setcounter{page}{7}
+\pagenumbering{gobble}
+\pagenumbering{roman}
+
+% ----------------------------------------------------------------------- Thanks
+\ifthenelse{\equal{\thesisthankyou}{false}}{
+    \cleardoublepage
+    \chapter*{\ifthenelse{\equal{\thesislanguage}{german}}%
+        {Danksagung}%
+        {Acknowledgement}}
+    \input{chapters/thanks.tex}}
+    \cleardoublepage
+{}%
+
+% --------------------------------------------------------------------- Abstract
+\ifthenelse{\equal{\thesisabstract}{true}}{
+    \cleardoublepage
+    \chapter*{\ifthenelse{\equal{\thesislanguage}{german}}%
+        {Kurzfassung}%
+        {Abstract}}
+        \input{chapters/abstract.tex}
+    
+    %\vspace*{\fill}
+    %\thispagestyle{empty}
+}{}
+\clearpage
+
+% ----------------------------------------------------------------------- Tables
+\addtocontents{toc}{\vskip -2em}
+\addtocontents{lof}{\vskip -2em}
+\addtocontents{lot}{\vskip -2em}
+\begingroup
+\let\clearpage\relax
+% \tableofcontents
+\clearpage
+\ifthenelse{\equal{\thesistableposition}{beginning}}{%
+    \iftotalfigures%
+        \phantomsection%
+        \addcontentsline{toc}{chapter}{\listfigurename}%
+        \listoffigures%
+        \clearpage
+    \fi%
+    \iftotaltables%
+        \phantomsection%
+        \addcontentsline{toc}{chapter}{\listtablename}%
+        \listoftables%
+        \clearpage
+    \fi%
+    \iftotallstlistings%
+        \phantomsection%
+        \addcontentsline{toc}{chapter}{\lstlistingname}%
+        \lstlistoflistings%
+        \clearpage
+    \fi%
+}{}
+\endgroup
+\cleardoublepage
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+
+% ------------------------------------------------------------ Add Chapters here
+\renewcommand{\cleardoublepage}{}
+% \renewcommand{\clearpage}{}  %aus irgendeinem Grund hat das hier Probleme bereitet, cleardoublepage aber nicht...
+\input{chapters/introduction.tex}
+\input{chapters/basics.tex}
+\input{chapters/relatedWork.tex}
+\input{chapters/methodology.tex}
+\input{chapters/results.tex}
+\input{chapters/discussion.tex}
+\input{chapters/conclusion.tex}
+\input{chapters/futureWork.tex}
+
+\printbibliography[heading=bibintoc,title=\reftitle]
+
+
+%------------------------------------------------------------ Table of Figures and Tables if Position is 'end'
+\clearpage
+\ifthenelse{\equal{\thesistableposition}{end}}{%
+    \iftotalfigures%
+        \phantomsection%
+        \addcontentsline{toc}{chapter}{\listfigurename}%
+        \listoffigures%
+        \clearpage
+    \fi%
+    \iftotaltables%
+        \phantomsection%
+        \addcontentsline{toc}{chapter}{\listtablename}%
+        \listoftables%
+        \clearpage
+    \fi%
+    \iftotallstlistings%
+        \phantomsection%
+        \addcontentsline{toc}{chapter}{\lstlistingname}%
+        \lstlistoflistings%
+        \clearpage
+    \fi%
+}{}
+
+% ------------------------------------------------------------------ Declaration
+\ifthenelse{\equal{\thesisprintdeclaration}{false}}{%
+\input{tpl/declaration.tex}
+\cleardoublepage
+}{}%
+
+\end{document}

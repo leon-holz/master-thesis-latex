@@ -1,0 +1,13 @@
+\chapter{Discussion}
+\section{Learning/Limitation}
+
+using chat gpt helped with smaller code fragments alot, but left much to be desired for more complex and large code systems
+% maybe elaborate (limited context length led to forgetting relevant code pieces or other specifications)
+% specifically for training models where additional or different inputs are relevant 
+
+training model consistency: sometimes hard to gauge how much model improves when certain randomness and noise is introduced during training, causing performance deviations that are not attributed to the "improvements"
+
+GPU histogram building and multi-threading can introduce tiny numeric drift, and you’re using stochastic subsampling
++ early stopping in combination with the above.
+
+therefore decided to use no multithreading and set other specific options to keep it as consistent and deterministic as possible

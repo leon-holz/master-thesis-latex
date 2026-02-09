@@ -1,0 +1,29 @@
+\chapter{Related Work}
+
+Several studies have examined the prediction of online content popularity. 
+Segall et al.~\cite{segall2012predicting} utilized features such as the author's identity, post creation time, and selftext content to predict post popularity. 
+
+Other research has focused on early engagement metrics. 
+Andrei Terentiev et al.~\cite{terentiev2014predicting} predicted post popularity using characteristics of the first 10 comments.
+Similarly, Fredrik Wigsnes et al.~\cite{wigsnes2019predicting} analyzed posts' statistics one hour after publication to make predictions. 
+However, these approaches require a waiting period, limiting their real-time applicability.
+
+Deaton et al.~\cite{deaton2017using} extended the analysis to comment popularity prediction, emphasizing the relevance of understanding how individual contributions perform within discussions.
+
+In this study, we expand on previous works by incorporating additional features related to the author, such as karma and account age, and examining subreddit-specific predictive accuracy.
+
+
+% TODO add stuff from below in
+
+The sociomateriality of rating and ranking devices on social media: A case study of Reddit's voting practices
+
+Popularity dynamics and intrinsic quality in reddit and hacker news
+
+% Something's brewing! Early prediction of controversy-causing posts from discussion features
+Hessel and Lee (2019) investigate the early prediction of controversial Reddit posts, defining controversy as community-specific disagreement reflected in mixed upvote and downvote behavior. 
+Using data from multiple subreddits, they show that incorporating features from early user interactions—particularly the textual content and structural properties of initial comment trees—significantly improves prediction performance compared to post-time text and metadata alone. 
+Importantly, they demonstrate that controversy prediction is distinct from popularity prediction: models trained to forecast engagement volume or attention do not transfer well to identifying controversial content, indicating that these outcomes capture fundamentally different dynamics. 
+While their work focuses on controversy rather than popularity, it establishes that early interaction signals provide information beyond post text and that predictive models must be carefully aligned with the specific downstream outcome of interest, a distinction that directly informs pipelines aimed at generating and evaluating posts based on predicted popularity rather than divisiveness
+\cite{hessel2019something}
+
+% maybe add in some other works that tried to create popular posts but without checking using model if its popular before posting
