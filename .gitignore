@@ -7,4 +7,8 @@ master.fls
 master.log
 master.pdf
 master.synctex.gz
+master.cb
+master.cb2
+master.out
+master.run.xml
 
