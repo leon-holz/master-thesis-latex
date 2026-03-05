@@ -53,123 +53,40 @@ for subreddits, since we wanted to see differences and similiaries in the differ
 
 generel metrics included the size of the sub, what post types they usually use 
 for our analysis, we tried to get subreddit with little images and mostly selftext and link posts, 
-we also tried to find subreddits that were "large enough" after filtering posts under a minimum of either a score of 3 or amount of comments equal to 3
+we initally chose to use keep analysis to 20 subreddits with medium size because of resources used for the encoded datasets. 
+we decided to filter out posts with low visiblity, meaning they didnt get positive or negative attention and where therefore adding noise to the task
+doing this filtered out a good part of one of the 20 subreddits, namely neutralpolitics. Unfortunately the pushshift website hasnt been available after discovering this. We were therefore not able to replace said subreddit and therefore continue with 19 subreddit.
 
-we chose to use keep analysis to 20 subreddits with medium size because of resources used for the encoded datasets. As subreddit as large as relationship\_advice for example would take up as much as 20GB using a fairly small dimensional encoder of 1024 dimensions. 
+A subreddit as large as relationship\_advice for example would take up as much as 20GB using a fairly small dimensional encoder of 1024 dimensions. 
 Ofcourse such size comes with longer encoding and model training time. WIth our approach each subreddit takes up between 0.15GB and 4GB after being encoded and enables us to test more configurations in the same time. 
-additionally we assumed it was likely that we would try different encoders or prompts which would add even more storage required
+additionally we tried different encoders or prompts which would add even more storage and time required
 
 to find out which direction a subreddit leans, we decided to use a mixture of the subreddits own descriptions and the work of Waller et al. \cite{waller2021quantifying}, which aligned for the subreddits we analyzed, if the description allowed for clear alignment.
-in the following x you can see the subreedits chosen, their community title and description and comments on why they were chosen
+in the following x you can see the subreddits chosen, their community title and description can be seen in the appendix
 
-% left
 r/democrats
-- Current Community Title: Democrats: Building a Better Future; News about Democrats and current events in the United States
-- Current Community description: The Democratic Party is building a better future for everyone and you can help. Join us today and help elect more Democrats nationwide! This sub offers news about current events in the United States. We are here to get Democrats elected up and down the ballot.
-- probably the most well known subreddit in favor of the democratic party in the US, categorized by \cite{waller2021quantifying} as left and officially supports the view of the democratic party. 
-
 r/Liberals
-- Current Community Title: The Liberal Subreddit: News about Liberals and Democrats
-- Current Community description: A Liberal Subreddit
-- smaller then democrats and not included in the work of \cite{waller2021quantifying}, but left leaning according to its discription
-
 r/anarchism
-- Current Community Title: Anarchism: Beneath the pavement, the beach
-- Current Community description: Anarchism is a social movement that seeks liberation from oppressive systems of control including but not limited to the state, governmentalism, capitalism, racism, sexism, ableism, speciesism, and religion. Anarchists advocate a self-managed, classless, stateless society without borders, bosses, or rulers where everyone takes collective responsibility for the health and prosperity of themselves and the environment.
-- not included in the work of \cite{waller2021quantifying}, more extreme left leaning subreddit compared to the previous two and not associated with a party
-
 r/racism
-- Current Community Title: dismantle white supremacy
-- Current Community description: Reddit's anti-racism community, a safe(r) space for People of Color and their supporters, pre-screens most content for safety. All discussions are expected to be from a post-"racism 101" and postcolonial point of view. We are conscious that race intersects with sex, class, disability, age, and more, and intend this space to be safe(r) for *all* POC. This community was founded by and is actively curated by People of Color.
-- left leaning according to \cite{waller2021quantifying}, not associated with a party 
-
 r/TrueAtheism
-- Current Community Title: TrueAtheism
-- Current Community description: A place dedicated to insightful posts and thoughtful, balanced discussion about atheism specifically and related topics concerning irreligion and religion generally.
-- left leaning according to \cite{waller2021quantifying}, not associated with a party, while not directly about politics, religion is politcal too \cite{potz2020political}\cite{perry1999religion} \cite{langsaether2019religious} \cite{madrid2022relevance}
-
-% right
 
 r/Conservative
-- Current Community Title: Conservative
-- Current Community description: \text{https://x.com/rcondiscord https://discord.gg/conservative}
-- right leaning according to \cite{waller2021quantifying}, the counterpart to r/democrats
-
 r/TrueChristian
-- Current Community Title: A subreddit for followers of Jesus Christ.
-- Current Community description: A subreddit for Christians of all sorts. We exist to provide a safe haven for all followers of Jesus Christ to discuss God, Jesus, the Bible, and information relative to our beliefs, and to provide non-believers a place to ask questions about Christianity as explained in the scriptures, without fear of mockery or debasement. To post suggestions or ideas for the sub, please go to /r/TrueChristianMeta. Come join us on Discord! https://discord.gg/mGCM9egt77
-- right leaning according to \cite{waller2021quantifying}, the counterpart to r/TrueAtheism
-
 r/Libertarian
-- Current Community Title: r/Libertarian: For a Free Society
-- Current Community description: Welcome to /r/Libertarian, a subreddit to discuss libertarianism. We are not a generic politics sub. We are a libertarian sub, about libertarianism. We do not owe you a platform to push anti-libertarian ideologies such as socialism/communism. This sub is explicitly against Communism/Socialism as it is antithetical to libertarianism
-- not included in the work of \cite{waller2021quantifying}, but right leaning according to their own description
-
 r/mensrights
-- Current Community Title: Men's Rights :: Advocating for the social and legal equality of men and boys since 2008
-- Current Community description: At the most basic level, men's rights are the legal rights that are granted to men. However, any issue that pertains to men's relationship to society is also a topic suitable for this subreddit. Men's rights are influenced by the way men are perceived by others. WARNING: Some other subs have bots that will ban you if you post or comment here.
-- not included in the work of \cite{waller2021quantifying}, anti-feminist communities overlap significantly with alt right communites \cite{mamie2021anti}
-
 r/progun
-- Current Community Title: Posts must be related to Firearms \& Second Amendment Politics. Please engage in Civil Discussion.
-- Current Community description: This is a place for discussion and debate of Second Amendment related topics, with a Pro-2A emphasis. Civil debate is welcome and encouraged. Even if you're completely opposed to 2A, you're welcome to share your thoughts here, as long as you maintain civility.
-- right leaning according to \cite{waller2021quantifying}
-
-% neutral
 
 r/PoliticalDiscussion
-
-r/PoliticalDiscussion
-- Current Community Title: Political Discussion
-- Current Community description: This is a subreddit for substantive and civil discussion on political topics. If you have a political prompt for discussion, ask it here!
-- not included in the work of \cite{waller2021quantifying}
-
 r/changemyview
-- Current Community Title: Change My View (CMV)
-- Current Community description: A place for people to post an opinion they accept may be flawed, in an effort to understand other perspectives on the issue. Enter with a mindset for conversation, not debate.
-- not included in the work of \cite{waller2021quantifying}
-
 r/NeutralPolitics
-- Current Community Title: Neutral Politics: Evidence. Logic. Respect.
-- Current Community description: A strictly-moderated community dedicated to evidence-based discussion of political issues.
-- right leaning according to \cite{waller2021quantifying}
-
 r/geopolitics
-- Current Community Title: Geopolitics: Geopolitical news, analysis, \& discussion
-- Current Community description: Geopolitics is focused on the relationship between politics and territory. Through geopolitics we attempt to analyze and predict the actions and decisions of nations, or other forms of political power, by means of their geographical characteristics and location in the world. In a broader sense, geopolitics studies the general relations between countries on a global scale. Here we analyze local events in terms of the bigger, global picture. 
-- not included in the work of \cite{waller2021quantifying}
-
 r/DebateReligion
-- Current Community Title: Discuss and debate religion
-- Current Community description: A place to respectfully discuss and debate religion
-- not included in the work of \cite{waller2021quantifying}
-
-% apolitical
 
 r/DecidingToBeBetter
-- Current Community Title: Deciding To Be Better
-- Current Community description: Ready to make a positive change in your life and leave behind habits that no longer serves you? This community is for you! Please read rules before posting. 
-- not included in the work of \cite{waller2021quantifying}
-
 r/truegaming
-- Current Community Title: For those who like talking about games as much as playing them.
-- Current Community description: /r/truegaming is a subreddit dedicated to meaningful, insightful, and high-quality discussion on all topics gaming.
-- not included in the work of \cite{waller2021quantifying}
-
 r/Fantasy
-- Current Community Title: Reddit Fantasy
-- Current Community description: /r/Fantasy is the internet’s largest discussion forum for the greater Speculative Fiction genre. We welcome respectful dialogue related to speculative fiction in literature, games, film, and the wider world. We reserve the right to remove discussion that does not fulfill the mission of /r/Fantasy.
-- not included in the work of \cite{waller2021quantifying}
-
 r/Frugal
-- Current Community Title: Frugal Living: Waste Less, Gain More!
-- Current Community description: Frugality is the mental approach we each take when considering our resource allocations. It includes time, money, convenience, and many other factors.
-- neutral leaning according to \cite{waller2021quantifying}
-
 r/Coffee
-- Current Community Title: Coffee
-- Current Community description: /r/Coffee is back - for now - and talking about itself, in addition to coffee.
-- not included in the work of \cite{waller2021quantifying}
 
 Initially we also wanted to include infamous and controversial subreddits such as r/The\_Donald, r/Mr\_Trump, r/uncensorednews or r/new\_right. Unfortunately, these subreddit were all banned or quarantined, meaning you can no longer gather data about them via praw.
 There were also a few subreddits which were too small after filtering out deleted posts and posts with low engagement
@@ -300,115 +217,8 @@ taking account \autoref{fig:score_statistics_over_time}, we can see that althoug
 used tfidf on subreddits
 added reddit/subreddit specific terms as custom stopwords
 
-
-% top terms
-
-terms such as state, republican, american, political, democrat, president, government were relevant throughout and were not included in above
-we aggregated the tfidf scores and set a minimum of 5 subreddits that the term should be included in
-
-
-top terms across subreddits per timespans:
-2008-2010: obama, health/obama care
-2010-2012: obama, paul, debt, tax
-2012-2014: obama, paul romney, war, gun, tax, obamacare
-2014-2016: obama, gun, war, hillary clinton, trump
-2016-2018: (donald) trump, hillary clinton, obama, bernie sanders
-2018-2020: trump, president, democrats, tax, war, free
-2020-2022: biden, trump, covid, coronavirus, joe, police
-
-% distintive words
-
-ignoring words that are very specific to the subreddit such as "liberal" for liberal or "conservative" for conservative subreddit or very broad terms such as america, white house, president, conservative, democratic and such
-
-done by calculating the uniqueness: difference between tfidf score of term in subreddit and the average tfidf score of the term overall
-
-distinctive words for subreddit conservative
-obamacare, media, obama, trump, ted cruz, cnn 
-
-
-distinctive words for subreddit libertarian
-ron paul, liberty, government, freedom, free market/speech,rights, rand paul, gary johnson,  
-
-
-distinctive words for subreddit progun
-gun, control, ban, nra, carry, amendment, rights, shooting
-
-
-distinctive words for subreddit truechristian
-god, chrisitan, jesus, bible, ...
-
-
-distinctive words for subreddit liberal
-obama, trump, torture, naomi klein, blue cross
-
-
-distinctive words for subreddit democrats
-obama, trump, pelosi, tax, deficit, hillary clinton, bernie sanders, charlie rangel, ethics, tax,
-
-
-distinctive words for subreddit progressive 
-health care, bernie sanders, obama, court, public option
-
-
-distinctive words for subreddit racism
-racist, racism, black, white, racial, ...
-
-
-distinctive words for subreddit anarchism
-anarchist, anarchism, police, capitalism, revolution, ...
-
-
-distinctive words for subreddit TrueAthemism
-atheism, religion, rage comics, science, life, ...
-
-
-
-distinctive words for subreddit PoliticalDiscussion
-candidate, election, cote, party, trump, change, support
-
-
-distinctive words for subreddit ENLIGHTENEDCENTRISM
-centrists, sides, left, nazi, facist
-
-
-distinctive words for subreddit changemyview
-happy, couple, view, broken, free, 
-
-though amount posts are political in nature, alot have very different topics not neccessarily limited to politics
-
-
-distinctive words for subreddit NeutralPolitics
-article, wikipedia, government, law, gov, usa/united states, state, congress, president, policy, election, vote, news, source, 
-
-heavy usage of wikipedia links in content
-
-
-distinctive words for subreddit geopolitics
-china, russia, iran, war, oil, east, europe, global, military, nuclear, ...
-
-
-distinctive words for subreddit DebateReligion
-theists, debate, answer, human, god, ...
-
-
-term evolution of specific terms
-interesting: obamacare + healthcare + care
-
-% comparison between presidents
-obama (inflated from obama care)
-romney
-biden + joe biden
-hillary clinton + hillary
-trump + donald trump
-
-election
-president
-
-government
-war
-
 % todo: difference when only using popular posts?
-no real real differences aside from some minor fluctuations
+no real real differences aside from some minor fluctuations when comparing unpopular to popular terms when it comes to top terms 
 
 % todo: overlap between subreddits? who is most similar
 % Todo: what metrics were used?
@@ -423,8 +233,10 @@ no real real differences aside from some minor fluctuations
 analysis was orignally planned with finding datashifts or contradictions bewteen subreddit. For example climate shift vs climate hoax, fake news vs media
 seems that subreddits like democrats and conservaties are closer than expected
 
-
-% todo: consider using tfidf on banned subreddits like the donald and compare?
+using tfidf as additional inputs, we tried we following things:
+coverage: how much overlap does the post have with the top terms
+binary: does the post contain one of the top k terms
+scores: analying how terms are correlated with popularity and add that that info for the top terms
 
 
 \subsection{Link Posts and common URLs}
@@ -484,23 +296,18 @@ tried to focus on different aspects
 Schritte:
 
 1. Generate Posts mit GenAI
-multishot prompting to generate text posts with distinct title and text content
+generate text posts with distinct title and text content
 
 2. encode post
 encode posts with LLM
 
-3. classify post
-see if post is classified as unpopular, popular or controversial
-either throw away everything thats not popular or test prediction for those classes too
+3. judge post using best model
+see how good the posts perform and save results alongside posts
 
 4. create reddit Post
+throw a coin and depending on the result choose a post from the top 10 percentile or at random
 create post per api
 save post id and other information, in case post is deleted, in dataset
-
-
-SLight alterating to the pipeline, each day flip a coin and if head, we dont throw away unpopular posts and just note the results down
-if its tails we classify and throw away if neccessarily
-at the end we can see which posts performed better
 
 \subsection{Generating the Post}
 
@@ -513,15 +320,20 @@ a similar issue is not repeating topics. As it stands, there might be a large am
 % TODO find out what average age and occupation for reddit users is, then use this as a persona
 % alternatively change that, depending on age of the respective subreddit from the paper that predicts political leaning too
 
+fine tuned prompts using claude, analyzed length of posts, writing style and such. Gave a few examples of popular and unpopular posts in the prompt
+added rules of the subreddit to the prompt in order to not have the post be removed by moderators for breaking rules and being more in line with the subreddits culture
+some rules had links to post containing alot of information, we tried to extract the relevant information from those posts to include in the prompts
 
-\subsection{Creating the Post}
+\subsection{Publishing the Post in the subreddit}
 
 problem is the account used to Post
-people could look at account and see posts -> make account private
-also subreddits have karma minimums and you cant post otherwise or need to be manually reviewed
-manual posting using the following prompt to test requirements to post:
+people could look at account and see regular posts in contradicting subreddits -> make account private
+also some subreddits have karma minimums and you cant post otherwise or need posts to be manually reviewed
+manual posting to test requirements to post
 
-Generate a Reddit post. Choose an interesting topic. The post should fit into the subreddit r/truechristian. Make it seem user generated and not like it created by an AI. Give me a Title and Content for the post. Make it suitable for Reddit. Make it seem like a uni student wrote it from the language and sentence structure. Dont use em-dashes.
+% Prompt used for manual testing: Generate a Reddit post. Choose an interesting topic. The post should fit into the subreddit r/[subreddit]. Make it seem user generated and not like it created by an AI. Give me a Title and Content for the post. Make it suitable for Reddit. Make it seem like a uni student wrote it from the language and sentence structure. Dont use em-dashes.
+
+
 
 - Libertarian: post has to be unlocked by moderators (Sorry, this post has been removed by the moderators of r/Libertarian.)
 - Conservative: Auto mod filters post under karma thresholds
@@ -529,41 +341,37 @@ Generate a Reddit post. Choose an interesting topic. The post should fit into th
 - liberal: cant post under r/liberal comment karma threshold
 - progressive: actually link post only
 - racism: awaiting moderator approval
-% - anarchism: awaiting moderator approval (was approved) https://www.reddit.com/r/Anarchism/comments/1phe0w2/are_hyperlocalized_micro_communes_a_realistic/
-% - TrueAthemism: posted with no problems: https://www.reddit.com/r/TrueAtheism/comments/1phe5pb/i_feel_like_leaving_religion_changed_how_i/
-% - truechristian: posted with no problems: https://www.reddit.com/r/TrueChristian/comments/1pheiwt/how_do_you_stay_patient_when_it_feels_like_god/
-% - mensrights: awaiting moderator approval (was approved), flair required https://www.reddit.com/r/MensRights/comments/1phenk5/why_do_mens_mental_health_issues_get_ignored_on/
-- metacanada: restricted community. Only approved users can post, but you can still comment.
-% - progun: posted with no problems: https://www.reddit.com/r/progun/comments/1pheprk/finally_got_my_first_ar_and_feeling_like_im/
-% - politicaldiscussion: flair required, awaiting moderator approval (was approved) https://www.reddit.com/r/PoliticalDiscussion/comments/1phetcy/how_effective_is_political_activism_on_campus/
+- anarchism: awaiting moderator approval (was approved) 
+% https://www.reddit.com/r/Anarchism/comments/1phe0w2/are_hyperlocalized_micro_communes_a_realistic/
+- TrueAthemism: posted with no problems: 
+%https://www.reddit.com/r/TrueAtheism/comments/1phe5pb/i_feel_like_leaving_religion_changed_how_i/
+- truechristian: posted with no problems: 
+%https://www.reddit.com/r/TrueChristian/comments/1pheiwt/how_do_you_stay_patient_when_it_feels_like_god/
+- mensrights: awaiting moderator approval (was approved), flair required 
+%https://www.reddit.com/r/MensRights/comments/1phenk5/why_do_mens_mental_health_issues_get_ignored_on/
+- progun: posted with no problems: 
+%https://www.reddit.com/r/progun/comments/1pheprk/finally_got_my_first_ar_and_feeling_like_im/
+- politicaldiscussion: flair required, awaiting moderator approval (was approved) 
+%https://www.reddit.com/r/PoliticalDiscussion/comments/1phetcy/how_effective_is_political_activism_on_campus/
 - changemyview: automatically removed due to lack of posting/comment history
-- neutralpolitics: needs contain any links. According to the submission rules, this subreddit does not approve posts without links to sources. question needs to be in title, awaiting moderator approval, changed prompt used to generate post according to post requirements
 - geopolitics: need comment karma to post
-% - debatereligion: must contain flair, posted with no problems: https://www.reddit.com/r/DebateReligion/comments/1phf1pn/can_morality_exist_without_god/
+- debatereligion: must contain flair, posted with no problems: 
+%https://www.reddit.com/r/DebateReligion/comments/1phf1pn/can_morality_exist_without_god/
 - decidingtobebetter: need total karma to post
-- truegaming: removed by reddit filters
-- fantasy: removed by reddit filters
+- truegaming:  flair required
+- fantasy: 
 
 filters could include karma, account age, posts, comments an such
 
-% consider buying accounts: https://www.g2g.com/categories/reddit-accounts
+using only subreddits that do not have these filters, we are left with anarchism, TrueAthemism, truechristian, mensrights, progun, politicaldiscussion, debatereligion, fantasy, truegaming
 
-upvote ratio verteilung angucken
-daten linearisieren
+some of them still have additional hurdles, such as formatting rules (politicaldiscussion only allows posts with question in the title) or specific topics that should not be discussed. therefore, we decided to use the subreddit rules directly in the prompts to generate the posts
 
-auf range von 0 bis 1 mappen (regreession)
+mensrights and trueatheism only allows posts that are flaired. for this we gave chatgpt the list of flairs and let it decide on its own what flair would be appropriate to use
 
-einmal als perzentil zu definieren(10% oder 20% fenster)
-
-Nur die krassesten aha momente in MA
-TFIDF bspw offen lassen, ob rein oder nicht
-abhängig, ob genug material die arbeit zu füllen
+in order to not make seem suspicious or automated, we are choosing a random time of the day to start posting, then we wait a random amount of minutes between posting to each subreddit
 
 
-linear regressor (oder anderer der zwischen 0 und 1 mappt, xgboost oder random forrest)
-correlations coeffizient (kendal, spearman)
-einlesen, was gute Werte sind
-in den oberen 10% liegt für post live
 
-upvote ratio irgendwie auf 0 - 1 mappen so dass sinnvoll verteilt ist
-große terms sonst auf 1 oder 0 clippen, falls wenige daten ausschlagen
+
+
