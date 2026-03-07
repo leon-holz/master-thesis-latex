@@ -1,102 +1,149 @@
 \chapter{Methodology}
-TODO kleine einleitung
+
+This chapter describes the data sources, preprocessing steps, feature engineering pipeline, regression model, and experimental deployment used in this study. The overall objective is to predict community approval of Reddit posts, measured via upvote ratio, and to evaluate whether generated posts can be optimized for higher community acceptance.
+
+\section{Data Sources}
+
+This study relies on large-scale historical Reddit data to analyze community behavior and train predictive models for post reception. Two primary data sources were used: the Pushshift Reddit archive and the official Reddit API accessed via the Python Reddit API Wrapper (PRAW). The combination of these sources provides broad historical coverage while ensuring accurate and up-to-date popularity metrics.
+
+\subsection{Pushshift Archive}
+
+The Pushshift dataset is a large-scale archival project that collected and stored Reddit submissions and comments over extended time periods. It provides structured JSON dumps that enable efficient retrieval of historical subreddit activity.
+
+For this study, posts spanning the period from 2008 to 2022 were retrieved from Pushshift. The archive provides access to essential metadata fields such as title, selftext, author, creation timestamp, and domain information. Its extensive temporal coverage makes it well suited for large-scale computational analysis.
+
+However, Pushshift captures posts at specific archival moments. As a result, engagement metrics such as score and upvote ratio may not reflect the final state of a post after additional voting activity.
+
+% additionally, reddit employs vote fuzzing which calls the score on pushshift even more into question, this behavior was supposedly stopped 2018
+\cite{stoddard2015popularity}
+
+% note that it is not up to date but makes it easy to take data from whole subreddits compared to any hugging face data collection
+
+\subsection{Reddit API}
+
+To ensure accurate popularity labels and additional metadata, the official Reddit API was used in conjunction with Pushshift data. The API provides up-to-date values for engagement metrics and allows retrieval of author-level metadata such as account age and karma statistics.
+
+The Reddit API enforces strict rate limits for standard applications, permitting approximately 100 requests per minute without a dedicated research agreement. Requests for extended research access were submitted but did not receive a response. Consequently, data retrieval was performed within the default rate constraints.
+
+Despite these limitations, the API provides authoritative engagement metrics, making it the preferred source for popularity labels used in the regression task.
+
+\subsection{Data Limitations}
+
+Several limitations arise from the use of archived and live API data. Posts may be deleted after archival, user accounts may become inaccessible, and engagement metrics may evolve over time. While these factors introduce unavoidable noise, combining Pushshift for historical breadth with the Reddit API for accurate labels provides a robust foundation for predictive modeling.
+
+\section{Subreddit Selection}
+
+The objective of this study is to analyze community-specific behavior on Reddit and evaluate whether post reception can be predicted within distinct subreddit environments. Subreddits were therefore selected to represent different political orientations as well as non-political communities, enabling comparison across varying discourse norms and moderation practices.
+
+\subsection{Political Orientation Categories}
+
+To capture ideological diversity, subreddits were grouped into four categories: left-leaning political communities, right-leaning political communities, politically neutral discussion communities, and non-political comparison communities. The classification of subreddits into these four categories follows prior empirical research on ideological clustering in online communities. In particular, we reference the work of Waller et al.\cite{waller2021quantifying}, who infer subreddit-level political alignment based on user overlap networks, posting behavior, and discourse patterns. For the subset of subreddits overlapping with their dataset, the inferred ideological positions largely correspond to the self-descriptions and moderation policies articulated by subreddit moderators. While moderator descriptions do not constitute an objective ground truth, the observed correspondence provides additional face validity for the adopted categorization.
+
+The present grouping is therefore not intended as a normative labeling, but as an operational categorization grounded in established patterns of ideological self-selection and community interaction. This approach allows for structured comparison while acknowledging that political identity in online spaces is fluid and multi-dimensional.
+
+Including both explicitly political and non-political communities allows the analysis to distinguish between ideological effects and more general subreddit-specific behavioral patterns.
+
+\subsection{Selection Criteria}
+
+Several criteria guided the selection of subreddits:
+
+\begin{itemize}
+    \item \textbf{Sufficient Activity:} Subreddits were required to contain a large number of posts over the observation period to enable statistically meaningful model training.
+    
+    \item \textbf{Text-Centered Content:} Communities dominated by image-only or media-only posts were excluded, as the predictive framework relies primarily on textual embeddings of titles and selftexts.
+    
+    \item \textbf{Availability of Historical Data:} Subreddits had to be accessible within the Pushshift archive and retrievable through the Reddit API during metadata enrichment.
+    
+    \item \textbf{Computational Feasibility:} Extremely large subreddits were excluded when their size would have resulted in disproportionately high storage and processing requirements for embedding generation and model training.
+\end{itemize}
+
+In addition, several historically influential but banned or quarantined subreddits were considered but ultimately excluded due to limited accessibility through the Reddit API at the time of data collection.
+
+\subsection{Final Subreddit Set}
+
+The final dataset consists of the following subreddits:
+
+\paragraph{Left-leaning communities}
+\begin{itemize}
+    \item r/democrats
+    \item r/Liberals
+    \item r/anarchism
+    \item r/racism
+    \item r/TrueAtheism
+\end{itemize}
+
+\paragraph{Right-leaning communities}
+\begin{itemize}
+    \item r/Conservative
+    \item r/TrueChristian
+    \item r/Libertarian
+    \item r/mensrights
+    \item r/progun
+\end{itemize}
+
+\paragraph{Politically neutral discussion communities}
+\begin{itemize}
+    \item r/PoliticalDiscussion
+    \item r/changemyview
+    \item r/NeutralPolitics (Excluded from model training due to insufficient post count after preprocessing.)
+    \item r/geopolitics
+    \item r/DebateReligion
+\end{itemize}
+
+\paragraph{Non-political comparison communities}
+\begin{itemize}
+    \item r/DecidingToBeBetter
+    \item r/truegaming
+    \item r/Fantasy
+    \item r/Frugal
+    \item r/Coffee
+\end{itemize}
+
+The impact of preprocessing and filtering steps on each subreddit is analyzed in Section~\ref{sec:preprocessing}. Model training is performed both on individual subreddit datasets and on a combined dataset aggregating posts from multiple communities.
+
+\subsection{Adjustment Due to Data Availability Constraints}
+
+During preprocessing, it was observed that the subreddit r/NeutralPolitics contained substantially fewer posts than anticipated after applying the minimum engagement filtering criterion. This reduction was primarily due to the removal of low-interaction posts and missing metadata.
+
+At the time this issue was identified, access to the Pushshift archive was temporarily unavailable, preventing additional data retrieval to compensate for the reduced sample size. As a result, the experimental evaluations were conducted using the remaining 19 subreddits.
+
+Although Pushshift access was later restored, repeating the full embedding generation and model training pipeline was not feasible within the available time frame. The exclusion of r/NeutralPolitics does not materially affect the overall conclusions, as the dataset retains representation from politically neutral discussion communities through other included subreddits.
+
+\section{Data Collection}
+
+\subsection{Initial Retrieval from Pushshift}
+
+Historical Reddit submissions were first retrieved from the Pushshift archive for each selected subreddit. The dataset spans posts from 2008 to 2022 and includes both link posts and self posts.
+
+For each submission, the following fields were extracted:
+
+\begin{itemize}
+    \item Title
+    \item Selftext (post body)
+    \item Author
+    \item Creation timestamp
+    \item Domain (for link posts)
+    \item Preliminary engagement metadata
+\end{itemize}
+
+Pushshift provides large-scale access to archived Reddit data, enabling efficient retrieval of millions of submissions across multiple communities. However, because Pushshift captures posts at discrete points in time, engagement metrics may not reflect their final state. For this reason, additional metadata enrichment was performed using the official Reddit API.
+
+\subsection{Metadata Enrichment via Reddit API}
+
+After initial retrieval from Pushshift, each post was queried via the official Reddit API using PRAW in order to retrieve up-to-date popularity metrics and additional metadata. The primary objective of this step was to obtain accurate upvote ratio values, which serve as the regression target in this study.
+
+In addition to the upvote ratio, author-level features were retrieved, including account age, link karma, comment karma, and related attributes used in feature engineering.
+
+The Reddit API enforces strict rate limits for standard applications, allowing approximately 100 requests per minute without a special research agreement. Requests for extended research access were submitted but did not receive a response. Consequently, metadata retrieval was performed under default rate-limit constraints.
+
+Given the scale of the dataset, which exceeded two million posts prior to filtering, the enrichment process required careful batching and long-running retrieval scripts operating over extended periods. Despite these constraints, all retained posts were successfully enriched with up-to-date popularity labels and relevant metadata.
+
+\subsection{Construction of the Final Dataset}
+
+The final dataset was constructed by merging the Pushshift archive data with the metadata retrieved via the Reddit API. Posts that could not be accessed during enrichment or for which required metadata was unavailable were excluded prior to model training.
 
 
-
-\section{Dataset}
-
-Firstly, a large dataset of Reddit posts is required for our study. 
-Initially, we planned to collect data using the Reddit API through the PRAW library~\cite{praw}, as it allows us to select specific subreddits freely. 
-However, the API imposes a limitation of retrieving only 1,000 posts per request. 
-Reddit offers different sorting options, such as hot, new, rising, top, and controversial, which can be combined to increase the diversity of the dataset. 
-In theory, this approach could yield up to 5,000 unique posts per subreddit. 
-However, in practice, many posts appear in multiple categories, significantly reducing the actual number of unique posts collected—typically to around 2,000 per subreddit. 
-
-volume far too small for training model or making claims using this small subset for millions of posts, necessitating an alternative approach to data collection.
-
-instead of using the api, we used datasets provided by pushshift~\cite{baumgartner2020pushshiftredditdataset}
-
-Pushshift is a large-scale data collection and archiving project that provides historical and near real-time access to social media data, most notably from Reddit. It was developed and maintained by Jason Baumgartner with the goal of facilitating social science research, data mining, and natural language processing (NLP) applications.
-
-Pushshift continuously ingested Reddit data via the platform’s public API and other data sources, archiving submissions and comments in a structured and queryable format. The data were made publicly accessible through two main interfaces:
-
-The Pushshift API, which allowed users to query Reddit submissions and comments by a wide range of metadata (e.g., subreddit, author, score, creation time, etc.), often returning results faster and with fewer limitations than the official Reddit API.
-
-Public data dumps, periodically released as compressed JSON files, providing bulk access to large portions of Reddit’s history for offline processing.
-
-Because of its extensive temporal coverage, Pushshift became a foundational resource in computational social science, linguistics, and political discourse analysis. Researchers used it to study online behavior, polarization, community dynamics, and the diffusion of information across subreddits and time.
-
-However, as of 2023, Pushshift’s public API was restricted following policy changes and concerns from Reddit regarding data use and privacy. While historical datasets remain accessible through archives and mirrors, real-time access has become limited. Consequently, many researchers now rely on the official Reddit API (via tools such as PRAW) or third-party mirrors of Pushshift’s data for updated collections.
-
-therefore only data up to 2023 is available. also must be mindful of potential biases, such as incomplete coverage, post-deletion timing discrepancies, or missing metadata in later versions of the dataset.
-
-we found that alot of the time the scores noted in the pushshift datasets were slightly off compared to results from the reddit api via praw. this could be due to upvote fuzzing or additional user engagement after the post and its data was saved to pushshift 
-upvote fuzzing adds a random constant to upvotes and downvotes in order to ``combat spam and manipulation''. this behavior was supposedly stopped 2018 \cite{stoddard2015popularity}
-
-also there is additional data that was required for analysis and later model training, so we used the reddit api via praw to gather additonal data for each post and all authors contained in it
-
-also information for some posts could not be retrieved via the reddit api because they haeve since been removed, either by author, subreddit moderators or reddit admins, or the Id might not be correct in pushshift
-therefore those posts were filtered out
-additionally there were other posts where the user or the post have been banned or deleted, causing the content to not be available anymore. those posts have been filtered too
--> possible introduction of bias against controversial or unpopular content
-Posts where author data could not be retrieved due to API limitations or other reasons were also excluded. 
-
-% todo additional disadvantages????
-
-% TODO: Author features collected
-% how many posts per author on average (without banned users)
-
-\section{Subreddit used}
-
-for subreddits, since we wanted to see differences and similiaries in the different political landscapes, we chose to pick 5 subreddits of each leaning, meaning left, right, and neutral. Additonally, to have a point of comparison, we chose to also include 5 subreddits that are not inherently political, so that we can see how posts from these subreddits are different to the ones from political subreddits
-
-
-generel metrics included the size of the sub, what post types they usually use 
-for our analysis, we tried to get subreddit with little images and mostly selftext and link posts, 
-we initally chose to use keep analysis to 20 subreddits with medium size because of resources used for the encoded datasets. 
-we decided to filter out posts with low visiblity, meaning they didnt get positive or negative attention and where therefore adding noise to the task
-doing this filtered out a good part of one of the 20 subreddits, namely neutralpolitics. Unfortunately the pushshift website hasnt been available after discovering this. We were therefore not able to replace said subreddit and therefore continue with 19 subreddit.
-
-A subreddit as large as relationship\_advice for example would take up as much as 20GB using a fairly small dimensional encoder of 1024 dimensions. 
-Ofcourse such size comes with longer encoding and model training time. WIth our approach each subreddit takes up between 0.15GB and 4GB after being encoded and enables us to test more configurations in the same time. 
-additionally we tried different encoders or prompts which would add even more storage and time required
-
-to find out which direction a subreddit leans, we decided to use a mixture of the subreddits own descriptions and the work of Waller et al. \cite{waller2021quantifying}, which aligned for the subreddits we analyzed, if the description allowed for clear alignment.
-in the following x you can see the subreddits chosen, their community title and description can be seen in the appendix
-
-r/democrats
-r/Liberals
-r/anarchism
-r/racism
-r/TrueAtheism
-
-r/Conservative
-r/TrueChristian
-r/Libertarian
-r/mensrights
-r/progun
-
-r/PoliticalDiscussion
-r/changemyview
-r/NeutralPolitics
-r/geopolitics
-r/DebateReligion
-
-r/DecidingToBeBetter
-r/truegaming
-r/Fantasy
-r/Frugal
-r/Coffee
-
-Initially we also wanted to include infamous and controversial subreddits such as r/The\_Donald, r/Mr\_Trump, r/uncensorednews or r/new\_right. Unfortunately, these subreddit were all banned or quarantined, meaning you can no longer gather data about them via praw.
-There were also a few subreddits which were too small after filtering out deleted posts and posts with low engagement
-
-% todo test keeping low engagement in as unpopular posts
-
-% todo mentioned subreddits that i decided against later for reasons like low post amount or other stuff
-
-as mentioned earlier, we filtered out deleted or removed posts/users. Here we found that left, right and apolitical leaning were relatively close with 16.5 - 20\% deleted posts. Neutral leaning however had more than half removed. 
-
+% todo mention table and explain a bit
 
 \begin{table}[htbp]
 \centering
@@ -131,7 +178,6 @@ truegaming & 61{,}368 & 39{,}355 & 22{,}013 & 35.85 \\
 \end{tabular}
 \end{table}
 
-
 \begin{table}[htbp]
 \centering
 \small
@@ -152,226 +198,283 @@ Apolitical  &   732{,}116 &   595{,}553 & 136{,}563 & 18.65 \\
 \end{table}
 
 
+At this stage, the dataset contained both textual content (title and selftext) and structured metadata fields necessary for feature engineering. Subsequent preprocessing steps further refined the dataset to ensure consistency and reliability of the prediction target.
 
-\section{Explorative Analysis}
+\section{temp}
 
-in this chapter we explore the datasets, gathering general statistics in regards to the subreddit as well as a more detailed look into the dataset using sentiment analysis, tfidf, embedding analysis as well as analyzing domains used in link posts
+% todo: figure of pipeline
 
 
-\subsection{}{Basic Information}
+\section{Text Representation}
 
-analyzed content types per subreddit
-since goal is to create posts via gen ai later and use our model to predict if they will be popular, we focused on link and selftext posts
-as we can see in \autoref{fig:post_content_type_distribution}, most politcal subreddits have an overwhelming amount of link posts, a small amount of images and video posts, that does not exceed 25\% when added together and a varying amount of selftext posts. 
+\subsection{Embedding Models}
 
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=\textwidth]{figs/content_type_distribution.png}
-    \caption{Post Content Type Distribution per Subreddit}
-    \label{fig:post_content_type_distribution}
-\end{figure}
+\subsection{Embedding Models}
 
+To transform textual content into numerical representations suitable for regression modeling, transformer-based embedding models were employed. These models map text sequences into dense vector representations that capture semantic and contextual information.
 
-analyzed posts made per year by subreddit in \autoref{fig:posting_volume_per_year}
-no clear trend for all subreddit, some appear to rise throughtout the years, some spike and fall of again, some seem to decline. One has to note that depending on the subreddit, a good of amount of posts had to be filtered out. its unclear, where those posts would fall into
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=\textwidth]{figs/posting_volume_yearly.png}
-    \caption{Posting Volume per year}
-    \label{fig:posting_volume_per_year}
-\end{figure}
+The baseline embedding model used in this study is the \textit{Stella} model (1024-dimensional embeddings), which was executed locally. The model was selected based on its strong performance on large-scale semantic similarity and retrieval benchmarks, including the Massive Text Embedding Benchmark (MTEB) \cite{muennighoff2022mteb}. High-quality sentence embeddings are essential in the context of political discourse, where meaning often depends on subtle framing, contextual nuance, and implicit semantic associations. By leveraging a model optimized for semantic representation, the analysis aims to ensure that downstream regression and clustering procedures operate on linguistically meaningful feature spaces rather than surface-level lexical overlap.
 
-next we looked at the score distribution in \autoref{fig:score_distribution}
-here we can see that the largest amount of posts are between a score of 1 to 10 and 11-100 respectively, note that a score of 100 as an example might be reached with a upvote ratio of 55\%, meaning its not necessarily a popular post
-taking account \autoref{fig:score_statistics_over_time}, we can see that although the amount of posting every year did not have a clear trend (\autoref{fig:posting_volume_per_year}), the score seems to increase or roughly stay the same for most subreddits
+Additional embedding models were evaluated to assess robustness across different architectural designs and training objectives. While the Stella model serves as the primary baseline configuration, comparative performance results are reported and discussed in the Results chapter.
 
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=\textwidth]{figs/score_distribution.png}
-    \caption{Score Distribution}
-    \label{fig:score_distribution}
-\end{figure}
+All models were run locally to ensure consistent preprocessing and to avoid variability introduced by external APIs.
 
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=\textwidth]{figs/score_statistics_over_time.png}
-    \caption{Score Stastistics over Time}
-    \label{fig:score_statistics_over_time}
-\end{figure}
+Using \textit{Stella}, each embedding vector has a dimensionality of 1024 features in the baseline configuration.
 
+\subsection{Input Text Construction}
 
-\subsection{Sentiment}
+Each Reddit post consists primarily of two textual components: the title and the selftext (body). These fields were encoded separately to preserve structural distinctions between short headline-style text and longer explanatory content.
 
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=\textwidth]{figs/sentiment_analysis.png}
-    \caption{Analyzing Sentiment per Subreddit over time}
-    \label{fig:sentiment}
-\end{figure}
+The subreddit identifier was not included in the textual encoding. Instead, models were trained either on individual subreddit datasets or on combined datasets containing posts from multiple communities. This design choice ensures that predictions are based on textual and metadata features rather than explicit subreddit identifiers.
 
-% todo compare popular vs unpopular and such
+% TODO training with subreddit identifier for combined datasets and readjust text appropriately
 
+\subsection{Embedding Aggregation Strategies}
 
-\subsection{TFIDF}
+Since titles and selftexts were encoded separately, an aggregation step was required to obtain a unified feature representation per post. Several aggregation strategies were evaluated to capture different relationships between title and body content:
 
-used tfidf on subreddits
-added reddit/subreddit specific terms as custom stopwords
+\begin{itemize}
+    \item \textbf{Concatenation:} Title and selftext embeddings were concatenated, resulting in a feature vector of doubled dimensionality. This approach preserves full information from both components and allows the regression model to learn their relative importance.
 
-% todo: difference when only using popular posts?
-no real real differences aside from some minor fluctuations when comparing unpopular to popular terms when it comes to top terms 
+    \item \textbf{Mean Pooling:} The element-wise mean of title and selftext embeddings was computed. While computationally efficient, this method implicitly assumes equal contribution of both components.
 
-% todo: overlap between subreddits? who is most similar
-% Todo: what metrics were used?
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=\textwidth]{figs/tfidf/subreddit_clustering.png}
-    \caption{Clustering Subreddits using TFIDF Similarity}
-    \label{fig:tfidf_similarity}
-\end{figure}
+    \item \textbf{Max Pooling:}  
+    The element-wise maximum across both embeddings was used. This emphasizes the strongest activation per dimension across title and body.
 
+    \item \textbf{Min Pooling:}  
+    The element-wise minimum across both embeddings was computed. While less commonly used, this operation captures the shared lower-bound signal across both textual components and serves as a complementary pooling strategy to max pooling.
 
-analysis was orignally planned with finding datashifts or contradictions bewteen subreddit. For example climate shift vs climate hoax, fake news vs media
-seems that subreddits like democrats and conservaties are closer than expected
+    \item \textbf{Hadamard Product:} The element-wise product of title and selftext embeddings was computed. This interaction-based representation captures multiplicative relationships between semantic dimensions.
 
-using tfidf as additional inputs, we tried we following things:
-coverage: how much overlap does the post have with the top terms
-binary: does the post contain one of the top k terms
-scores: analying how terms are correlated with popularity and add that that info for the top terms
+    \item \textbf{Smart Mean:} A conditional mean aggregation designed to account for structural differences between self posts and link posts. In cases where a post does not contain a meaningful selftext (e.g., link-only posts), the title embedding alone is used. For posts containing both title and body text, the element-wise mean is computed. This approach avoids averaging a meaningful embedding with a zero vector, which would otherwise distort the representation of body-less posts.
 
+    \item \textbf{Multi-Feature Aggregation:} The most expressive aggregation strategy concatenates the title and selftext embeddings and appends an additional similarity feature computed as the dot product between the two embeddings. This similarity score provides an explicit signal indicating how closely related the title and body content are. High similarity values suggest semantic alignment, while lower values may indicate divergence between headline and content.
+\end{itemize}
 
-\subsection{Link Posts and common URLs}
+Aggregation strategies that increase dimensionality, such as concatenation and multi-feature aggregation, offer greater representational capacity but also increase computational cost and the risk of overfitting. Simpler pooling-based approaches reduce dimensionality but may discard potentially informative interactions. Comparative evaluation of these strategies is presented in the Results chapter.
 
-good amount of posts in political subreddits are link posts which only contain a title and a link which often points to a news websites like breitbart, foxnews, dailywire, washingtonpost or social media sites like twitter, reddit itself 
+\section{Exploratory Analysis of Subreddit Differences}
 
-sincce link posts are missing the usual post content, they are a valuable indicator as to what the author is communicating with their post. as such, we need to find a way to add such information as an additional input for predicting popularity
+\subsection{Objective of the Exploratory Analysis}
 
+Before constructing predictive models, an exploratory analysis was conducted to examine whether transformer-based text embeddings capture distinguishable structural patterns across different subreddits. The objective of this analysis is not to provide a comprehensive study of embedding space geometry, but rather to verify that linguistic and stylistic differences between communities are reflected in the embedding representations.
 
-\subsection{Embeddings analysis}
+If subreddit communities exhibit distinct embedding distributions, this suggests that textual features contain structured information that may be predictive of community-specific reception and popularity outcomes.
 
+\subsection{Dimensionality Reduction}
 
-clustered and visualized top posts by popular, controversial and unpopular
-used comments for latter 2 as score cant be below 0
-seems like clusters can be seen and subreddits seem to have somewhat individual things that are liked, disliked
+Because the baseline embedding vectors are 1024-dimensional, dimensionality reduction techniques were applied for visualization purposes. Principal Component Analysis (PCA) was used to project embeddings into two- and three-dimensional spaces.
 
-determine if that is true by training models that try to determine if a post is from a certain subreddit / political subreddit group
-used minimum of x score or comments for dataset
-compare eval on val set from 2008-2015 vs after
+PCA preserves directions of maximum variance and enables inspection of global structure within the embedding space. The reduced representations were used solely for visualization and exploratory clustering; the regression models operate on the full high-dimensional feature vectors.
 
-% todo different encoders and prompts
+% todo PCA plots 
 
-% todo: see which posts were categorized wrongly, what upvote ratio, what was the real vs expected subreddit, etc
+Visual inspection of the reduced embedding space indicates partial separation between subreddits, particularly across politically distinct communities. While overlaps remain substantial, identifiable clusters suggest that embeddings capture community-specific linguistic patterns.
 
+\subsection{Subreddit Classification Experiment}
 
-\section{Encoder}
+To quantitatively evaluate separability, a supervised classification experiment was conducted in which subreddit membership was predicted directly from embedding vectors. A standard classification model was trained using embedding features as input and subreddit labels as targets.
 
-looked at Massive Text Embedding Benchmark (MTEB) Leaderboard~\cite{muennighoff2022mteb} for top models
+The resulting classification performance demonstrates that embeddings contain sufficient information to distinguish between communities at rates substantially above chance level.
 
-considerations next to performance were hard requirements and first and foremost the embedding dimensions
-the lower the better, as encoding millions of posts with different encoders or prompts costs alot of time and takes up alot of memory
+% todo table for classification here
 
-for initial analysis we employed the \textit{stella\_en\_400M\_v5} model~\cite{stella_en_400M_v5} as its dimensions could be set to 1024, meaning smaller encoded datasets and maintained a great perofmenace in clustering and classification tasks while having low hardware requirements
+These results confirm that transformer-based embeddings capture systematic linguistic differences between subreddit communities. However, this analysis serves only as validation of representational quality and is not the primary focus of the thesis.
 
-during our later tests, additional models joined the leaderboards, so we also compared other encoders with similar requirements, excluding those that we would have had to pay for like gemini-embedding-001 (https://ai.google.dev/gemini-api/docs/embeddings) to find the one with the best performance for our use case. the resuls of which encoder performed the best for our task can be seen in the results section
+\subsection{Relevance for Popularity Prediction}
 
-% TODO bender acknowledgement
+The exploratory findings suggest that subreddit communities exhibit distinct linguistic and stylistic patterns that are reflected in embedding representations. This supports the hypothesis that textual features can provide meaningful signals for predicting community reception.
 
-using the high-performance computing (HPC) environment, specifically the HPC cluster \textit{Bender} at the University of Bonn~\cite{benderhpc}, which provided the necessary computational resources to handle large-scale data processing.
+If embeddings encode community-specific norms, preferences, and discourse conventions, they may also encode features that influence whether a post is positively received within that community. Consequently, embedding-based representations form a suitable foundation for the regression models introduced in the following sections.
 
+\section{Feature Engineering}
 
-\section{Prompts}
+In addition to textual embeddings, a range of structured features was constructed to capture contextual, temporal, author-related, and lexical signals potentially relevant for predicting community reception. These features complement the semantic information encoded in transformer embeddings and allow the regression model to incorporate heterogeneous sources of information.
 
-Different prompts for the best encoder model (stella)
+\subsection{Domain Features}
 
-no much research whats prompts are best used for social media or political posts specifically
+For link posts, the external domain referenced by the submission may influence community reception. To quantify this effect, correlation statistics between domain occurrence and upvote ratio were computed.
 
-tried to focus on different aspects
+Domains appearing at least 100 times were evaluated for correlation with popularity. Based on these statistics, the top and bottom 50 domains (ranked by correlation strength) were identified.
 
-% todo show prompts
+Three types of domain features were constructed:
 
+\begin{itemize}
+    \item A continuous feature representing the estimated correlation signal associated with the post's domain.
+    \item A binary indicator denoting whether the domain belongs to the top-ranked positively correlated domains.
+    \item A binary indicator denoting whether the domain belongs to the lowest-ranked negatively correlated domains.
+\end{itemize}
 
+These features allow the model to capture systematic community preferences for specific external content sources.
 
-\section{Gen AI}
+\subsection{Temporal Features}
 
+User activity and post reception on Reddit exhibit strong temporal patterns. To capture these dynamics, cyclic and categorical time-based features were constructed.
 
-Schritte:
+Cyclic variables were encoded using sine and cosine transformations to preserve periodic structure:
 
-1. Generate Posts mit GenAI
-generate text posts with distinct title and text content
+\begin{itemize}
+    \item Hour of day (two features)
+    \item Day of week (two features)
+    \item Month of year (two features)
+\end{itemize}
 
-2. encode post
-encode posts with LLM
+Additional temporal indicators include:
 
-3. judge post using best model
-see how good the posts perform and save results alongside posts
+\begin{itemize}
+    \item Weekend flag (binary)
+    \item Time-of-day buckets (night, morning, afternoon, evening; one-hot encoded)
+    \item Holiday indicators for major U.S. holidays
+\end{itemize}
 
-4. create reddit Post
-throw a coin and depending on the result choose a post from the top 10 percentile or at random
-create post per api
-save post id and other information, in case post is deleted, in dataset
+Cyclic encoding prevents artificial discontinuities (e.g., between hour 23 and hour 0) and enables the model to learn smooth periodic effects.
 
-\subsection{Generating the Post}
+\subsection{Author Features}
 
-first of all we should try to have a consistent persona for the posts
-depending on subreddit size, users might recognize the username and if two posts contradict each other
-as an example, the post might indicate the user be a woman in one post and a man in another
-thereby, they might be detected as written by AI, as there are reddit users that just try to post popular content and generate karma on their account to sell it later
-a similar issue is not repeating topics. As it stands, there might be a large amount of posts what will be thrown away. therefore it will be difficult to find enough content that does not repeat itself
+Author-level characteristics may influence post reception, as established users often exhibit different engagement patterns compared to new accounts.
 
-% TODO find out what average age and occupation for reddit users is, then use this as a persona
-% alternatively change that, depending on age of the respective subreddit from the paper that predicts political leaning too
+Continuous author features include:
 
-fine tuned prompts using claude, analyzed length of posts, writing style and such. Gave a few examples of popular and unpopular posts in the prompt
-added rules of the subreddit to the prompt in order to not have the post be removed by moderators for breaking rules and being more in line with the subreddits culture
-some rules had links to post containing alot of information, we tried to extract the relevant information from those posts to include in the prompts
+\begin{itemize}
+    \item Account age in days (clipped to a maximum threshold)
+    \item Link karma
+    \item Comment karma
+    \item Total karma
+\end{itemize}
 
-\subsection{Publishing the Post in the subreddit}
+To reduce skewness and preserve sign information, karma-related features were transformed using a signed logarithmic scaling function.
 
-problem is the account used to Post
-people could look at account and see regular posts in contradicting subreddits -> make account private
-also some subreddits have karma minimums and you cant post otherwise or need posts to be manually reviewed
-manual posting to test requirements to post
+Binary author features include:
 
-% Prompt used for manual testing: Generate a Reddit post. Choose an interesting topic. The post should fit into the subreddit r/[subreddit]. Make it seem user generated and not like it created by an AI. Give me a Title and Content for the post. Make it suitable for Reddit. Make it seem like a uni student wrote it from the language and sentence structure. Dont use em-dashes.
+\begin{itemize}
+    \item Moderator status
+    \item Verified email status
+    \item Premium (Gold) membership
+\end{itemize}
 
+These features provide the model with signals related to user reputation, experience, and community standing.
 
+\subsection{TF-IDF Derived Features}
 
-- Libertarian: post has to be unlocked by moderators (Sorry, this post has been removed by the moderators of r/Libertarian.)
-- Conservative: Auto mod filters post under karma thresholds
-- democrats: cant post under r/democrats comment karma threshold
-- liberal: cant post under r/liberal comment karma threshold
-- progressive: actually link post only
-- racism: awaiting moderator approval
-- anarchism: awaiting moderator approval (was approved) 
-% https://www.reddit.com/r/Anarchism/comments/1phe0w2/are_hyperlocalized_micro_communes_a_realistic/
-- TrueAthemism: posted with no problems: 
-%https://www.reddit.com/r/TrueAtheism/comments/1phe5pb/i_feel_like_leaving_religion_changed_how_i/
-- truechristian: posted with no problems: 
-%https://www.reddit.com/r/TrueChristian/comments/1pheiwt/how_do_you_stay_patient_when_it_feels_like_god/
-- mensrights: awaiting moderator approval (was approved), flair required 
-%https://www.reddit.com/r/MensRights/comments/1phenk5/why_do_mens_mental_health_issues_get_ignored_on/
-- progun: posted with no problems: 
-%https://www.reddit.com/r/progun/comments/1pheprk/finally_got_my_first_ar_and_feeling_like_im/
-- politicaldiscussion: flair required, awaiting moderator approval (was approved) 
-%https://www.reddit.com/r/PoliticalDiscussion/comments/1phetcy/how_effective_is_political_activism_on_campus/
-- changemyview: automatically removed due to lack of posting/comment history
-- geopolitics: need comment karma to post
-- debatereligion: must contain flair, posted with no problems: 
-%https://www.reddit.com/r/DebateReligion/comments/1phf1pn/can_morality_exist_without_god/
-- decidingtobebetter: need total karma to post
-- truegaming:  flair required
-- fantasy: 
+To capture lexical signals beyond dense embeddings, TF-IDF-based features were constructed. Term importance scores were computed based on correlations between word occurrence and upvote ratio.
 
-filters could include karma, account age, posts, comments an such
+Three categories of features were derived:
 
-using only subreddits that do not have these filters, we are left with anarchism, TrueAthemism, truechristian, mensrights, progun, politicaldiscussion, debatereligion, fantasy, truegaming
+\paragraph{Coverage Features}
+The fraction of characteristic vocabulary associated with popular or unpopular posts appearing in a given submission.
 
-some of them still have additional hurdles, such as formatting rules (politicaldiscussion only allows posts with question in the title) or specific topics that should not be discussed. therefore, we decided to use the subreddit rules directly in the prompts to generate the posts
+\paragraph{Score-Based Features}
+The average correlation weight of the post's tokens, computed both globally across subreddits and within individual communities.
 
-mensrights and trueatheism only allows posts that are flaired. for this we gave chatgpt the list of flairs and let it decide on its own what flair would be appropriate to use
+\paragraph{Binary Indicators}
+Binary features indicating whether a post contains at least one globally top-ranked popular or unpopular term.
 
-in order to not make seem suspicious or automated, we are choosing a random time of the day to start posting, then we wait a random amount of minutes between posting to each subreddit
+These features provide interpretable lexical signals complementing embedding-based semantic representations.
 
+\subsection{Sentiment Features}
 
+Sentiment information was extracted using the VADER sentiment analysis tool. Depending on configuration, sentiment scores were computed for the title, the selftext, a combined text representation, or treated separately.
 
+For each selected text source, different feature sets were evaluated:
 
+\begin{itemize}
+    \item Raw sentiment scores (positive, neutral, negative, compound)
+    \item Binary sentiment indicator (compound score above standard threshold)
+    \item Categorical one-hot encoding (negative, neutral, positive)
+    \item Combined feature sets
+\end{itemize}
 
+These sentiment features allow the regression model to incorporate affective signals that may influence community approval.
+
+The performance impact of individual feature groups and their combinations is evaluated in the Results chapter. This modular design allows systematic comparison of embedding-only models and extended feature configurations.
+
+\section{Popularity Prediction Model}
+
+\subsection{Prediction Target}
+
+The objective of the predictive model is to estimate the \textit{upvote ratio} of a Reddit post. The upvote ratio represents the proportion of positive votes relative to total votes and is bounded between 0 and 1.
+
+While many studies of online popularity focus on predicting absolute score values, raw scores are strongly influenced by factors that are difficult to control experimentally, including post timing, visibility dynamics, and fluctuations in overall user activity. Two posts of similar perceived quality may therefore receive substantially different scores depending on exposure conditions.
+
+The upvote ratio provides a normalized measure of community approval that is less sensitive to overall engagement volume. Even in cases of limited total votes, the ratio reflects whether users who interacted with the post responded positively. 
+
+% todo, add that upvote ratio is Platform-native, Consistent within subreddit, Suitable for comparative analysis.
+
+
+
+For a study focused on alignment with subreddit norms and community expectations, the upvote ratio therefore serves as an appropriate proxy for community acceptance.
+
+All upvote ratio values used in this study were retrieved directly from the official Reddit API to ensure accuracy and consistency.
+
+\subsection{Minimum Engagement Constraint}
+
+To improve target stability, posts were required to have either a minimum score of three or at least three comments. This filtering step excludes posts that received negligible interaction and whose upvote ratios may reflect only one or two votes rather than meaningful community evaluation.
+
+After filtering, the final dataset consisted of 1,599,379 posts, with 1,279,864 used for training and 319,515 for validation.
+
+\subsection{Model Architecture}
+
+Post popularity was modeled using gradient boosting regression implemented with XGBoost. Gradient boosting models are well suited for heterogeneous feature spaces and can effectively combine dense embeddings with structured metadata.
+
+The model was trained with the following hyperparameters:
+
+\begin{itemize}
+    \item Number of estimators: 2000
+    \item Maximum tree depth: 6
+    \item Learning rate: 0.05
+    \item Subsample ratio: 0.85
+    \item Column sampling ratio per tree: 0.85
+\end{itemize}
+
+These settings provide a balance between model capacity and regularization. Subsampling and column sampling reduce overfitting risk, while moderate tree depth allows modeling nonlinear feature interactions.
+
+\subsection{Training Procedure}
+
+The dataset was randomly partitioned into training and validation sets using an 80/20 split. No cross-validation was performed due to the large dataset size and the computational cost associated with repeatedly training high-dimensional models.
+
+Models were trained both on individual subreddit datasets and on a combined dataset aggregating posts from multiple communities. The subreddit identifier itself was not included as an explicit feature, ensuring that predictions are based solely on textual and contextual characteristics rather than label leakage.
+
+\subsection{Evaluation Metrics}
+
+Model performance was evaluated using two complementary regression metrics:
+
+\paragraph{Mean Absolute Error (MAE).}
+MAE measures the average absolute difference between predicted and observed upvote ratios. It provides a direct interpretation of prediction error magnitude within the bounded [0,1] range.
+
+\paragraph{Pearson Correlation Coefficient.}
+Pearson correlation measures the linear relationship between predicted and observed upvote ratios. While MAE quantifies absolute accuracy, correlation assesses whether the model correctly ranks posts according to expected popularity.
+
+Using both metrics allows evaluation of prediction precision and ranking quality simultaneously.
+
+\subsection{Experimental Configurations}
+
+To assess the contribution of different feature groups, multiple model configurations were evaluated. These include embedding-only models, embedding models augmented with domain, temporal, author, TF-IDF, and sentiment features, as well as combinations thereof.
+
+This modular design enables systematic comparison of feature contributions and aggregation strategies, as reported in the Results chapter.
+
+\section{Prediction Pipeline and Live Experiment}
+
+\subsection{Overview}
+
+The live experiment was designed to evaluate whether publicly available Reddit data can be used to train a regression model capable of improving the predicted community reception of generated posts. The objective is not to optimize persuasive messaging or promote specific viewpoints, but rather to assess whether large-scale historical data combined with generative models can systematically increase the likelihood of positive community evaluation.
+
+This experiment serves as a proof-of-concept demonstrating how publicly accessible data and widely available machine learning tools could potentially be used to influence online discourse. The focus is therefore on technical feasibility rather than ideological content.
+
+\subsection{Post Generation}
+
+Candidate posts were generated using large language models guided by simple, rule-based prompts. The prompts incorporated subreddit-specific formatting requirements and publicly visible community rules but avoided advanced prompt engineering techniques. The intent was to simulate a realistic, minimally optimized use case rather than an extensively tuned content-generation system.
+
+No attempt was made to promote specific political positions or advance particular viewpoints. Generated posts were designed to align with the general thematic scope of each subreddit without introducing manipulative framing or targeted persuasion strategies.
+
+This restrained approach ensures that the experiment evaluates the predictive model’s ability to identify structurally well-aligned content rather than the effectiveness of sophisticated prompt optimization.
+
+\subsection{Experimental Objective}
+
+The live experiment evaluates whether a regression model trained on publicly available historical data can improve the likelihood that generated posts receive positive community evaluation, as measured by upvote ratio.
+
+Rather than maximizing engagement or steering political opinion, the experiment focuses on alignment with community norms and structural expectations. The key research question is whether a relatively simple predictive pipeline—combining embeddings, structured features, and generative models—can systematically outperform random content selection.
+
+From a broader perspective, the experiment highlights the potential dual-use implications of such systems. If effective under limited resources and simple prompt strategies, similar approaches could be scaled by actors with greater computational resources and more advanced optimization techniques. The findings therefore contribute not only to predictive modeling research but also to discussions about the potential misuse of publicly available behavioral data.
+
+\paragraph{Computational Environment and Reproducibility.}
+All experiments were conducted in a controlled Python environment using standard scientific computing libraries (e.g., PyTorch, NumPy, and scikit-learn). Embedding generation and dimensionality reduction were executed on GPU-enabled hardware to ensure computational efficiency. Random seeds were fixed where applicable to enhance reproducibility. The complete preprocessing and analysis pipeline was implemented in a modular manner to allow replication of intermediate steps, including data filtering, encoding, and visualization.

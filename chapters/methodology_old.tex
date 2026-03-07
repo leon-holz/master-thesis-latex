@@ -1,0 +1,377 @@
+\chapter{Methodology}
+TODO kleine einleitung
+
+
+
+\section{Dataset}
+
+Firstly, a large dataset of Reddit posts is required for our study. 
+Initially, we planned to collect data using the Reddit API through the PRAW library~\cite{praw}, as it allows us to select specific subreddits freely. 
+However, the API imposes a limitation of retrieving only 1,000 posts per request. 
+Reddit offers different sorting options, such as hot, new, rising, top, and controversial, which can be combined to increase the diversity of the dataset. 
+In theory, this approach could yield up to 5,000 unique posts per subreddit. 
+However, in practice, many posts appear in multiple categories, significantly reducing the actual number of unique posts collected—typically to around 2,000 per subreddit. 
+
+volume far too small for training model or making claims using this small subset for millions of posts, necessitating an alternative approach to data collection.
+
+instead of using the api, we used datasets provided by pushshift~\cite{baumgartner2020pushshiftredditdataset}
+
+Pushshift is a large-scale data collection and archiving project that provides historical and near real-time access to social media data, most notably from Reddit. It was developed and maintained by Jason Baumgartner with the goal of facilitating social science research, data mining, and natural language processing (NLP) applications.
+
+Pushshift continuously ingested Reddit data via the platform’s public API and other data sources, archiving submissions and comments in a structured and queryable format. The data were made publicly accessible through two main interfaces:
+
+The Pushshift API, which allowed users to query Reddit submissions and comments by a wide range of metadata (e.g., subreddit, author, score, creation time, etc.), often returning results faster and with fewer limitations than the official Reddit API.
+
+Public data dumps, periodically released as compressed JSON files, providing bulk access to large portions of Reddit’s history for offline processing.
+
+Because of its extensive temporal coverage, Pushshift became a foundational resource in computational social science, linguistics, and political discourse analysis. Researchers used it to study online behavior, polarization, community dynamics, and the diffusion of information across subreddits and time.
+
+However, as of 2023, Pushshift’s public API was restricted following policy changes and concerns from Reddit regarding data use and privacy. While historical datasets remain accessible through archives and mirrors, real-time access has become limited. Consequently, many researchers now rely on the official Reddit API (via tools such as PRAW) or third-party mirrors of Pushshift’s data for updated collections.
+
+therefore only data up to 2023 is available. also must be mindful of potential biases, such as incomplete coverage, post-deletion timing discrepancies, or missing metadata in later versions of the dataset.
+
+we found that alot of the time the scores noted in the pushshift datasets were slightly off compared to results from the reddit api via praw. this could be due to upvote fuzzing or additional user engagement after the post and its data was saved to pushshift 
+upvote fuzzing adds a random constant to upvotes and downvotes in order to ``combat spam and manipulation''. this behavior was supposedly stopped 2018 \cite{stoddard2015popularity}
+
+also there is additional data that was required for analysis and later model training, so we used the reddit api via praw to gather additonal data for each post and all authors contained in it
+
+also information for some posts could not be retrieved via the reddit api because they haeve since been removed, either by author, subreddit moderators or reddit admins, or the Id might not be correct in pushshift
+therefore those posts were filtered out
+additionally there were other posts where the user or the post have been banned or deleted, causing the content to not be available anymore. those posts have been filtered too
+-> possible introduction of bias against controversial or unpopular content
+Posts where author data could not be retrieved due to API limitations or other reasons were also excluded. 
+
+% todo additional disadvantages????
+
+% TODO: Author features collected
+% how many posts per author on average (without banned users)
+
+\section{Subreddit used}
+
+for subreddits, since we wanted to see differences and similiaries in the different political landscapes, we chose to pick 5 subreddits of each leaning, meaning left, right, and neutral. Additonally, to have a point of comparison, we chose to also include 5 subreddits that are not inherently political, so that we can see how posts from these subreddits are different to the ones from political subreddits
+
+
+generel metrics included the size of the sub, what post types they usually use 
+for our analysis, we tried to get subreddit with little images and mostly selftext and link posts, 
+we initally chose to use keep analysis to 20 subreddits with medium size because of resources used for the encoded datasets. 
+we decided to filter out posts with low visiblity, meaning they didnt get positive or negative attention and where therefore adding noise to the task
+doing this filtered out a good part of one of the 20 subreddits, namely neutralpolitics. Unfortunately the pushshift website hasnt been available after discovering this. We were therefore not able to replace said subreddit and therefore continue with 19 subreddit.
+
+A subreddit as large as relationship\_advice for example would take up as much as 20GB using a fairly small dimensional encoder of 1024 dimensions. 
+Ofcourse such size comes with longer encoding and model training time. WIth our approach each subreddit takes up between 0.15GB and 4GB after being encoded and enables us to test more configurations in the same time. 
+additionally we tried different encoders or prompts which would add even more storage and time required
+
+to find out which direction a subreddit leans, we decided to use a mixture of the subreddits own descriptions and the work of Waller et al. \cite{waller2021quantifying}, which aligned for the subreddits we analyzed, if the description allowed for clear alignment.
+in the following x you can see the subreddits chosen, their community title and description can be seen in the appendix
+
+r/democrats
+r/Liberals
+r/anarchism
+r/racism
+r/TrueAtheism
+
+r/Conservative
+r/TrueChristian
+r/Libertarian
+r/mensrights
+r/progun
+
+r/PoliticalDiscussion
+r/changemyview
+r/NeutralPolitics
+r/geopolitics
+r/DebateReligion
+
+r/DecidingToBeBetter
+r/truegaming
+r/Fantasy
+r/Frugal
+r/Coffee
+
+Initially we also wanted to include infamous and controversial subreddits such as r/The\_Donald, r/Mr\_Trump, r/uncensorednews or r/new\_right. Unfortunately, these subreddit were all banned or quarantined, meaning you can no longer gather data about them via praw.
+There were also a few subreddits which were too small after filtering out deleted posts and posts with low engagement
+
+% todo test keeping low engagement in as unpopular posts
+
+% todo mentioned subreddits that i decided against later for reasons like low post amount or other stuff
+
+as mentioned earlier, we filtered out deleted or removed posts/users. Here we found that left, right and apolitical leaning were relatively close with 16.5 - 20\% deleted posts. Neutral leaning however had more than half removed. 
+
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Post Counts and Filtering Losses per Subreddit (Adjusted Original Size)}
+\label{tab:subreddit_filtering}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Subreddit} & \textbf{Original} & \textbf{Remaining} & \textbf{Deleted} & \textbf{\% Filtered} \\
+\hline
+anarchism & 182{,}082 & 153{,}447 & 28{,}635 & 15.73 \\
+changemyview & 255{,}187 & 106{,}222 & 148{,}965 & 58.38 \\
+Coffee & 208{,}060 & 191{,}772 & 16{,}288 & 7.83 \\
+conservative & 938{,}422 & 772{,}529 & 165{,}893 & 17.68 \\
+DebateReligion & 60{,}222 & 39{,}747 & 20{,}475 & 33.99 \\
+DecidingToBeBetter & 101{,}165 & 68{,}721 & 32{,}444 & 32.06 \\
+democrats & 175{,}929 & 143{,}813 & 32{,}116 & 18.26 \\
+Fantasy & 173{,}384 & 139{,}517 & 33{,}867 & 19.53 \\
+Frugal & 188{,}139 & 156{,}188 & 31{,}951 & 16.99 \\
+geopolitics & 63{,}475 & 46{,}663 & 16{,}812 & 26.48 \\
+Liberal & 67{,}446 & 51{,}761 & 15{,}685 & 23.26 \\
+Libertarian & 525{,}563 & 459{,}502 & 66{,}061 & 12.57 \\
+mensrights & 308{,}715 & 261{,}078 & 47{,}637 & 15.43 \\
+NeutralPolitics & 21{,}728 & 6{,}731 & 14{,}997 & 69.03 \\
+PoliticalDiscussion & 177{,}351 & 60{,}033 & 117{,}318 & 66.14 \\
+progun & 59{,}998 & 50{,}600 & 9{,}398 & 15.66 \\
+racism & 52{,}984 & 34{,}731 & 18{,}253 & 34.45 \\
+TrueAtheism & 20{,}006 & 16{,}102 & 3{,}904 & 19.52 \\
+TrueChristian & 100{,}404 & 68{,}664 & 31{,}740 & 31.61 \\
+truegaming & 61{,}368 & 39{,}355 & 22{,}013 & 35.85 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Post Counts and Filtering Losses by Political Leaning (Adjusted Original Size)}
+\label{tab:leaning_filtering}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Political Leaning} & \textbf{Original} & \textbf{Remaining} & \textbf{Deleted} & \textbf{\% Filtered} \\
+\hline
+Right        & 1{,}933{,}102 & 1{,}612{,}373 & 320{,}729 & 16.59 \\
+Left         &   498{,}447 &   399{,}854 &  98{,}593 & 19.78 \\
+Neutral      &   577{,}963 &   259{,}396 & 318{,}567 & 55.12 \\
+Apolitical  &   732{,}116 &   595{,}553 & 136{,}563 & 18.65 \\
+\hline
+\textbf{Overall} & \textbf{3{,}741{,}628} & \textbf{2{,}867{,}176} & \textbf{874{,}452} & \textbf{23.38} \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+\section{Explorative Analysis}
+
+in this chapter we explore the datasets, gathering general statistics in regards to the subreddit as well as a more detailed look into the dataset using sentiment analysis, tfidf, embedding analysis as well as analyzing domains used in link posts
+
+
+\subsection{}{Basic Information}
+
+analyzed content types per subreddit
+since goal is to create posts via gen ai later and use our model to predict if they will be popular, we focused on link and selftext posts
+as we can see in \autoref{fig:post_content_type_distribution}, most politcal subreddits have an overwhelming amount of link posts, a small amount of images and video posts, that does not exceed 25\% when added together and a varying amount of selftext posts. 
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/content_type_distribution.png}
+    \caption{Post Content Type Distribution per Subreddit}
+    \label{fig:post_content_type_distribution}
+\end{figure}
+
+
+analyzed posts made per year by subreddit in \autoref{fig:posting_volume_per_year}
+no clear trend for all subreddit, some appear to rise throughtout the years, some spike and fall of again, some seem to decline. One has to note that depending on the subreddit, a good of amount of posts had to be filtered out. its unclear, where those posts would fall into
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/posting_volume_yearly.png}
+    \caption{Posting Volume per year}
+    \label{fig:posting_volume_per_year}
+\end{figure}
+
+next we looked at the score distribution in \autoref{fig:score_distribution}
+here we can see that the largest amount of posts are between a score of 1 to 10 and 11-100 respectively, note that a score of 100 as an example might be reached with a upvote ratio of 55\%, meaning its not necessarily a popular post
+taking account \autoref{fig:score_statistics_over_time}, we can see that although the amount of posting every year did not have a clear trend (\autoref{fig:posting_volume_per_year}), the score seems to increase or roughly stay the same for most subreddits
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/score_distribution.png}
+    \caption{Score Distribution}
+    \label{fig:score_distribution}
+\end{figure}
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/score_statistics_over_time.png}
+    \caption{Score Stastistics over Time}
+    \label{fig:score_statistics_over_time}
+\end{figure}
+
+
+\subsection{Sentiment}
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/sentiment_analysis.png}
+    \caption{Analyzing Sentiment per Subreddit over time}
+    \label{fig:sentiment}
+\end{figure}
+
+% todo compare popular vs unpopular and such
+
+
+\subsection{TFIDF}
+
+used tfidf on subreddits
+added reddit/subreddit specific terms as custom stopwords
+
+% todo: difference when only using popular posts?
+no real real differences aside from some minor fluctuations when comparing unpopular to popular terms when it comes to top terms 
+
+% todo: overlap between subreddits? who is most similar
+% Todo: what metrics were used?
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/tfidf/subreddit_clustering.png}
+    \caption{Clustering Subreddits using TFIDF Similarity}
+    \label{fig:tfidf_similarity}
+\end{figure}
+
+
+analysis was orignally planned with finding datashifts or contradictions bewteen subreddit. For example climate shift vs climate hoax, fake news vs media
+seems that subreddits like democrats and conservaties are closer than expected
+
+using tfidf as additional inputs, we tried we following things:
+coverage: how much overlap does the post have with the top terms
+binary: does the post contain one of the top k terms
+scores: analying how terms are correlated with popularity and add that that info for the top terms
+
+
+\subsection{Link Posts and common URLs}
+
+good amount of posts in political subreddits are link posts which only contain a title and a link which often points to a news websites like breitbart, foxnews, dailywire, washingtonpost or social media sites like twitter, reddit itself 
+
+sincce link posts are missing the usual post content, they are a valuable indicator as to what the author is communicating with their post. as such, we need to find a way to add such information as an additional input for predicting popularity
+
+
+\subsection{Embeddings analysis}
+
+
+clustered and visualized top posts by popular, controversial and unpopular
+used comments for latter 2 as score cant be below 0
+seems like clusters can be seen and subreddits seem to have somewhat individual things that are liked, disliked
+
+determine if that is true by training models that try to determine if a post is from a certain subreddit / political subreddit group
+used minimum of x score or comments for dataset
+compare eval on val set from 2008-2015 vs after
+
+% todo different encoders and prompts
+
+% todo: see which posts were categorized wrongly, what upvote ratio, what was the real vs expected subreddit, etc
+
+
+\section{Encoder}
+
+looked at Massive Text Embedding Benchmark (MTEB) Leaderboard~\cite{muennighoff2022mteb} for top models
+
+considerations next to performance were hard requirements and first and foremost the embedding dimensions
+the lower the better, as encoding millions of posts with different encoders or prompts costs alot of time and takes up alot of memory
+
+for initial analysis we employed the \textit{stella\_en\_400M\_v5} model~\cite{stella_en_400M_v5} as its dimensions could be set to 1024, meaning smaller encoded datasets and maintained a great perofmenace in clustering and classification tasks while having low hardware requirements
+
+during our later tests, additional models joined the leaderboards, so we also compared other encoders with similar requirements, excluding those that we would have had to pay for like gemini-embedding-001 (https://ai.google.dev/gemini-api/docs/embeddings) to find the one with the best performance for our use case. the resuls of which encoder performed the best for our task can be seen in the results section
+
+% TODO bender acknowledgement
+
+using the high-performance computing (HPC) environment, specifically the HPC cluster \textit{Bender} at the University of Bonn~\cite{benderhpc}, which provided the necessary computational resources to handle large-scale data processing.
+
+
+\section{Prompts}
+
+Different prompts for the best encoder model (stella)
+
+no much research whats prompts are best used for social media or political posts specifically
+
+tried to focus on different aspects
+
+% todo show prompts
+
+
+
+\section{Gen AI}
+
+
+Schritte:
+
+1. Generate Posts mit GenAI
+generate text posts with distinct title and text content
+
+2. encode post
+encode posts with LLM
+
+3. judge post using best model
+see how good the posts perform and save results alongside posts
+
+4. create reddit Post
+throw a coin and depending on the result choose a post from the top 10 percentile or at random
+create post per api
+save post id and other information, in case post is deleted, in dataset
+
+\subsection{Generating the Post}
+
+first of all we should try to have a consistent persona for the posts
+depending on subreddit size, users might recognize the username and if two posts contradict each other
+as an example, the post might indicate the user be a woman in one post and a man in another
+thereby, they might be detected as written by AI, as there are reddit users that just try to post popular content and generate karma on their account to sell it later
+a similar issue is not repeating topics. As it stands, there might be a large amount of posts what will be thrown away. therefore it will be difficult to find enough content that does not repeat itself
+
+% TODO find out what average age and occupation for reddit users is, then use this as a persona
+% alternatively change that, depending on age of the respective subreddit from the paper that predicts political leaning too
+
+fine tuned prompts using claude, analyzed length of posts, writing style and such. Gave a few examples of popular and unpopular posts in the prompt
+added rules of the subreddit to the prompt in order to not have the post be removed by moderators for breaking rules and being more in line with the subreddits culture
+some rules had links to post containing alot of information, we tried to extract the relevant information from those posts to include in the prompts
+
+\subsection{Publishing the Post in the subreddit}
+
+problem is the account used to Post
+people could look at account and see regular posts in contradicting subreddits -> make account private
+also some subreddits have karma minimums and you cant post otherwise or need posts to be manually reviewed
+manual posting to test requirements to post
+
+% Prompt used for manual testing: Generate a Reddit post. Choose an interesting topic. The post should fit into the subreddit r/[subreddit]. Make it seem user generated and not like it created by an AI. Give me a Title and Content for the post. Make it suitable for Reddit. Make it seem like a uni student wrote it from the language and sentence structure. Dont use em-dashes.
+
+
+
+- Libertarian: post has to be unlocked by moderators (Sorry, this post has been removed by the moderators of r/Libertarian.)
+- Conservative: Auto mod filters post under karma thresholds
+- democrats: cant post under r/democrats comment karma threshold
+- liberal: cant post under r/liberal comment karma threshold
+- progressive: actually link post only
+- racism: awaiting moderator approval
+- anarchism: awaiting moderator approval (was approved) 
+% https://www.reddit.com/r/Anarchism/comments/1phe0w2/are_hyperlocalized_micro_communes_a_realistic/
+- TrueAthemism: posted with no problems: 
+%https://www.reddit.com/r/TrueAtheism/comments/1phe5pb/i_feel_like_leaving_religion_changed_how_i/
+- truechristian: posted with no problems: 
+%https://www.reddit.com/r/TrueChristian/comments/1pheiwt/how_do_you_stay_patient_when_it_feels_like_god/
+- mensrights: awaiting moderator approval (was approved), flair required 
+%https://www.reddit.com/r/MensRights/comments/1phenk5/why_do_mens_mental_health_issues_get_ignored_on/
+- progun: posted with no problems: 
+%https://www.reddit.com/r/progun/comments/1pheprk/finally_got_my_first_ar_and_feeling_like_im/
+- politicaldiscussion: flair required, awaiting moderator approval (was approved) 
+%https://www.reddit.com/r/PoliticalDiscussion/comments/1phetcy/how_effective_is_political_activism_on_campus/
+- changemyview: automatically removed due to lack of posting/comment history
+- geopolitics: need comment karma to post
+- debatereligion: must contain flair, posted with no problems: 
+%https://www.reddit.com/r/DebateReligion/comments/1phf1pn/can_morality_exist_without_god/
+- decidingtobebetter: need total karma to post
+- truegaming:  flair required
+- fantasy: 
+
+filters could include karma, account age, posts, comments an such
+
+using only subreddits that do not have these filters, we are left with anarchism, TrueAthemism, truechristian, mensrights, progun, politicaldiscussion, debatereligion, fantasy, truegaming
+
+some of them still have additional hurdles, such as formatting rules (politicaldiscussion only allows posts with question in the title) or specific topics that should not be discussed. therefore, we decided to use the subreddit rules directly in the prompts to generate the posts
+
+mensrights and trueatheism only allows posts that are flaired. for this we gave chatgpt the list of flairs and let it decide on its own what flair would be appropriate to use
+
+in order to not make seem suspicious or automated, we are choosing a random time of the day to start posting, then we wait a random amount of minutes between posting to each subreddit
+
+
+
+
+
