@@ -371,11 +371,131 @@ Results will be reported separately for:
 
 \section{Cross-Subreddit Generalization}
 
-This section evaluates whether models trained on aggregated multi-subreddit data generalize effectively across individual communities, compared to models trained on subreddit-specific data. The objective is to assess whether popularity dynamics are primarily community-dependent or transferable across subreddits.
+To evaluate the extent to which popularity dynamics transfer across communities, three alternative training strategies were compared:
 
-\section{Hyperparameter Optimization}
+(1) \textit{Subreddit-specific models}, where a separate regression model is trained for each subreddit.
 
-Initial experiments were conducted using a fixed XGBoost configuration to enable controlled comparison of embedding and feature effects. After identifying promising model configurations, hyperparameter optimization was performed to assess potential additional performance gains.
+(2) \textit{Leaning-group models}, where one model is trained per political leaning category.
+
+(3) \textit{Combined model}, where a single model is trained on all subreddits jointly.
+
+In addition, a variant of the combined model was evaluated that includes an explicit subreddit indicator feature.
+
+All configurations use identical embedding and regression settings to ensure comparability.
+
+
+\begin{table}[ht]
+\centering
+\caption{Regression performance by model grouping strategy. MAE and $r$ are averaged across subreddits. For the leaning-group models, only the subreddits matching each leaning category are included before averaging.}
+\label{tab:model_grouping}
+\begin{tabular}{lrrr}
+\toprule
+Model Type & MAE & $R^2$ & $r$ \\
+\midrule
+Subreddit-specific  & 0.1153 & 0.1700 & 0.4086 \\
+Leaning-group       & 0.1217 & 0.1087 & 0.3540 \\
+Combined + subreddit feature & 0.1219 & 0.0984 & 0.3270 \\
+Combined            & 0.1298 & -0.0027 & 0.2887 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:model_grouping} reports average performance across subreddits for each training strategy.
+
+Subreddit-specific models achieve the strongest performance, with mean Pearson correlation of 0.4086 and $R^2$ of 0.1700. Leaning-group models exhibit a noticeable performance drop, while the fully combined model performs substantially worse, with mean $R^2$ approaching zero.
+
+Introducing an explicit subreddit feature into the combined model partially recovers performance but remains clearly below subreddit-specific training.
+
+These results indicate that popularity dynamics are strongly community-dependent. Training a global model across heterogeneous subreddits introduces substantial noise that reduces predictive accuracy. Even grouping subreddits by political leaning is insufficient to fully capture community-specific variation.
+
+The partial recovery achieved by adding a subreddit indicator feature suggests that shared structural patterns exist across communities, but these patterns require explicit conditioning on community identity to be effectively leveraged.
+
+\clearpage
+
+\begin{longtable}{lrrrr}
+\caption{Per-subreddit Pearson $r$ by training strategy. \textit{Specific} trains a separate model per subreddit; \textit{Leaning} trains one model per political leaning group; \textit{Combined} trains a single model on all subreddits; \textit{Combined + Sub.} adds a subreddit indicator feature to the combined model.}
+\label{tab:per_subreddit_pearson} \\
+\toprule
+Subreddit & Specific & Leaning & Combined & Combined + Sub. \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\small\textit{(continued from previous page)}} \\
+\toprule
+Subreddit & Specific & Leaning & Combined & Combined + Sub. \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\small\textit{(continued on next page)}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{5}{l}{\textit{Right-leaning}} \\
+\quad Conservative       & 0.3760 & 0.2730 & 0.2388 & 0.3045 \\
+\quad TrueChristian      & 0.4288 & 0.3687 & 0.3685 & 0.3722 \\
+\quad Libertarian        & 0.5032 & 0.3941 & 0.3587 & 0.4173 \\
+\quad mensrights         & 0.4189 & 0.3527 & 0.3378 & 0.3435 \\
+\quad progun             & 0.4401 & 0.3358 & 0.3357 & 0.3605 \\
+\midrule
+\multicolumn{5}{l}{\textit{Left-leaning}} \\
+\quad Liberal            & 0.4129 & 0.3665 & 0.2648 & 0.3460 \\
+\quad democrats          & 0.4298 & 0.4033 & 0.2372 & 0.3231 \\
+\quad racism             & 0.3441 & 0.3060 & 0.2708 & 0.2668 \\
+\quad anarchism          & 0.4082 & 0.3919 & 0.2981 & 0.3450 \\
+\quad TrueAtheism        & 0.3928 & 0.3494 & 0.2768 & 0.3345 \\
+\midrule
+\multicolumn{5}{l}{\textit{Neutral}} \\
+\quad PoliticalDiscussion & 0.5316 & 0.5049 & 0.3837 & 0.4679 \\
+\quad changemyview        & 0.3604 & 0.3091 & 0.2001 & 0.2285 \\
+\quad geopolitics         & 0.3417 & 0.2762 & 0.2401 & 0.2574 \\
+\quad DebateReligion      & 0.4568 & 0.4125 & 0.2766 & 0.2812 \\
+\midrule
+\multicolumn{5}{l}{\textit{Apolitical}} \\
+\quad DecidingToBeBetter  & 0.3445 & 0.2975 & 0.2886 & 0.2979 \\
+\quad truegaming          & 0.4699 & 0.3699 & 0.2813 & 0.3629 \\
+\quad Fantasy             & 0.4756 & 0.4411 & 0.3806 & 0.4011 \\
+\quad Frugal              & 0.3269 & 0.2710 & 0.2149 & 0.2498 \\
+\quad Coffee              & 0.3018 & 0.2817 & 0.2329 & 0.2522 \\
+% already included in table before this one
+% \midrule
+% \textbf{Mean}             & \textbf{0.4086} & \textbf{0.3540} & \textbf{0.2887} & \textbf{0.3270} \\
+\end{longtable}
+
+Table~\ref{tab:per_subreddit_pearson} provides a per-subreddit comparison of Pearson correlation across training strategies.
+
+Across nearly all communities, subreddit-specific models achieve the strongest performance. The performance gap is particularly pronounced for politically active subreddits such as PoliticalDiscussion, Libertarian, and democrats.
+
+Leaning-group models typically outperform the fully combined model, indicating that grouping by ideological orientation preserves some transferable structure. However, leaning-level training remains consistently below subreddit-specific performance. Adding a subreddit indicator feature to the combined model improves results across most communities but does not close the gap.
+
+These findings suggest that while some shared engagement patterns exist across ideologically similar communities, substantial variation persists at the individual subreddit level. Popularity dynamics therefore appear to be shaped by both broader ideological alignment and localized community norms.
+
+\subsection{Leaning-Level Transferability}
+
+\begin{table}[ht]
+\centering
+\caption{Cross-leaning generalisation: mean Pearson $r$ when a leaning-group model is evaluated on subreddits from each leaning category. Diagonal (bold) shows within-group performance; off-diagonal shows cross-group transfer.}
+\label{tab:cross_leaning_pearson}
+\begin{tabular}{lrrrr}
+\toprule
+\multirow{2}{*}{Train Model} & \multicolumn{4}{c}{Evaluated on} \\
+\cmidrule(lr){2-5}
+ & Right & Left & Neutral & Apolitical \\
+\midrule
+Right model      & \textbf{0.3447} & 0.2180 & 0.1699 & 0.1571 \\
+Left model       & 0.2479 & \textbf{0.3604} & 0.1335 & 0.1478 \\
+Neutral model    & 0.1425 & 0.1713 & \textbf{0.3750} & 0.1211 \\
+Apolitical model & 0.1862 & 0.1625 & 0.1449 & \textbf{0.3308} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:cross_leaning_pearson} reports cross-leaning generalisation performance. Each cell shows the mean Pearson correlation when a leaning-group model is evaluated on subreddits belonging to a particular ideological category. Diagonal entries represent within-group performance, while off-diagonal entries capture cross-group transfer.
+
+A clear diagonal structure is visible. Models trained within a given ideological category perform substantially better on subreddits of the same category than on those of different leanings. For example, the right-leaning model achieves a mean $r$ of 0.3447 on right-leaning subreddits but drops markedly when evaluated on left-leaning (0.2180), neutral (0.1699), or apolitical (0.1571) communities.
+
+This pattern holds consistently across all leaning categories, indicating that engagement dynamics exhibit partial ideological clustering. However, even within-group performance remains below subreddit-specific training, demonstrating that ideological similarity alone does not fully account for community-specific popularity patterns.
+
+Taken together, these results suggest a hierarchical structure of generalizability: subreddit-specific models perform best, leaning-group models capture intermediate transferable structure, and fully combined models without explicit community conditioning perform worst.
+
 
 \section{Regression vs Classification}
 
@@ -405,6 +525,10 @@ From this perspective, precision on the positive class is more critical than rec
 
 Because regression supports ranking and precision-oriented filtering without retraining, it provides a more suitable framework for the generation-and-selection pipeline used in the live experiment.
 
+
+\section{Hyperparameter Optimization}
+
+Initial experiments were conducted using a fixed XGBoost configuration to enable controlled comparison of embedding and feature effects. After identifying promising model configurations, hyperparameter optimization was performed to assess potential additional performance gains.
 
 
 \section{Final Model Configuration}
