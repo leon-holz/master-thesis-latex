@@ -1,8 +1,25 @@
+% todo: rewrite texts with significance
+% todo: make tables easier to interpret:
+% - highlight best scores (maybe underline second best)
+% - write if lower or higher is better, maybe show with arrows in table columns
+% todo:make sure every table has interpretation text that links back to research question 
+% - e.g. These results suggest that semantic information captured by sentence embeddings provides useful signals for predicting Reddit post popularity.
+% - e.g. The stronger performance of Stella embeddings indicates that higher-quality semantic representations improve downstream popularity prediction.
+
+
 \chapter{Results}
 
-% TODO Intro text
+This chapter presents the empirical evaluation of the popularity prediction models and the associated experimental analyses. The goal of these experiments is to assess how well different modeling choices capture the factors influencing post reception on Reddit.
 
-% todo significance
+The evaluation proceeds in several stages. First, the influence of text representation is examined by comparing different embedding models, prompt configurations, and aggregation strategies. These experiments establish the baseline text encoding used for subsequent analyses.
+
+Next, the impact of dataset composition and additional feature groups is evaluated. This includes experiments analyzing the effects of combining self and link posts during training as well as incorporating temporal, domain, sentiment, TF-IDF, and author-related features.
+
+The chapter then investigates the generalizability of popularity prediction across communities. Different training strategies are compared, including subreddit-specific models, leaning-group models, and a combined model trained across all subreddits.
+
+Finally, the regression framework is compared with a classification-based formulation of the task. The chapter concludes with a live experiment in which generated posts are scored using the trained models and selectively published to evaluate whether model-guided post selection leads to improved real-world engagement outcomes.
+
+The experiments aim to determine whether publicly available data can be used to predict post popularity and whether such predictions can be leveraged to guide automated content generation.
 
 \section{Embedding Model Comparison}
 
@@ -33,15 +50,15 @@ Performance metrics are reported as mean values across all subreddits.
 \centering
 \caption{Popularity prediction results for popularity regressor with different encoder models. Results show mean performance across all subreddits.}
 \label{tab:embedding_comparison}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r \\
 \midrule
-e5 Large Instruct & 0.1154 & 0.1462 & 0.1680 & 0.4062 & 369,834 \\
-Stella 400M & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Kalm Mini Instruct & 0.1158 & 0.1465 & 0.1636 & 0.4011 & 369,834 \\
-Bilingual & 0.1165 & 0.1473 & 0.1559 & 0.3912 & 369,834 \\
-Gwen & 0.1180 & 0.1490 & 0.1361 & 0.3658 & 369,834 \\
+e5 Large Instruct & 0.1154 & 0.1462 & 0.1680 & 0.4062 \\
+Stella 400M & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
+Kalm Mini Instruct & 0.1158 & 0.1465 & 0.1636 & 0.4011 \\
+Bilingual & 0.1165 & 0.1473 & 0.1559 & 0.3912 \\
+Gwen & 0.1180 & 0.1490 & 0.1361 & 0.3658 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -68,16 +85,16 @@ Each prompt variant modifies the instruction context under which embeddings are 
 \centering
 \caption{Popularity prediction results for popularity regressor with different encoder prompts. Results show mean performance across all subreddits.}
 \label{tab:prompt_comparison}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r \\
 \midrule
-Stella Popularity & 0.1150 & 0.1456 & 0.1738 & 0.4134 & 369,834 \\
-Stella Writing Quality & 0.1148 & 0.1454 & 0.1759 & 0.4158 & 369,834 \\
-Stella Engagement & 0.1152 & 0.1459 & 0.1708 & 0.4099 & 369,834 \\
-Stella Baseline & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Stella Political Leaning & 0.1151 & 0.1456 & 0.1729 & 0.4122 & 369,834 \\
-Stella Content & 0.1148 & 0.1454 & 0.1762 & 0.4164 & 369,834 \\
+Stella Writing Quality & 0.1148 & 0.1454 & 0.1759 & 0.4158 \\
+Stella Content & 0.1148 & 0.1454 & 0.1762 & 0.4164 \\Stella Political Leaning & 0.1151 & 0.1456 & 0.1729 & 0.4122 \\
+Stella Popularity & 0.1150 & 0.1456 & 0.1738 & 0.4134 \\
+Stella Political Leaning & 0.1151 & 0.1456 & 0.1729 & 0.4122 \\
+Stella Engagement & 0.1152 & 0.1459 & 0.1708 & 0.4099 \\
+Stella Baseline & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -108,18 +125,18 @@ All experiments in this section use the Stella Content embedding configuration. 
 \centering
 \caption{Popularity prediction results for popularity regressor with different aggregation methods. Results show mean performance across all subreddits.}
 \label{tab:aggregation_comparison}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r \\
 \midrule
-Hadamard Product & 0.1211 & 0.1525 & 0.0918 & 0.2843 & 369,834 \\
-Mean & 0.1150 & 0.1457 & 0.1731 & 0.4124 & 369,834 \\
-Multi-Feature & 0.1153 & 0.1459 & 0.1707 & 0.4094 & 369,834 \\
-Conatencation (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Min Pooling & 0.1154 & 0.1460 & 0.1691 & 0.4078 & 369,834 \\
-Max Pooling & 0.1154 & 0.1461 & 0.1683 & 0.4066 & 369,834 \\
-Smart Mean & 0.1152 & 0.1458 & 0.1717 & 0.4107 & 369,834 \\
-Title Only & 0.1173 & 0.1483 & 0.1447 & 0.3763 & 369,834 \\
+Hadamard Product & 0.1211 & 0.1525 & 0.0918 & 0.2843 \\
+Mean & 0.1150 & 0.1457 & 0.1731 & 0.4124 \\
+Multi-Feature & 0.1153 & 0.1459 & 0.1707 & 0.4094 \\
+Conatencation (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
+Min Pooling & 0.1154 & 0.1460 & 0.1691 & 0.4078 \\
+Max Pooling & 0.1154 & 0.1461 & 0.1683 & 0.4066 \\
+Smart Mean & 0.1152 & 0.1458 & 0.1717 & 0.4107 \\
+Title Only & 0.1173 & 0.1483 & 0.1447 & 0.3763 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -148,15 +165,14 @@ Both per-subreddit PCA and global PCA (computed across all subreddits) were eval
 \centering
 \caption{Popularity prediction results for popularity regressor with different dimensionality reductions. Results show mean performance across all subreddits.}
 \label{tab:dimensionality_reduction}
-\begin{tabular}{lrrrrrr}
-\toprule
-Features & MAE & RMSE & R² & r & Total \\
+\begin{tabular}{lrrrr}\toprule
+Features & MAE & RMSE & R² & r  \\
 \midrule
-No Reduction (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Per-Subreddit PCA 512 & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Global PCA 256 & 0.1156 & 0.1462 & 0.1669 & 0.4049 & 369,834 \\
-Global PCA 128 & 0.1154 & 0.1461 & 0.1680 & 0.4064 & 369,834 \\
-Global PCA 512 & 0.1207 & 0.1519 & 0.0976 & 0.2630 & 369,834 \\
+No Reduction (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086  \\
+Per-Subreddit PCA 512 & 0.1153 & 0.1459 & 0.1700 & 0.4086  \\
+Global PCA 256 & 0.1156 & 0.1462 & 0.1669 & 0.4049  \\
+Global PCA 128 & 0.1154 & 0.1461 & 0.1680 & 0.4064  \\
+Global PCA 512 & 0.1207 & 0.1519 & 0.0976 & 0.2630  \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -168,6 +184,31 @@ Per-subreddit PCA with 512 components yields performance identical to the baseli
 Global PCA with 256 and 128 components results in only minor performance degradation, suggesting that substantial dimensionality reduction is possible without dramatically impacting regression quality.
 
 However, global PCA with 512 components exhibits a significant drop in performance, with $R^2$ decreasing to 0.0976 and correlation falling to 0.2630. This suggests that globally computed principal components may fail to preserve community-specific variance patterns critical for predicting popularity.
+
+\section{Dataset Composition Effects}
+
+In order to assess whether including link posts during training improves the model’s ability to predict post popularity, models were trained using three dataset configurations: self posts only, link posts only, and the combined dataset containing both post types. Table~\ref{tab:dataset_composition} compares regression performance across these dataset configurations.
+
+\begin{table}[htbp]
+\centering
+\caption{Regression performance when training on different post types. Models were trained using only self posts, only link posts, or both combined. Metrics are averaged across subreddits.}
+\label{tab:dataset_composition}
+\begin{tabular}{lrrrrr}
+\toprule
+Training Data & MAE & RMSE & $R^2$ & $r$ & Total Posts \\
+\midrule
+Self + Link & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
+Self Only & 0.1233 & 0.1560 & 0.1580 & 0.3932 & 147,696 \\
+Link Only & 0.1155 & 0.1482 & -0.0809 & 0.2869 & 170,641 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Training on the combined dataset consistently yields the best overall performance, achieving the highest Pearson correlation ($r=0.4086$) and the strongest $R^2$ value. Models trained only on self posts perform slightly worse across all metrics.
+
+Models trained exclusively on link posts exhibit substantially weaker performance, particularly in terms of correlation and explained variance. One possible explanation is that link posts contain less textual information directly available to the model, as only the title text is encoded while the content of the linked article is not included.
+
+The superior performance of the combined dataset suggests that including both post types provides a larger and more diverse training set, enabling the model to learn more robust engagement patterns. Although the live experiment generates only self posts, link posts were retained during training because their inclusion improves overall predictive performance.
 
 \section{Feature Contribution Analysis}
 
@@ -181,18 +222,18 @@ Each temporal feature group was evaluated independently to isolate its marginal 
 \centering
 \caption{Popularity prediction results for popularity regressor with different author feature combinations. Results show mean performance across all subreddits.}
 \label{tab:temporal_features}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r \\
 \midrule
-Full Timestamp Encoding (All Temporal Features) & 0.1151 & 0.1458 & 0.1722 & 0.4115 & 369,834 \\
-Hour of Day (Cyclic) & 0.1152 & 0.1459 & 0.1709 & 0.4097 & 369,834 \\
-Month of Year (Cyclic) & 0.1152 & 0.1458 & 0.1713 & 0.4104 & 369,834 \\
-Time-of-Day Buckets & 0.1152 & 0.1458 & 0.1712 & 0.4099 & 369,834 \\
-Day of Week (Cyclic) & 0.1153 & 0.1459 & 0.1701 & 0.4089 & 369,834 \\
-Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-All Holidays & 0.1154 & 0.1460 & 0.1697 & 0.4081 & 369,834 \\
-Weekend Indicator & 0.1153 & 0.1459 & 0.1699 & 0.4085 & 369,834 \\
+Full Timestamp (All Temporal Features) & 0.1151 & 0.1458 & 0.1722 & 0.4115 \\
+Hour of Day (Cyclic) & 0.1152 & 0.1459 & 0.1709 & 0.4097 \\
+Month of Year (Cyclic) & 0.1152 & 0.1458 & 0.1713 & 0.4104 \\
+Time-of-Day Buckets & 0.1152 & 0.1458 & 0.1712 & 0.4099 \\
+Day of Week (Cyclic) & 0.1153 & 0.1459 & 0.1701 & 0.4089 \\
+Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
+All Holidays & 0.1154 & 0.1460 & 0.1697 & 0.4081 \\
+Weekend Indicator & 0.1153 & 0.1459 & 0.1699 & 0.4085 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -220,14 +261,14 @@ Three configurations were tested: continuous correlation scores, binary indicato
 \centering
 \caption{Popularity prediction results for popularity regressor with different author feature combinations. Results show mean performance across all subreddits.}
 \label{tab:domain_features}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r \\
 \midrule
-Domain All & 0.1146 & 0.1452 & 0.1792 & 0.4200 & 369,834 \\
-Domain Scores & 0.1146 & 0.1452 & 0.1793 & 0.4201 & 369,834 \\
-Domain Binary & 0.1153 & 0.1459 & 0.1709 & 0.4097 & 369,834 \\
-Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
+Domain All & 0.1146 & 0.1452 & 0.1792 & 0.420\\
+Domain Scores & 0.1146 & 0.1452 & 0.1793 & 0.4201 \\
+Domain Binary & 0.1153 & 0.1459 & 0.1709 & 0.4097 \\
+Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -253,16 +294,16 @@ Multiple configurations were tested, varying both the text source (title, body, 
 \centering
 \caption{Popularity prediction performance with different sentiment feature configurations. Baseline corresponds to Stella embeddings with concatenation and no additional structured features. Results show mean performance across all subreddits.}
 \label{tab:sentiment_features}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r  \\
 \midrule
-Title & Body Separate (Vader Scores) & 0.1152 & 0.1459 & 0.1709 & 0.4101 & 369,834 \\
-Title & Body Separate (All Sentiment Features) & 0.1152 & 0.1459 & 0.1710 & 0.4101 & 369,834 \\
-Title & Body Separate (Binary Sentiment) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Max-Pooled (All Sentiment Features) & 0.1153 & 0.1459 & 0.1708 & 0.4097 & 369,834 \\
-Combined Text (All Sentiment Features) & 0.1153 & 0.1459 & 0.1700 & 0.4088 & 369,834 \\
+Title \& Body Separate (Vader Scores) & 0.1152 & 0.1459 & 0.1709 & 0.4101  \\
+Title \& Body Separate (All Sentiment Features) & 0.1152 & 0.1459 & 0.1710 & 0.4101  \\
+Title \& Body Separate (Binary Sentiment) & 0.1153 & 0.1459 & 0.1700 & 0.4086  \\
+Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086  \\
+Max-Pooled (All Sentiment Features) & 0.1153 & 0.1459 & 0.1708 & 0.4097  \\
+Combined Text (All Sentiment Features) & 0.1153 & 0.1459 & 0.1700 & 0.4088  \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -287,15 +328,15 @@ Three categories were evaluated: coverage features, correlation-based TF-IDF sco
 \centering
 \caption{Popularity prediction performance with TF-IDF-derived feature additions. Baseline corresponds to Stella embeddings with concatenation and no additional structured features. Results show mean performance across all subreddits.}
 \label{tab:tfidf_features}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r \\
 \midrule
-TF-IDF All Features & 0.1153 & 0.1460 & 0.1695 & 0.4081 & 369,834 \\
-TF-IDF Binary & 0.1153 & 0.1460 & 0.1697 & 0.4081 & 369,834 \\
-TF-IDF Scores & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-Embeddings Only & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
-TF-IDF Coverage & 0.1153 & 0.1459 & 0.1700 & 0.4086 & 369,834 \\
+TF-IDF All Features & 0.1153 & 0.1460 & 0.1695 & 0.4081 \\
+TF-IDF Binary & 0.1153 & 0.1460 & 0.1697 & 0.4081 \\
+TF-IDF Scores & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
+Embeddings Only & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
+TF-IDF Coverage & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -323,19 +364,19 @@ To ensure fair comparison, the baseline model reported in this section (``Embedd
 \centering
 \caption{Popularity prediction performance with author-related feature additions. Results are reported on the subset of posts for which complete author metadata was available. Baseline corresponds to embeddings only on the same filtered subset.}
 \label{tab:author_features}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Features & MAE & RMSE & R² & r & Total \\
+Features & MAE & RMSE & R² & r \\
 \midrule
-All Author Features & 0.1090 & 0.1390 & 0.2016 & 0.4444 & 220,855 \\
-Account Age & 0.1108 & 0.1412 & 0.1782 & 0.4180 & 220,855 \\
-Link Karma & 0.1113 & 0.1415 & 0.1737 & 0.4128 & 220,855 \\
-Comment Karma & 0.1113 & 0.1414 & 0.1748 & 0.4141 & 220,855 \\
-Total Karma & 0.1112 & 0.1413 & 0.1758 & 0.4152 & 220,855 \\
-Moderator Status & 0.1126 & 0.1429 & 0.1576 & 0.3931 & 220,855 \\
-Embeddings Only (Author-Available Subset) & 0.1126 & 0.1429 & 0.1571 & 0.3923 & 220,855 \\
-Email Verified & 0.1125 & 0.1428 & 0.1594 & 0.3955 & 220,855 \\
-Premium (Gold) Status & 0.1126 & 0.1429 & 0.1573 & 0.3928 & 220,855 \\
+All Author Features & 0.1090 & 0.1390 & 0.2016 & 0.4444 \\
+Account Age & 0.1108 & 0.1412 & 0.1782 & 0.4180 \\
+Link Karma & 0.1113 & 0.1415 & 0.1737 & 0.4128 \\
+Comment Karma & 0.1113 & 0.1414 & 0.1748 & 0.4141 \\
+Total Karma & 0.1112 & 0.1413 & 0.1758 & 0.4152 \\
+Moderator Status & 0.1126 & 0.1429 & 0.1576 & 0.3931 \\
+Embeddings Only (Author-Available Subset) & 0.1126 & 0.1429 & 0.1571 & 0.3923 \\
+Email Verified & 0.1125 & 0.1428 & 0.1594 & 0.3955 \\
+Premium (Gold) Status & 0.1126 & 0.1429 & 0.1573 & 0.3928 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -510,7 +551,7 @@ Because the median threshold was computed on the training split only, the valida
     \caption{Popularity prediction performance using classification. Baseline corresponds to embeddings only on the same filtered subset.} 
     \label{tab:classification} 
     \begin{tabular}{lrrrrrr} 
-        \toprule Features & Precision & Recall & F1-Macro & Accuracy & Total & \% Popular \\ \midrule Baseline Classification & 0.6841 & 0.6223 & 0.6513 & 0.6341 & 369,834 & 50.00\% \\ Baseline Regression as Classification & 0.6369 & 0.6718 & 0.6341 & 0.6356 & 369,834 & 54.05\% \\ 
+        \toprule Features & Precision & Recall & F1-Macro & Accuracy & \% Popular \\ \midrule Baseline Classification & 0.6841 & 0.6223 & 0.6513 & 0.6341 & 50.00\% \\ Baseline Regression as Classification & 0.6369 & 0.6718 & 0.6341 & 0.6356 & 54.05\% \\ 
         \bottomrule 
     \end{tabular} 
 \end{table}
@@ -533,4 +574,71 @@ Initial experiments were conducted using a fixed XGBoost configuration to enable
 
 \section{Final Model Configuration}
 
+Final Model Configuration
+   - embedding model
+   - aggregation strategy
+   - hyperparameters
+   - training split
+
 \section{Live Experiment Evaluation}
+
+\subsection{Generated Post Prediction Distribution}
+
+Before evaluating the performance of published posts, we first examine the range of predicted upvote ratios produced by the regression model for generated content. For each subreddit, 200 candidate posts were generated and scored using the trained regression model. Posts were then ranked by predicted upvote ratio, and either a post from the top 10\% of predictions or a randomly selected post was chosen for publication.
+
+Table~\ref{tab:generated_prediction_ranges} summarizes the predicted score ranges for generated posts across the evaluated subreddits, together with the median upvote ratio observed in the training data.
+
+\begin{table}[ht]
+\centering
+\caption{Predicted upvote ratio ranges for generated posts across subreddits. For each subreddit, 200 candidate posts were generated and scored using the regression model. The table also reports the median upvote ratio observed in the training data for comparison.}
+\label{tab:generated_prediction_ranges}
+\begin{tabular}{lrrrr}
+\toprule
+Subreddit & Min Prediction & Max Prediction & Top-10\% Threshold & Training Median \\
+\midrule
+DebateReligion       & 0.337 & 0.599 & 0.525 & 0.689 \\
+Fantasy              & 0.323 & 0.568 & 0.515 & 0.812 \\
+mensrights           & 0.407 & 0.671 & 0.601 & 0.794 \\
+PoliticalDiscussion  & 0.319 & 0.622 & 0.548 & 0.657 \\
+progun               & 0.387 & 0.662 & 0.592 & 0.854 \\
+TrueAtheism          & 0.446 & 0.680 & 0.629 & 0.789 \\
+TrueChristian        & 0.285 & 0.591 & 0.535 & 0.798 \\
+truegaming           & 0.212 & 0.576 & 0.496 & 0.651 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Across subreddits, predicted scores generally fall between approximately 0.21 and 0.68. The top-10\% selection threshold typically lies between 0.49 and 0.63. In comparison, the median upvote ratios observed in the training data are substantially higher for most communities.
+
+This difference indicates that even the highest-ranked generated posts rarely reach the typical median performance of historical posts in the dataset. However, this does not necessarily imply that generated posts are unusually poor. The training dataset was filtered to include only posts that received a minimum level of engagement and excluded deleted or removed content. Consequently, it likely overrepresents relatively successful posts compared to the full distribution of submissions on Reddit.
+
+For this reason, the live experiment focuses primarily on the relative ranking of generated posts rather than their absolute predicted scores. Even if generated posts do not reach the historical median threshold, the model may still correctly identify which posts are more likely to perform well relative to other generated candidates.
+
+\subsection{Baseline Subreddit Statistics}
+
+To provide context for evaluating the live experiment results, baseline engagement statistics were calculated for each subreddit. Only self posts were included in this analysis, as the generation pipeline produces discussion posts rather than link submissions.
+
+Unlike the training dataset, no minimum engagement filter was applied for this baseline calculation. This provides a broader view of typical community engagement patterns and better comparability.
+
+To reduce the influence of highly active users who may post frequently, engagement statistics were aggregated at the user level. For each user, average and median values for upvote ratio, score, and comment count were computed before averaging across users.
+
+This approach ensures that a small number of highly popular or highly active users do not disproportionately skew the subreddit-level statistics. In practice, the difference between user-level aggregation and raw post averages was minimal.
+
+% TODO add table
+% TODO maybe do use engagement filter..., but adjust mentions of no engagement filter then too
+
+Table~X summarizes these baseline engagement statistics across the subreddits included in the live experiment.
+
+\subsection{Experiment Constraints}
+
+During the live experiment, the account used for posting was banned from several subreddits. Specifically, r/anarchism banned the account after the first post, r/truegaming after the third post, and r/Fantasy after the sixth post.
+
+These bans reduced the number of observations available for those communities and limited the ability to evaluate long-term posting behavior within those subreddits. The bans also highlight practical challenges associated with conducting controlled experiments in live online communities.
+
+\subsection{Post Results}
+
+The primary objective of the live experiment is to determine whether posts selected using the regression model outperform randomly selected generated posts.
+
+For each posting opportunity, a coin flip determined whether the post would be selected from the top 10\% of predicted posts or randomly from the generated pool. This randomized selection process allows comparison between model-guided and random posting strategies under similar conditions.
+
+[Results and statistical analysis of realized post performance will be presented here.]

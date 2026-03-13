@@ -103,7 +103,7 @@ The impact of preprocessing and filtering steps on each subreddit is analyzed in
 
 \subsection{Adjustment Due to Data Availability Constraints}
 
-During preprocessing, it was observed that the subreddit r/NeutralPolitics contained substantially fewer posts than anticipated after applying the minimum engagement filtering criterion. This reduction was primarily due to the removal of low-interaction posts and missing metadata.
+During preprocessing, it was observed that the subreddit r/NeutralPolitics contained substantially fewer posts than anticipated after applying the minimum engagement filtering criterion discribed later in this chapter. This reduction was primarily due to the removal of low-interaction posts and missing metadata.
 
 At the time this issue was identified, access to the Pushshift archive was temporarily unavailable, preventing additional data retrieval to compensate for the reduced sample size. As a result, the experimental evaluations were conducted using the remaining 19 subreddits.
 
@@ -200,14 +200,12 @@ Apolitical  &   732{,}116 &   595{,}553 & 136{,}563 & 18.65 \\
 
 At this stage, the dataset contained both textual content (title and selftext) and structured metadata fields necessary for feature engineering. Subsequent preprocessing steps further refined the dataset to ensure consistency and reliability of the prediction target.
 
-\section{temp}
+% \section{temp}
 
 % todo: figure of pipeline
-
+test
 
 \section{Text Representation}
-
-\subsection{Embedding Models}
 
 \subsection{Embedding Models}
 
@@ -215,7 +213,7 @@ To transform textual content into numerical representations suitable for regress
 
 The baseline embedding model used in this study is the \textit{Stella} model (1024-dimensional embeddings), which was executed locally. The model was selected based on its strong performance on large-scale semantic similarity and retrieval benchmarks, including the Massive Text Embedding Benchmark (MTEB) \cite{muennighoff2022mteb}. High-quality sentence embeddings are essential in the context of political discourse, where meaning often depends on subtle framing, contextual nuance, and implicit semantic associations. By leveraging a model optimized for semantic representation, the analysis aims to ensure that downstream regression and clustering procedures operate on linguistically meaningful feature spaces rather than surface-level lexical overlap.
 
-Additional embedding models were evaluated to assess robustness across different architectural designs and training objectives. While the Stella model serves as the primary baseline configuration, comparative performance results are reported and discussed in the Results chapter.
+Additional embedding models were evaluated to assess robustness across different architectural designs and training objectives. While the Stella model serves as the primary baseline configuration, several alternative sentence embedding models were also tested. Each model was used to encode the same dataset, and the resulting embeddings were evaluated using an identical regression setup to isolate the effect of the representation method. Comparative performance results are reported and discussed in the Results chapter.
 
 All models were run locally to ensure consistent preprocessing and to avoid variability introduced by external APIs.
 
@@ -223,11 +221,11 @@ Using \textit{Stella}, each embedding vector has a dimensionality of 1024 featur
 
 \subsection{Input Text Construction}
 
-Each Reddit post consists primarily of two textual components: the title and the selftext (body). These fields were encoded separately to preserve structural distinctions between short headline-style text and longer explanatory content.
+Each Reddit post consists primarily of two textual components: the title and the selftext (body). These fields were encoded separately to preserve structural distinctions between short, headline-style text and longer explanatory content.
 
-The subreddit identifier was not included in the textual encoding. Instead, models were trained either on individual subreddit datasets or on combined datasets containing posts from multiple communities. This design choice ensures that predictions are based on textual and metadata features rather than explicit subreddit identifiers.
+In the training setup that used posts from all subreddits combined, the subreddit of origin was additionally included as a categorical feature. Each subreddit name was mapped to a unique integer identifier and passed to the XGBoost model as a categorical feature.
 
-% TODO training with subreddit identifier for combined datasets and readjust text appropriately
+This feature was not included when training models on individual subreddits or on datasets grouped by political leaning, since in those settings the subreddit information would either be constant or redundant. Consequently, subreddit-specific patterns were only explicitly modeled in the combined training scenario, while the other configurations relied solely on textual and metadata features.
 
 \subsection{Embedding Aggregation Strategies}
 
@@ -253,6 +251,15 @@ Since titles and selftexts were encoded separately, an aggregation step was requ
 
 Aggregation strategies that increase dimensionality, such as concatenation and multi-feature aggregation, offer greater representational capacity but also increase computational cost and the risk of overfitting. Simpler pooling-based approaches reduce dimensionality but may discard potentially informative interactions. Comparative evaluation of these strategies is presented in the Results chapter.
 
+
+\section{Dataset Composition Effects}
+
+The Reddit dataset used in this study contains two primary types of submissions: self posts, which consist of user-written discussion text, and link posts, which primarily contain a title and a link to external content. Since the live experiment shown in this thesis generates discussion posts rather than external links, it would in principle be possible to train models using only self posts.
+
+However, link posts substantially increase the size of the available dataset and may still contain useful engagement signals through their titles and associated metadata. To evaluate whether including link posts during training improves predictive performance, models were trained using three dataset configurations: self posts only, link posts only, and the combined dataset containing both post types.
+
+The results of this comparison are presented in Section~\ref{sec:dataset_composition_results}.
+
 \section{Exploratory Analysis of Subreddit Differences}
 
 \subsection{Objective of the Exploratory Analysis}
@@ -265,11 +272,10 @@ If subreddit communities exhibit distinct embedding distributions, this suggests
 
 Because the baseline embedding vectors are 1024-dimensional, dimensionality reduction techniques were applied for visualization purposes. Principal Component Analysis (PCA) was used to project embeddings into two- and three-dimensional spaces.
 
-PCA preserves directions of maximum variance and enables inspection of global structure within the embedding space. The reduced representations were used solely for visualization and exploratory clustering; the regression models operate on the full high-dimensional feature vectors.
 
 % todo PCA plots 
 
-Visual inspection of the reduced embedding space indicates partial separation between subreddits, particularly across politically distinct communities. While overlaps remain substantial, identifiable clusters suggest that embeddings capture community-specific linguistic patterns.
+The PCA projection reveals visible clustering tendencies across subreddit groups, suggesting that the embedding representation captures meaningful semantic structure. While these visualizations are not used directly for prediction, they provide preliminary evidence that the embedding space contains information relevant for downstream modeling.
 
 \subsection{Subreddit Classification Experiment}
 
@@ -400,8 +406,6 @@ The upvote ratio provides a normalized measure of community approval that is les
 
 % todo, add that upvote ratio is Platform-native, Consistent within subreddit, Suitable for comparative analysis.
 
-
-
 For a study focused on alignment with subreddit norms and community expectations, the upvote ratio therefore serves as an appropriate proxy for community acceptance.
 
 All upvote ratio values used in this study were retrieved directly from the official Reddit API to ensure accuracy and consistency.
@@ -410,7 +414,44 @@ All upvote ratio values used in this study were retrieved directly from the offi
 
 To improve target stability, posts were required to have either a minimum score of three or at least three comments. This filtering step excludes posts that received negligible interaction and whose upvote ratios may reflect only one or two votes rather than meaningful community evaluation.
 
-After filtering, the final dataset consisted of 1,599,379 posts, with 1,279,864 used for training and 319,515 for validation.
+The impact of this filtering step on each subreddit is summarized in Table~\ref{tab:subreddit_filtering}. Prior to filtering, the dataset contained 2,867,176 posts. After applying the minimum engagement constraint, 1,853,933 posts remained, corresponding to the removal of 35.3\% of posts due to insufficient interaction.
+
+\begin{table}[htbp]
+\centering
+\caption{Subreddit dataset sizes before and after applying the minimum engagement constraint (score $\geq$ 3 or $\geq$ 3 comments).}
+\label{tab:subreddit_filtering}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Subreddit} & \textbf{Original} & \textbf{After Filter} & \textbf{Filtered Out} & \textbf{\% Filtered} \\
+\midrule
+Coffee              & 191,772 & 110,527 &  81,245 & 42.4\% \\
+Conservative        & 772,529 & 463,002 & 309,527 & 40.1\% \\
+DebateReligion      &  39,747 &  38,162 &   1,585 &  4.0\% \\
+DecidingToBeBetter  &  68,721 &  45,450 &  23,271 & 33.9\% \\
+Fantasy             & 139,517 & 114,399 &  25,118 & 18.0\% \\
+Frugal              & 156,188 & 105,745 &  50,443 & 32.3\% \\
+Liberal             &  51,761 &  29,340 &  22,421 & 43.3\% \\
+Libertarian         & 459,502 & 260,261 & 199,241 & 43.4\% \\
+PoliticalDiscussion &  60,033 &  52,146 &   7,887 & 13.1\% \\
+TrueAtheism         &  16,102 &  12,681 &   3,421 & 21.2\% \\
+TrueChristian       &  68,664 &  58,137 &  10,527 & 15.3\% \\
+anarchism           & 153,447 &  99,337 &  54,110 & 35.3\% \\
+changemyview        & 106,222 &  89,309 &  16,913 & 15.9\% \\
+democrats           & 143,813 &  90,159 &  53,654 & 37.3\% \\
+geopolitics         &  46,663 &  29,155 &  17,508 & 37.5\% \\
+mensrights          & 261,078 & 175,768 &  85,310 & 32.7\% \\
+progun              &  50,600 &  35,792 &  14,808 & 29.3\% \\
+racism              &  34,731 &  13,426 &  21,305 & 61.3\% \\
+truegaming          &  39,355 &  31,137 &   8,218 & 20.9\% \\
+\midrule
+\textbf{Total}      & \textbf{2,867,176} & \textbf{1,853,933} & \textbf{1,013,243} & \textbf{35.3\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The proportion of removed posts varies substantially across subreddits, reflecting differences in baseline engagement levels. Some communities such as DebateReligion exhibit consistently high interaction rates, whereas others contain a larger proportion of low-engagement posts.
+
+The filtered dataset was split into 1,484,099 training samples and 369,834 validation samples.
 
 \subsection{Model Architecture}
 
@@ -418,6 +459,7 @@ Post popularity was modeled using gradient boosting regression implemented with 
 
 The model was trained with the following hyperparameters:
 
+% todo: kinda wrong as this only changed to the setup below with hyperparameter tuning
 \begin{itemize}
     \item Number of estimators: 2000
     \item Maximum tree depth: 6
@@ -436,15 +478,52 @@ Models were trained both on individual subreddit datasets and on a combined data
 
 \subsection{Evaluation Metrics}
 
-Model performance was evaluated using two complementary regression metrics:
+Model performance was evaluated using several complementary regression metrics
+to capture different aspects of prediction quality.
 
 \paragraph{Mean Absolute Error (MAE).}
-MAE measures the average absolute difference between predicted and observed upvote ratios. It provides a direct interpretation of prediction error magnitude within the bounded [0,1] range.
+MAE measures the average absolute difference between predicted and observed
+upvote ratios. It provides a direct interpretation of prediction error magnitude
+within the bounded [0,1] range, since Reddit upvote ratios are naturally
+restricted between 0 and 1.
+
+\begin{equation}
+MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+\end{equation}
+
+where $y_i$ denotes the observed upvote ratio and $\hat{y}_i$ the predicted value.
+
+\paragraph{Root Mean Squared Error (RMSE).}
+RMSE measures the square root of the average squared prediction error and
+penalizes larger prediction deviations more strongly than MAE.
+
+\begin{equation}
+RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
+\end{equation}
+
+\paragraph{Coefficient of Determination ($R^2$).}
+The coefficient of determination indicates the proportion of variance in the
+observed upvote ratios that can be explained by the model predictions.
+Higher values indicate that the model captures a larger share of the variability
+in post popularity.
 
 \paragraph{Pearson Correlation Coefficient.}
-Pearson correlation measures the linear relationship between predicted and observed upvote ratios. While MAE quantifies absolute accuracy, correlation assesses whether the model correctly ranks posts according to expected popularity.
+Pearson correlation measures the linear relationship between predicted and
+observed upvote ratios. While MAE and RMSE quantify absolute prediction
+accuracy, correlation assesses whether the model correctly preserves the
+relative ordering of posts according to expected popularity.
 
-Using both metrics allows evaluation of prediction precision and ranking quality simultaneously.
+Using multiple metrics provides complementary perspectives on model
+performance. Error-based metrics such as MAE and RMSE evaluate prediction
+accuracy, while $R^2$ and Pearson correlation measure how well the model
+captures variability and relative ranking patterns in post popularity.
+
+In addition to the regression-based approach, a classification formulation of the
+task was also explored for comparison. In this setting, posts were categorized
+into discrete popularity classes, and standard classification metrics such as
+accuracy and F1-score were used to evaluate performance. The purpose of this
+comparison is to assess whether predicting continuous popularity values provides
+advantages over categorical prediction approaches.
 
 \subsection{Experimental Configurations}
 
@@ -454,27 +533,68 @@ This modular design enables systematic comparison of feature contributions and a
 
 \section{Prediction Pipeline and Live Experiment}
 
+% todo: add pipeline diagram and/or short pseudo code
+
 \subsection{Overview}
 
-The live experiment was designed to evaluate whether publicly available Reddit data can be used to train a regression model capable of improving the predicted community reception of generated posts. The objective is not to optimize persuasive messaging or promote specific viewpoints, but rather to assess whether large-scale historical data combined with generative models can systematically increase the likelihood of positive community evaluation.
+The live experiment was designed to evaluate whether publicly available Reddit data can be used to train a regression model capable of improving the predicted community reception of generated discussion posts. The objective of the experiment is not to optimize persuasive messaging or promote specific viewpoints, but rather to assess whether historical behavioral data combined with generative models can systematically increase the likelihood of positive community evaluation.
 
-This experiment serves as a proof-of-concept demonstrating how publicly accessible data and widely available machine learning tools could potentially be used to influence online discourse. The focus is therefore on technical feasibility rather than ideological content.
+This experiment serves as a proof-of-concept demonstrating how publicly accessible data and widely available machine learning tools could potentially be used to influence online discourse. The focus of the experiment is therefore on technical feasibility rather than ideological influence.
 
-\subsection{Post Generation}
+The generation pipeline focuses exclusively on self posts rather than link posts. Since the generation pipeline produces textual discussion prompts rather than external content, evaluating generated link posts would introduce additional confounding factors unrelated to the generated textual content. Link posts were nevertheless retained during model training because their inclusion increases dataset size and improves predictive performance, as demonstrated in the dataset composition experiments.
 
-Candidate posts were generated using large language models guided by simple, rule-based prompts. The prompts incorporated subreddit-specific formatting requirements and publicly visible community rules but avoided advanced prompt engineering techniques. The intent was to simulate a realistic, minimally optimized use case rather than an extensively tuned content-generation system.
+\subsection{Candidate Post Generation}
 
-No attempt was made to promote specific political positions or advance particular viewpoints. Generated posts were designed to align with the general thematic scope of each subreddit without introducing manipulative framing or targeted persuasion strategies.
+Candidate posts were generated using large language models guided by simple rule-based prompts. The prompts incorporated subreddit-specific formatting requirements and publicly visible community rules while intentionally avoiding advanced prompt engineering techniques. The intent was to simulate a realistic and minimally optimized generation setup rather than an extensively tuned content generation system.
 
-This restrained approach ensures that the experiment evaluates the predictive model’s ability to identify structurally well-aligned content rather than the effectiveness of sophisticated prompt optimization.
+For each subreddit included in the experiment, 200 candidate posts were generated. Generation was performed through the ChatGPT interface in batches of 40 posts per prompt, with each prompt executed in a separate conversation to avoid cross-context influence between generations. The prompts were designed to produce discussion-oriented self posts aligned with the thematic scope of each subreddit.
 
-\subsection{Experimental Objective}
+The generation process did not attempt to promote specific political positions or advance particular viewpoints. Instead, the prompts focused on generating neutral discussion questions or topic prompts consistent with the typical posting style observed in the target communities.
 
-The live experiment evaluates whether a regression model trained on publicly available historical data can improve the likelihood that generated posts receive positive community evaluation, as measured by upvote ratio.
+% todo: Prompts in appendix and mention it here
 
-Rather than maximizing engagement or steering political opinion, the experiment focuses on alignment with community norms and structural expectations. The key research question is whether a relatively simple predictive pipeline—combining embeddings, structured features, and generative models—can systematically outperform random content selection.
+\subsection{Prediction and Ranking Pipeline}
 
-From a broader perspective, the experiment highlights the potential dual-use implications of such systems. If effective under limited resources and simple prompt strategies, similar approaches could be scaled by actors with greater computational resources and more advanced optimization techniques. The findings therefore contribute not only to predictive modeling research but also to discussions about the potential misuse of publicly available behavioral data.
+All generated candidate posts were evaluated using the regression model that achieved the best performance during the model evaluation phase described earlier in this methodology.
 
-\paragraph{Computational Environment and Reproducibility.}
-All experiments were conducted in a controlled Python environment using standard scientific computing libraries (e.g., PyTorch, NumPy, and scikit-learn). Embedding generation and dimensionality reduction were executed on GPU-enabled hardware to ensure computational efficiency. Random seeds were fixed where applicable to enhance reproducibility. The complete preprocessing and analysis pipeline was implemented in a modular manner to allow replication of intermediate steps, including data filtering, encoding, and visualization.
+Each candidate post was processed through the same preprocessing pipeline used during training. This included text embedding generation and feature extraction using the previously selected feature configuration. Features that depend on historical author behavior or external domains were excluded, as generated posts originate from the experimental account and consist exclusively of self posts. All remaining structural and textual features were computed using the same procedures established during the feature exploration experiments.
+
+Embeddings were generated using the same embedding model employed during training to ensure consistency between the training and inference pipelines.
+
+After feature extraction, the regression model predicted the expected upvote ratio for each candidate post. For each subreddit, the 200 generated posts were then sorted according to their predicted upvote ratio, producing a ranked list of candidate posts ranging from lowest to highest predicted community reception.
+
+The resulting predictions and rankings were computed once and stored in the experimental dataset to ensure that the subsequent post selection process remained deterministic and reproducible.
+
+\paragraph{Experimental Posting Procedure}
+
+The experiment aimed to evaluate whether model-guided selection improves post reception compared to random selection.
+
+For each subreddit and posting day, a coin flip determined the selection strategy:
+
+With probability 0.5, a post was selected randomly from the entire ranked candidate pool.
+
+With probability 0.5, a post was selected randomly from the top 10\% of the predicted ranking.
+
+This procedure created a simple randomized A/B setup comparing random candidate selection against model-guided high-score selection.
+
+Originally, the experiment was designed to run for 30 days, posting once per day to each subreddit included in the experiment. With 19 subreddits, this would have resulted in a theoretical maximum of 570 submitted posts.
+
+However, practical platform constraints affected the execution of the experiment. Due to subreddit moderation policies and account restrictions, several communities banned the experimental account during the initial phase of the study. To reduce the risk of additional bans, the posting frequency was subsequently reduced to one post every two days, resulting in 15 active posting days for the remainder of the experiment.
+
+Because many subreddits require a minimum account age for participation, the experiment relied on a single Reddit account that satisfied the minimum age requirements across communities.
+
+To reduce temporal posting bias, submission times were randomized across the full 24-hour day, with a minimum spacing of five minutes between consecutive posts.
+
+\section{Performance Measurement}
+
+Post performance was measured using the upvote ratio reported by Reddit. To ensure that all posts had sufficient time to accumulate community feedback, performance metrics were collected one week after the conclusion of the posting phase.
+
+Because the experiment ran for 30 days, the final evaluation was performed on day 37. This approach ensured that even the last submitted posts had at least one week to accumulate engagement signals, although earlier posts naturally had longer exposure windows.
+
+\section{Reproducibility Considerations}
+
+Traditional notions of reproducibility used in machine learning experiments do not fully apply to live platform experiments involving human interaction. While the data processing and prediction components of the pipeline are fully reproducible, the resulting engagement outcomes depend on inherently stochastic social dynamics such as user activity patterns, moderator decisions, and platform ranking algorithms.
+
+To ensure reproducibility where possible, the prediction and ranking of generated posts were computed once and stored as part of the experimental dataset prior to submission. This guarantees that the selection logic and candidate rankings remain stable even if the scoring pipeline were executed again.
+
+The random assignment between random selection and model-guided selection was implemented using an unbiased coin flip without a fixed random seed. Fixing the seed could introduce systematic assignment patterns over time, whereas an unseeded randomization more closely reflects independent trial assignment in a real-world experiment.

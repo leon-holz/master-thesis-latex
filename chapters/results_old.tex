@@ -385,9 +385,61 @@ PoliticalDiscussion & 0.68 & 0.657 & 5 & 49.9 & 30 & 101.2 & 41,924 \\
 
 \section{Popular Post Pipeline}
 
-For the pipeline we evaluated the results again for only the subset of sbreddits that we were going to post too. This had a negligibly impact with only small changes to performance that didnt chance the larger picture of what inputs and configurations were best used
 
-% todo further results are not available yet
+before discussing the results of the posts, one should look at the genereal range of predicted upvote ratios. We generated 200 posts for each subreddit and posted either from the top 10 percentile or randomly. Even with the top 10\% of the 200 posts, we could not even reach the median of the training set per subreddit
+
+Scoring for generated posts
+  ✓ Scored 200 posts | score range: [0.396, 0.662] | top-10\% threshold ≈ 0.602
+Scoring r/DebateReligion...
+  ✓ Scored 200 posts | score range: [0.337, 0.599] | top-10\% threshold ≈ 0.525
+Scoring r/Fantasy...
+  ✓ Scored 200 posts | score range: [0.323, 0.568] | top-10\% threshold ≈ 0.515
+Scoring r/mensrights...
+  ✓ Scored 200 posts | score range: [0.407, 0.671] | top-10\% threshold ≈ 0.601
+Scoring r/PoliticalDiscussion...
+  ✓ Scored 200 posts | score range: [0.319, 0.622] | top-10\% threshold ≈ 0.548
+Scoring r/progun...
+  ✓ Scored 200 posts | score range: [0.387, 0.662] | top-10\% threshold ≈ 0.592
+Scoring r/TrueAtheism...
+  ✓ Scored 200 posts | score range: [0.446, 0.680] | top-10\% threshold ≈ 0.629
+Scoring r/TrueChristian...
+  ✓ Scored 200 posts | score range: [0.285, 0.591] | top-10\% threshold ≈ 0.535
+Scoring r/truegaming...
+  ✓ Scored 200 posts | score range: [0.212, 0.576] | top-10\% threshold ≈ 0.496
+
+median for 
+DebateReligion 0.6888811588287354
+Fantasy: 0.8122967481613159
+mensrights: 0.794232964515686
+PoliticalDiscussion: 0.6569116115570068
+progun: 0.8536453247070312
+TrueAtheism: 0.7893964052200317
+TrueChristian: 0.7980936765670776
+truegaming: 0.6512488126754761
+
+while the results seem "bad", gotta keep in mind that we filtered out posts with too little engagement and deleted or banned posts from the dataset. and even then there might be a larger amount that was not even included in the dataset at all, for example also because the moderators did not allow the posts to be posted in the first place. Even if we dont reach the threshold for good posts according to our own definition, we can still see if the model correctly predicts which posts would perform better
+
+
+\subsection{Post Results}
+
+
+As a baseline, we calculated the average upvote ratio, score and comments per post for all subreddits in our popular post creation test. For better comparison we filtered the posts to self posts only, as we are not creating link posts with our pipeline. Note that we did not apply the engagnement filter here before gathering the data. 
+we also grouped the posts by users, as a few users might skew the average by creating lots of very popular or unpopular posts. The resulting difference was negligibly though.
+
+subreddit,post_hint,avg_upvote_ratio_per_user,median_upvote_ratio_per_user,avg_score_per_user,median_score_per_user,avg_comments_per_user,median_comments_per_user,unique_users
+DebateReligion,self,0.6764867072515158,0.71,16.700747017950956,7.0,103.99889845249768,71.0,6509.0
+Fantasy,self,0.7735466950516648,0.8,36.61126555501717,11.0,35.1680035837485,20.0,24035.0
+PoliticalDiscussion,self,0.6619666528921266,0.69,49.24055035715551,7.0,90.05425594281198,32.0,11936.0
+TrueAtheism,self,0.7834185556769657,0.82,62.78502887707105,29.0,57.00745184148486,37.0,3180.0
+TrueChristian,self,0.796693459232371,0.82,17.71063745954378,6.0,24.621429646927037,15.0,8383.0
+anarchism,self,0.7834861063202377,0.8166666666666665,28.127403583973194,9.0,18.085786255684514,9.666666666666666,8382.0
+mensrights,self,0.7603133836335255,0.8,62.58656128310802,16.0,30.812620537802594,15.0,12918.0
+progun,self,0.775701712792005,0.84,106.03536643588936,20.0,42.60110590310606,18.0,2373.0
+truegaming,self,0.6529205008308068,0.6799999999999999,66.91180345147316,13.0,59.56225816492178,28.0,9419.0
+
+before comparing showing and comparing the results, we have to note that the account used to post to the subreddits got banned in 3 subreddits. 2 of them quite early into the live experiment after only, namely anarchism after the first, truegaming after the third and fantasy after the sixth post. 
+
+[More evaluation coming here later]
 
 
 
