@@ -1,12 +1,10 @@
 \chapter{Discussion}
 \section{Learning/Limitation}
 
-using chat gpt helped with smaller code fragments alot, but left much to be desired for more complex and large code systems
-% maybe elaborate (limited context length led to forgetting relevant code pieces or other specifications)
-% specifically for training models where additional or different inputs are relevant 
-
 Potential misuse: Could amplify misinformation spread
 
+
+19 subreddits is very small compared to all the subreddits out there, results such as cross generalizeability of left, right, neutral might not hold for different subreddit set. Most "neutral" subreddits were discussion subreddits. 
 
 
 \subsection{Pipeline}
@@ -20,3 +18,8 @@ moderation changes over the years might make it so posts are removed that were p
 
 there might be alot more posts that dont make it into datasets/that cant be scraped because they are not even allowed to be posted or removed instantly by actively moderated communities
 
+amount of posts might not be a big enough sample, especially with the banned subreddits reducing the size further
+
+using different accounts to make it less suspicious might be better, but needs accounts that fulfill the requirements of the respective subreddit with most having atleast a minimum age
+
+find out what the model uses specifically to predict upvote ratio to better tune prompts and posts
