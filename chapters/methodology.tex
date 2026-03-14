@@ -61,45 +61,23 @@ In addition, several historically influential but banned or quarantined subreddi
 
 \subsection{Final Subreddit Set}
 
-The final dataset consists of the following subreddits:
+The final dataset consists of the following subreddits.
 
 \paragraph{Left-leaning communities}
-\begin{itemize}
-    \item r/democrats
-    \item r/Liberals
-    \item r/anarchism
-    \item r/racism
-    \item r/TrueAtheism
-\end{itemize}
+r/democrats, r/Liberals, r/anarchism, r/racism, r/TrueAtheism.
 
 \paragraph{Right-leaning communities}
-\begin{itemize}
-    \item r/Conservative
-    \item r/TrueChristian
-    \item r/Libertarian
-    \item r/mensrights
-    \item r/progun
-\end{itemize}
+r/Conservative, r/TrueChristian, r/Libertarian, r/mensrights, r/progun.
 
 \paragraph{Politically neutral discussion communities}
-\begin{itemize}
-    \item r/PoliticalDiscussion
-    \item r/changemyview
-    \item r/NeutralPolitics (Excluded from model training due to insufficient post count after preprocessing.)
-    \item r/geopolitics
-    \item r/DebateReligion
-\end{itemize}
+r/PoliticalDiscussion, r/changemyview, r/geopolitics, r/DebateReligion. 
 
 \paragraph{Non-political comparison communities}
-\begin{itemize}
-    \item r/DecidingToBeBetter
-    \item r/truegaming
-    \item r/Fantasy
-    \item r/Frugal
-    \item r/Coffee
-\end{itemize}
+r/DecidingToBeBetter, r/truegaming, r/Fantasy, r/Frugal, r/Coffee.
 
-The impact of preprocessing and filtering steps on each subreddit is analyzed in Section~\ref{sec:preprocessing}. Model training is performed both on individual subreddit datasets and on a combined dataset aggregating posts from multiple communities.
+The subreddit r/NeutralPolitics was excluded from model training due to an insufficient post count after preprocessing.
+
+The impact of preprocessing and filtering steps on each subreddit is analyzed in Section~\ref{sec:construction_final_dataset}. Model training is performed both on individual subreddit datasets and on a combined dataset aggregating posts from multiple communities.
 
 \subsection{Adjustment Due to Data Availability Constraints}
 
@@ -139,6 +117,7 @@ The Reddit API enforces strict rate limits for standard applications, allowing a
 Given the scale of the dataset, which exceeded two million posts prior to filtering, the enrichment process required careful batching and long-running retrieval scripts operating over extended periods. Despite these constraints, all retained posts were successfully enriched with up-to-date popularity labels and relevant metadata.
 
 \subsection{Construction of the Final Dataset}
+\label{sec:construction_final_dataset}
 
 The final dataset was constructed by merging the Pushshift archive data with the metadata retrieved via the Reddit API. Posts that could not be accessed during enrichment or for which required metadata was unavailable were excluded prior to model training.
 
@@ -197,13 +176,55 @@ Apolitical  &   732{,}116 &   595{,}553 & 136{,}563 & 18.65 \\
 \end{tabular}
 \end{table}
 
-
 At this stage, the dataset contained both textual content (title and selftext) and structured metadata fields necessary for feature engineering. Subsequent preprocessing steps further refined the dataset to ensure consistency and reliability of the prediction target.
+
+\subsection{Minimum Engagement Constraint}
+\label{sec:minimum_engagement_constraint}
+
+To ensure that posts reflect meaningful community interaction, only posts with a minimum score of three or at least three comments were retained. This filtering step removes posts with negligible engagement, where upvote ratios may be based on only one or two votes rather than broader community evaluation.
+
+The impact of this filtering step on each subreddit is summarized in Table~\ref{tab:subreddit_filtering}. Prior to filtering, the dataset contained 2,867,176 posts. After applying the minimum engagement constraint, 1,853,933 posts remained, corresponding to the removal of 35.3\% of posts due to insufficient interaction.
+
+\begin{table}[htbp]
+\centering
+\caption{Subreddit dataset sizes before and after applying the minimum engagement constraint (score $\geq$ 3 or $\geq$ 3 comments).}
+\label{tab:subreddit_filtering}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Subreddit} & \textbf{Original} & \textbf{After Filter} & \textbf{Filtered Out} & \textbf{\% Filtered} \\
+\midrule
+Coffee              & 191,772 & 110,527 &  81,245 & 42.4\% \\
+Conservative        & 772,529 & 463,002 & 309,527 & 40.1\% \\
+DebateReligion      &  39,747 &  38,162 &   1,585 &  4.0\% \\
+DecidingToBeBetter  &  68,721 &  45,450 &  23,271 & 33.9\% \\
+Fantasy             & 139,517 & 114,399 &  25,118 & 18.0\% \\
+Frugal              & 156,188 & 105,745 &  50,443 & 32.3\% \\
+Liberal             &  51,761 &  29,340 &  22,421 & 43.3\% \\
+Libertarian         & 459,502 & 260,261 & 199,241 & 43.4\% \\
+PoliticalDiscussion &  60,033 &  52,146 &   7,887 & 13.1\% \\
+TrueAtheism         &  16,102 &  12,681 &   3,421 & 21.2\% \\
+TrueChristian       &  68,664 &  58,137 &  10,527 & 15.3\% \\
+anarchism           & 153,447 &  99,337 &  54,110 & 35.3\% \\
+changemyview        & 106,222 &  89,309 &  16,913 & 15.9\% \\
+democrats           & 143,813 &  90,159 &  53,654 & 37.3\% \\
+geopolitics         &  46,663 &  29,155 &  17,508 & 37.5\% \\
+mensrights          & 261,078 & 175,768 &  85,310 & 32.7\% \\
+progun              &  50,600 &  35,792 &  14,808 & 29.3\% \\
+racism              &  34,731 &  13,426 &  21,305 & 61.3\% \\
+truegaming          &  39,355 &  31,137 &   8,218 & 20.9\% \\
+\midrule
+\textbf{Total}      & \textbf{2,867,176} & \textbf{1,853,933} & \textbf{1,013,243} & \textbf{35.3\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The proportion of removed posts varies substantially across subreddits, reflecting differences in baseline engagement levels. Some communities such as DebateReligion exhibit consistently high interaction rates, whereas others contain a larger proportion of low-engagement posts.
+
+The filtered dataset was split into 1,484,099 training samples and 369,834 validation samples.
 
 % \section{temp}
 
 % todo: figure of pipeline
-test
 
 \section{Text Representation}
 
@@ -410,49 +431,6 @@ For a study focused on alignment with subreddit norms and community expectations
 
 All upvote ratio values used in this study were retrieved directly from the official Reddit API to ensure accuracy and consistency.
 
-\subsection{Minimum Engagement Constraint}
-
-To improve target stability, posts were required to have either a minimum score of three or at least three comments. This filtering step excludes posts that received negligible interaction and whose upvote ratios may reflect only one or two votes rather than meaningful community evaluation.
-
-The impact of this filtering step on each subreddit is summarized in Table~\ref{tab:subreddit_filtering}. Prior to filtering, the dataset contained 2,867,176 posts. After applying the minimum engagement constraint, 1,853,933 posts remained, corresponding to the removal of 35.3\% of posts due to insufficient interaction.
-
-\begin{table}[htbp]
-\centering
-\caption{Subreddit dataset sizes before and after applying the minimum engagement constraint (score $\geq$ 3 or $\geq$ 3 comments).}
-\label{tab:subreddit_filtering}
-\begin{tabular}{lrrrr}
-\toprule
-\textbf{Subreddit} & \textbf{Original} & \textbf{After Filter} & \textbf{Filtered Out} & \textbf{\% Filtered} \\
-\midrule
-Coffee              & 191,772 & 110,527 &  81,245 & 42.4\% \\
-Conservative        & 772,529 & 463,002 & 309,527 & 40.1\% \\
-DebateReligion      &  39,747 &  38,162 &   1,585 &  4.0\% \\
-DecidingToBeBetter  &  68,721 &  45,450 &  23,271 & 33.9\% \\
-Fantasy             & 139,517 & 114,399 &  25,118 & 18.0\% \\
-Frugal              & 156,188 & 105,745 &  50,443 & 32.3\% \\
-Liberal             &  51,761 &  29,340 &  22,421 & 43.3\% \\
-Libertarian         & 459,502 & 260,261 & 199,241 & 43.4\% \\
-PoliticalDiscussion &  60,033 &  52,146 &   7,887 & 13.1\% \\
-TrueAtheism         &  16,102 &  12,681 &   3,421 & 21.2\% \\
-TrueChristian       &  68,664 &  58,137 &  10,527 & 15.3\% \\
-anarchism           & 153,447 &  99,337 &  54,110 & 35.3\% \\
-changemyview        & 106,222 &  89,309 &  16,913 & 15.9\% \\
-democrats           & 143,813 &  90,159 &  53,654 & 37.3\% \\
-geopolitics         &  46,663 &  29,155 &  17,508 & 37.5\% \\
-mensrights          & 261,078 & 175,768 &  85,310 & 32.7\% \\
-progun              &  50,600 &  35,792 &  14,808 & 29.3\% \\
-racism              &  34,731 &  13,426 &  21,305 & 61.3\% \\
-truegaming          &  39,355 &  31,137 &   8,218 & 20.9\% \\
-\midrule
-\textbf{Total}      & \textbf{2,867,176} & \textbf{1,853,933} & \textbf{1,013,243} & \textbf{35.3\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The proportion of removed posts varies substantially across subreddits, reflecting differences in baseline engagement levels. Some communities such as DebateReligion exhibit consistently high interaction rates, whereas others contain a larger proportion of low-engagement posts.
-
-The filtered dataset was split into 1,484,099 training samples and 369,834 validation samples.
-
 \subsection{Model Architecture}
 
 Post popularity was modeled using gradient boosting regression implemented with XGBoost. Gradient boosting models are well suited for heterogeneous feature spaces and can effectively combine dense embeddings with structured metadata.
@@ -546,6 +524,8 @@ The generation pipeline focuses exclusively on self posts rather than link posts
 \subsection{Candidate Post Generation}
 
 Candidate posts were generated using large language models guided by simple rule-based prompts. The prompts incorporated subreddit-specific formatting requirements and publicly visible community rules while intentionally avoiding advanced prompt engineering techniques. The intent was to simulate a realistic and minimally optimized generation setup rather than an extensively tuned content generation system.
+
+% todo: geht nicht um topic modeling oder heißen themen zu machen -> aus festem pool random zu samplen um den effekt gering zu halten
 
 For each subreddit included in the experiment, 200 candidate posts were generated. Generation was performed through the ChatGPT interface in batches of 40 posts per prompt, with each prompt executed in a separate conversation to avoid cross-context influence between generations. The prompts were designed to produce discussion-oriented self posts aligned with the thematic scope of each subreddit.
 
