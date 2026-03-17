@@ -1,6 +1,6 @@
 \chapter{Methodology}
 
-This chapter describes the data sources, preprocessing steps, feature engineering pipeline, regression model, and experimental deployment used in this study. The overall objective is to predict community approval of Reddit posts, measured via upvote ratio, and to evaluate whether generated posts can be optimized for higher community acceptance.
+This chapter describes the data sources, preprocessing steps, feature engineering pipeline, regression model, and experimental deployment used in this study. The overall objective is twofold: first, to assess how well community approval of Reddit posts — measured via upvote ratio — can be predicted from publicly available data; and second, to demonstrate that such a model, combined with a generative language model, is sufficient to construct a functional influence pipeline requiring no resources beyond what is freely accessible to any actor online. The latter objective is intentionally proof-of-concept in scope: the experiment is designed to minimize real-world impact while still providing a meaningful evaluation of technical feasibility.
 
 \section{Data Sources}
 
@@ -37,7 +37,7 @@ The objective of this study is to analyze community-specific behavior on Reddit 
 
 \subsection{Political Orientation Categories}
 
-To capture ideological diversity, subreddits were grouped into four categories: left-leaning political communities, right-leaning political communities, politically neutral discussion communities, and non-political comparison communities. The classification of subreddits into these four categories follows prior empirical research on ideological clustering in online communities. In particular, we reference the work of Waller et al.\cite{waller2021quantifying}, who infer subreddit-level political alignment based on user overlap networks, posting behavior, and discourse patterns. For the subset of subreddits overlapping with their dataset, the inferred ideological positions largely correspond to the self-descriptions and moderation policies articulated by subreddit moderators. While moderator descriptions do not constitute an objective ground truth, the observed correspondence provides additional face validity for the adopted categorization.
+To capture ideological diversity, subreddits were grouped into four categories: left-leaning political communities, right-leaning political communities, politically neutral discussion communities, and non-political comparison communities. The classification of subreddits into these four categories follows prior empirical research on ideological clustering in online communities by Waller et al.\cite{waller2021quantifying}, who infer subreddit-level political alignment based on user overlap networks, posting behavior, and discourse patterns. For the subset of subreddits overlapping with their dataset, the inferred ideological positions largely correspond to the self-descriptions and moderation policies articulated by subreddit moderators. While moderator descriptions do not constitute an objective ground truth, the observed correspondence provides additional face validity for the adopted categorization.
 
 The present grouping is therefore not intended as a normative labeling, but as an operational categorization grounded in established patterns of ideological self-selection and community interaction. This approach allows for structured comparison while acknowledging that political identity in online spaces is fluid and multi-dimensional.
 
@@ -121,9 +121,6 @@ Given the scale of the dataset, which exceeded two million posts prior to filter
 
 The final dataset was constructed by merging the Pushshift archive data with the metadata retrieved via the Reddit API. Posts that could not be accessed during enrichment or for which required metadata was unavailable were excluded prior to model training.
 
-
-% todo mention table and explain a bit
-
 \begin{table}[htbp]
 \centering
 \small
@@ -175,6 +172,10 @@ Apolitical  &   732{,}116 &   595{,}553 & 136{,}563 & 18.65 \\
 \hline
 \end{tabular}
 \end{table}
+
+Tables~\ref{tab:subreddit_filtering} and~\ref{tab:leaning_filtering} show that the enrichment step led to a substantial but uneven reduction of the initial Pushshift-based corpus. Overall, 874{,}452 posts were excluded, corresponding to 23.38\% of the adjusted original dataset, leaving 2{,}867{,}176 posts for further preprocessing. However, these losses were not distributed uniformly across subreddits. While some communities such as \textit{Coffee} (7.83\%) and \textit{Libertarian} (12.57\%) experienced comparatively little reduction, others such as \textit{NeutralPolitics} (69.03\%), \textit{PoliticalDiscussion} (66.14\%), and \textit{changemyview} (58.38\%) lost a large share of posts during enrichment.
+
+A similar pattern appears when aggregating by political leaning. Right-leaning, left-leaning, and apolitical groups show relatively moderate filtering rates between 16.59\% and 19.78\%, whereas the neutral category is affected much more strongly, with 55.12\% of posts removed. This indicates that the availability of Reddit API metadata varied systematically across communities rather than randomly across the corpus. As a result, the final dataset does not only differ from the original Pushshift archive in size, but also in composition. These differences must be taken into account when interpreting later analyses, especially comparisons between political leanings, since some groups -- most notably neutral subreddits -- are underrepresented after filtering.
 
 At this stage, the dataset contained both textual content (title and selftext) and structured metadata fields necessary for feature engineering. Subsequent preprocessing steps further refined the dataset to ensure consistency and reliability of the prediction target.
 
@@ -425,8 +426,6 @@ While many studies of online popularity focus on predicting absolute score value
 
 The upvote ratio provides a normalized measure of community approval that is less sensitive to overall engagement volume. Even in cases of limited total votes, the ratio reflects whether users who interacted with the post responded positively. 
 
-% todo, add that upvote ratio is Platform-native, Consistent within subreddit, Suitable for comparative analysis.
-
 For a study focused on alignment with subreddit norms and community expectations, the upvote ratio therefore serves as an appropriate proxy for community acceptance.
 
 All upvote ratio values used in this study were retrieved directly from the official Reddit API to ensure accuracy and consistency.
@@ -517,15 +516,18 @@ This modular design enables systematic comparison of feature contributions and a
 
 The live experiment was designed to evaluate whether publicly available Reddit data can be used to train a regression model capable of improving the predicted community reception of generated discussion posts. The objective of the experiment is not to optimize persuasive messaging or promote specific viewpoints, but rather to assess whether historical behavioral data combined with generative models can systematically increase the likelihood of positive community evaluation.
 
-This experiment serves as a proof-of-concept demonstrating how publicly accessible data and widely available machine learning tools could potentially be used to influence online discourse. The focus of the experiment is therefore on technical feasibility rather than ideological influence.
+This experiment serves as a proof-of-concept whose primary contribution is demonstrative rather than operational: it illustrates how an actor with access only to public data and widely available tools - a scraped Reddit archive, an off-the-shelf gradient boosting model, and a general-purpose language model - could construct a pipeline capable of systematically selecting content for higher community acceptance. The low barrier to replicating such a system is itself a finding of this work, and motivates closer scrutiny of how behavioral data collected at scale can be repurposed for influence-adjacent applications.
+
+The focus of the experiment is therefore on technical feasibility rather than ideological influence. The experiment does not attempt to shift opinion, exploit trending topics, or otherwise maximize real-world impact; the design choices described below were made explicitly to limit the scope of influence while still allowing a meaningful evaluation of the pipeline's predictive utility.
 
 The generation pipeline focuses exclusively on self posts rather than link posts. Since the generation pipeline produces textual discussion prompts rather than external content, evaluating generated link posts would introduce additional confounding factors unrelated to the generated textual content. Link posts were nevertheless retained during model training because their inclusion increases dataset size and improves predictive performance, as demonstrated in the dataset composition experiments.
 
 \subsection{Candidate Post Generation}
 
-Candidate posts were generated using large language models guided by simple rule-based prompts. The prompts incorporated subreddit-specific formatting requirements and publicly visible community rules while intentionally avoiding advanced prompt engineering techniques. The intent was to simulate a realistic and minimally optimized generation setup rather than an extensively tuned content generation system.
+Candidate posts were generated using large language models guided by simple rule-based prompts. The prompts incorporated subreddit-specific formatting requirements and publicly visible community rules while intentionally avoiding advanced prompt engineering techniques. The intent was to simulate a realistic and minimally optimized generation setup rather than an extensively tuned 
+content generation system.
 
-% todo: geht nicht um topic modeling oder heißen themen zu machen -> aus festem pool random zu samplen um den effekt gering zu halten
+To limit the real-world influence of the experiment, candidate posts were generated from a fixed pool sampled without reference to current events, trending topics, or algorithmically surfaced content. No topic modeling or hot-topic targeting was employed. This design choice ensures that the experiment measures the model's ability to select posts that align with stable subreddit norms, rather than its ability to exploit momentary spikes in community attention. Sampling uniformly from this fixed pool for the control arm further reduces systematic bias in the comparison.
 
 For each subreddit included in the experiment, 200 candidate posts were generated. Generation was performed through the ChatGPT interface in batches of 40 posts per prompt, with each prompt executed in a separate conversation to avoid cross-context influence between generations. The prompts were designed to produce discussion-oriented self posts aligned with the thematic scope of each subreddit.
 
@@ -543,7 +545,7 @@ Embeddings were generated using the same embedding model employed during trainin
 
 After feature extraction, the regression model predicted the expected upvote ratio for each candidate post. For each subreddit, the 200 generated posts were then sorted according to their predicted upvote ratio, producing a ranked list of candidate posts ranging from lowest to highest predicted community reception.
 
-The resulting predictions and rankings were computed once and stored in the experimental dataset to ensure that the subsequent post selection process remained deterministic and reproducible.
+The resulting predictions and rankings were computed once and stored in the experimental dataset to ensure that the subsequent post selection process remained deterministic and reproducible. Crucially, this also means that no real-time feedback loop between posting outcomes and candidate selection was active during the experiment — the system operated as a one-shot pipeline rather than an adaptive influence agent.
 
 \paragraph{Experimental Posting Procedure}
 
