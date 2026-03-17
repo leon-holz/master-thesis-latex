@@ -48,24 +48,24 @@ Performance metrics are reported as mean values across all subreddits.
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction results for popularity regressor with different encoder models. Results show mean performance across all subreddits.}
+\caption{Popularity prediction results for popularity regressor with different encoder models. Results show mean performance across all subreddits. Significance columns indicate whether the difference from Stella (baseline) is statistically significant at the $\alpha=0.05$ level after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant).}
 \label{tab:embedding_comparison}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrccc}
 \toprule
-Features & MAE & RMSE & R² & r \\
+Features & MAE & RMSE & $R^2$ & $r$ & MAE Sig. & $r$ Sig. \\
 \midrule
-e5 Large Instruct & 0.1154 & 0.1462 & 0.1680 & 0.4062 \\
-Stella 400M & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
-Kalm Mini Instruct & 0.1158 & 0.1465 & 0.1636 & 0.4011 \\
-Bilingual & 0.1165 & 0.1473 & 0.1559 & 0.3912 \\
-Gwen & 0.1180 & 0.1490 & 0.1361 & 0.3658 \\
+Stella 400M (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & --- & --- \\
+e5 Large Instruct      & 0.1154 & 0.1462 & 0.1680 & 0.4062 & $\times$ & $\times$ \\
+Kalm Mini Instruct     & 0.1158 & 0.1465 & 0.1636 & 0.4011 & \checkmark & \checkmark \\
+Bilingual              & 0.1165 & 0.1473 & 0.1559 & 0.3912 & \checkmark & \checkmark \\
+Gwen                   & 0.1180 & 0.1490 & 0.1361 & 0.3658 & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:embedding_comparison} reports regression performance across different embedding models. Stella achieves the best overall performance, with the lowest MAE (0.1153), lowest RMSE (0.1459), highest $R^2$ (0.1700), and highest Pearson correlation (0.4086).
 
-The performance differences between Stella and e5 Large Instruct are relatively small, indicating that both models provide strong semantic representations for the popularity prediction task. However, Stella consistently achieves slightly better correlation and variance explained, suggesting improved alignment between predicted and observed upvote ratios.
+The performance differences between Stella and e5 Large Instruct are relatively small, and a Wilcoxon signed-rank test reveals no statistically significant difference in either MAE or Pearson correlation after multiple-comparison correction. In contrast, the performance gaps for Kalm Mini Instruct, Bilingual, and Gwen are all statistically significant, confirming that these models provide meaningfully weaker representations for the popularity prediction task.
 
 Kalm Mini Instruct and Bilingual embeddings perform moderately worse, while Gwen exhibits the lowest predictive performance across all reported metrics.
 
@@ -83,18 +83,18 @@ Each prompt variant modifies the instruction context under which embeddings are 
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction results for popularity regressor with different encoder prompts. Results show mean performance across all subreddits.}
+\caption{Popularity prediction results for popularity regressor with different encoder prompts. Results show mean performance across all subreddits. Significance columns indicate whether the difference from the no-prompt baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant).}
 \label{tab:prompt_comparison}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrccc}
 \toprule
-Features & MAE & RMSE & R² & r \\
+Features & MAE & RMSE & $R^2$ & $r$ & MAE Sig. & $r$ Sig. \\
 \midrule
-Stella Writing Quality & 0.1148 & 0.1454 & 0.1759 & 0.4158 \\
-Stella Content & 0.1148 & 0.1454 & 0.1762 & 0.4164 \\Stella Political Leaning & 0.1151 & 0.1456 & 0.1729 & 0.4122 \\
-Stella Popularity & 0.1150 & 0.1456 & 0.1738 & 0.4134 \\
-Stella Political Leaning & 0.1151 & 0.1456 & 0.1729 & 0.4122 \\
-Stella Engagement & 0.1152 & 0.1459 & 0.1708 & 0.4099 \\
-Stella Baseline & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
+Stella Baseline (No Prompt)  & 0.1153 & 0.1459 & 0.1700 & 0.4086 & --- & --- \\
+Stella Writing Quality       & 0.1148 & 0.1454 & 0.1759 & 0.4158 & \checkmark & \checkmark \\
+Stella Content               & 0.1148 & 0.1454 & 0.1762 & 0.4164 & \checkmark & \checkmark \\
+Stella Popularity            & 0.1150 & 0.1456 & 0.1738 & 0.4134 & \checkmark & \checkmark \\
+Stella Political Leaning     & 0.1151 & 0.1456 & 0.1729 & 0.4122 & \checkmark & \checkmark \\
+Stella Engagement            & 0.1152 & 0.1459 & 0.1708 & 0.4099 & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -103,9 +103,7 @@ Table~\ref{tab:prompt_comparison} reports the impact of prompt conditioning on r
 
 The \textit{Content} prompt achieves the highest performance overall, with the lowest MAE (0.1148), highest $R^2$ (0.1762), and highest Pearson correlation (0.4164). The \textit{Writing Quality} prompt performs nearly identically, while the baseline prompt yields slightly lower performance across all metrics.
 
-Prompts emphasizing popularity or political leaning provide modest improvements over the baseline but do not outperform the more general content-focused variants.
-
-These results suggest that prompt conditioning can influence embedding representations in ways that affect downstream regression performance. However, the magnitude of improvement remains marginal, indicating that embedding quality is relatively robust to prompt phrasing within the tested range.
+Prompts emphasizing popularity or political leaning provide modest improvements over the baseline but do not outperform the more general content-focused variants. Wilcoxon signed-rank tests confirm that all prompt variants produce statistically significant improvements over the no-prompt baseline in both MAE and Pearson correlation after Benjamini-Hochberg correction. Despite reaching statistical significance, the magnitude of improvement remains marginal, indicating that embedding quality is relatively robust to prompt phrasing within the tested range.
 
 The superior performance of the content-oriented prompts may indicate that general semantic alignment provides a stronger signal for predicting community approval than narrowly framed task instructions.
 
@@ -123,20 +121,20 @@ All experiments in this section use the Stella Content embedding configuration. 
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction results for popularity regressor with different aggregation methods. Results show mean performance across all subreddits.}
+\caption{Popularity prediction results for popularity regressor with different aggregation methods. Results show mean performance across all subreddits. Significance columns indicate whether the difference from the concatenation baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant, ---~= not tested).}
 \label{tab:aggregation_comparison}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrccc}
 \toprule
-Features & MAE & RMSE & R² & r \\
+Features & MAE & RMSE & $R^2$ & $r$ & MAE Sig. & $r$ Sig. \\
 \midrule
-Hadamard Product & 0.1211 & 0.1525 & 0.0918 & 0.2843 \\
-Mean & 0.1150 & 0.1457 & 0.1731 & 0.4124 \\
-Multi-Feature & 0.1153 & 0.1459 & 0.1707 & 0.4094 \\
-Conatencation (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
-Min Pooling & 0.1154 & 0.1460 & 0.1691 & 0.4078 \\
-Max Pooling & 0.1154 & 0.1461 & 0.1683 & 0.4066 \\
-Smart Mean & 0.1152 & 0.1458 & 0.1717 & 0.4107 \\
-Title Only & 0.1173 & 0.1483 & 0.1447 & 0.3763 \\
+Concatenation (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & --- & --- \\
+Mean                     & 0.1150 & 0.1457 & 0.1731 & 0.4124 & \checkmark & $\times$ \\
+Smart Mean               & 0.1152 & 0.1458 & 0.1717 & 0.4107 & $\times$ & $\times$ \\
+Multi-Feature            & 0.1153 & 0.1459 & 0.1707 & 0.4094 & --- & --- \\
+Min Pooling              & 0.1154 & 0.1460 & 0.1691 & 0.4078 & --- & --- \\
+Max Pooling              & 0.1154 & 0.1461 & 0.1683 & 0.4066 & --- & --- \\
+Hadamard Product         & 0.1211 & 0.1525 & 0.0918 & 0.2843 & --- & --- \\
+Title Only               & 0.1173 & 0.1483 & 0.1447 & 0.3763 & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -149,7 +147,7 @@ Hadamard product aggregation performs substantially worse than all other methods
 
 Using only the title embedding results in noticeably lower performance compared to combined representations, confirming that body text contributes meaningful signal for popularity prediction.
 
-The performance of smart mean aggregation slightly exceeds that of naive mean pooling and concatenation in terms of explained variance. This supports the hypothesis that conditionally handling body-less posts prevents representational distortion caused by averaging meaningful embeddings with zero vectors.
+Statistical significance was assessed for the mean and smart mean strategies relative to the concatenation baseline. Mean pooling yields a statistically significant improvement in MAE but not in Pearson correlation after Benjamini-Hochberg correction. Smart mean does not reach significance on either metric, despite its slightly higher $R^2$. The remaining aggregation strategies were not subjected to formal testing.
 
 Although performance differences among pooling-based strategies remain moderate, the results indicate that preserving balanced information from both title and body text is preferable to interaction-only representations.
 
@@ -210,6 +208,14 @@ Models trained exclusively on link posts exhibit substantially weaker performanc
 
 The superior performance of the combined dataset suggests that including both post types provides a larger and more diverse training set, enabling the model to learn more robust engagement patterns. Although the live experiment generates only self posts, link posts were retained during training because their inclusion improves overall predictive performance.
 
+\paragraph{Effect of Training Data on Self Post Predictions.}
+
+To assess whether the inclusion of link posts during training affects predictive quality specifically on self posts, predictions from the combined model and the self-only model were compared on the subset of shared self posts. This isolates the effect of training data composition from any confound introduced by evaluating different post populations.
+
+A Wilcoxon signed-rank test on the per-subreddit Pearson correlation differences yields no statistically significant difference in MAE ($p_\text{BH} = 0.646$), while a marginally significant improvement in Pearson correlation is observed ($p_\text{BH} = 0.026$). The mean difference in Pearson correlation is small ($\Delta r = +0.0083$ in favour of the combined model).
+
+These results suggest that including link posts during training provides a marginal but statistically detectable benefit to self-post prediction quality, likely by exposing the model to a broader range of writing styles and community engagement patterns. However, the effect size is small, and the improvement in MAE does not reach significance, indicating that the combined dataset's primary advantage lies in better ranking rather than lower absolute prediction error.
+
 \section{Feature Contribution Analysis}
 
 \subsection{Temporal Feature Contribution}
@@ -220,7 +226,7 @@ Each temporal feature group was evaluated independently to isolate its marginal 
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction results for popularity regressor with different temporal feature combinations. Results show mean performance across all subreddits.}
+\caption{Popularity prediction results for popularity regressor with different author feature combinations. Results show mean performance across all subreddits.}
 \label{tab:temporal_features}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -259,25 +265,25 @@ Three configurations were tested: continuous correlation scores, binary indicato
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction results for popularity regressor with different domain feature combinations. Results show mean performance across all subreddits.}
+\caption{Popularity prediction results for popularity regressor with different domain feature combinations. Results show mean performance across all subreddits. Significance columns indicate whether the difference from the embedding-only baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant, ---~= not tested).}
 \label{tab:domain_features}
-\begin{tabular}{lrrrr}
+\begin{tabular}{lrrrrccc}
 \toprule
-Features & MAE & RMSE & R² & r \\
+Features & MAE & RMSE & $R^2$ & $r$ & MAE Sig. & $r$ Sig. \\
 \midrule
-Domain All & 0.1146 & 0.1452 & 0.1792 & 0.420\\
-Domain Scores & 0.1146 & 0.1452 & 0.1793 & 0.4201 \\
-Domain Binary & 0.1153 & 0.1459 & 0.1709 & 0.4097 \\
-Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
+Embeddings Only (Baseline) & 0.1153 & 0.1459 & 0.1700 & 0.4086 & --- & --- \\
+Domain Scores              & 0.1146 & 0.1452 & 0.1793 & 0.4201 & \checkmark & \checkmark \\
+Domain All                 & 0.1146 & 0.1452 & 0.1792 & 0.4200 & \checkmark & \checkmark \\
+Domain Binary              & 0.1153 & 0.1459 & 0.1709 & 0.4097 & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:domain_features} reports the effect of domain-based features on popularity prediction performance.
 
-Adding domain features yields a noticeable improvement over the embedding-only baseline. Both the full domain feature set and the continuous domain score configuration increase $R^2$ from 0.1700 to approximately 0.1793 and improve Pearson correlation from 0.4086 to 0.4201.
+Adding domain features yields a noticeable improvement over the embedding-only baseline. Both the full domain feature set and the continuous domain score configuration increase $R^2$ from 0.1700 to approximately 0.1793 and improve Pearson correlation from 0.4086 to 0.4201. Wilcoxon signed-rank tests confirm that these improvements are statistically significant after Benjamini-Hochberg correction for both MAE and Pearson correlation.
 
-In contrast, the binary domain indicators alone do not provide meaningful improvement over the baseline.
+In contrast, the binary domain indicators alone do not provide meaningful improvement over the baseline and were not formally tested.
 
 The strong performance of continuous domain score features suggests that subreddit communities exhibit systematic differences in how linked external content is received. However, domain features should not be interpreted purely as reputation signals. 
 
@@ -362,30 +368,30 @@ To ensure fair comparison, the baseline model reported in this section (``Embedd
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction performance with author-related feature additions. Results are reported on the subset of posts for which complete author metadata was available. Baseline corresponds to embeddings only on the same filtered subset.}
+\caption{Popularity prediction performance with author-related feature additions. Results are reported on the subset of posts for which complete author metadata was available. Baseline corresponds to embeddings only on the same filtered subset. The significance column indicates whether the difference from the filtered baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, ---~= not tested); only the combined author feature configuration was formally tested.}
 \label{tab:author_features}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrc}
 \toprule
-Features & MAE & RMSE & R² & r \\
+Features & MAE & RMSE & $R^2$ & $r$ & Sig. \\
 \midrule
-All Author Features & 0.1090 & 0.1390 & 0.2016 & 0.4444 \\
-Account Age & 0.1108 & 0.1412 & 0.1782 & 0.4180 \\
-Link Karma & 0.1113 & 0.1415 & 0.1737 & 0.4128 \\
-Comment Karma & 0.1113 & 0.1414 & 0.1748 & 0.4141 \\
-Total Karma & 0.1112 & 0.1413 & 0.1758 & 0.4152 \\
-Moderator Status & 0.1126 & 0.1429 & 0.1576 & 0.3931 \\
-Embeddings Only (Author-Available Subset) & 0.1126 & 0.1429 & 0.1571 & 0.3923 \\
-Email Verified & 0.1125 & 0.1428 & 0.1594 & 0.3955 \\
-Premium (Gold) Status & 0.1126 & 0.1429 & 0.1573 & 0.3928 \\
+All Author Features                        & 0.1090 & 0.1390 & 0.2016 & 0.4444 & \checkmark \\
+Account Age                                & 0.1108 & 0.1412 & 0.1782 & 0.4180 & --- \\
+Total Karma                                & 0.1112 & 0.1413 & 0.1758 & 0.4152 & --- \\
+Comment Karma                              & 0.1113 & 0.1414 & 0.1748 & 0.4141 & --- \\
+Link Karma                                 & 0.1113 & 0.1415 & 0.1737 & 0.4128 & --- \\
+Email Verified                             & 0.1125 & 0.1428 & 0.1594 & 0.3955 & --- \\
+Premium (Gold) Status                      & 0.1126 & 0.1429 & 0.1573 & 0.3928 & --- \\
+Moderator Status                           & 0.1126 & 0.1429 & 0.1576 & 0.3931 & --- \\
+Embeddings Only (Author-Available Subset)  & 0.1126 & 0.1429 & 0.1571 & 0.3923 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:author_features} reports regression performance with individual and combined author features.
 
-Incorporating all author-related features yields a substantial improvement in predictive performance, increasing $R^2$ from 0.1571 (baseline on filtered subset) to 0.2016 and Pearson correlation from 0.3923 to 0.4444.
+Incorporating all author-related features yields a substantial improvement in predictive performance, increasing $R^2$ from 0.1571 (baseline on filtered subset) to 0.2016 and Pearson correlation from 0.3923 to 0.4444. A Wilcoxon signed-rank test confirms that this improvement is statistically significant after Benjamini-Hochberg correction.
 
-Among individual features, account age and total karma provide the strongest gains, while moderator status and premium (Gold) status contribute comparatively little predictive value.
+Among individual features, account age and total karma provide the strongest gains, while moderator status and premium (Gold) status contribute comparatively little predictive value. Individual feature configurations were not subjected to formal significance testing.
 
 The magnitude of improvement indicates that author-related variables are strongly associated with post reception. However, this association should not be interpreted as evidence that users directly reward reputation or account status.
 

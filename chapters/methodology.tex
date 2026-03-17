@@ -502,6 +502,26 @@ accuracy and F1-score were used to evaluate performance. The purpose of this
 comparison is to assess whether predicting continuous popularity values provides
 advantages over categorical prediction approaches.
 
+\subsection{Statistical Significance Testing}
+
+To assess whether observed performance differences between experimental configurations are statistically meaningful rather than attributable to random variation across subreddits, Wilcoxon signed-rank tests were applied to selected comparisons.
+
+\paragraph{Test Design.}
+
+For each comparison of interest, two model configurations were evaluated on identical validation data, producing per-subreddit metric values (MAE and Pearson correlation) for both configurations. The Wilcoxon signed-rank test was then applied to the vector of per-subreddit differences, treating each subreddit as a paired observation. This paired design controls for subreddit-level baseline differences in post popularity and community size, isolating the effect of the configuration change.
+
+The test was applied in its two-sided form, assessing whether the median of the paired differences differs significantly from zero. No assumption of normality is required, making the test appropriate for the relatively small number of subreddits ($n = 19$) used as the unit of analysis.
+
+\paragraph{Multiple Comparison Correction.}
+
+Since multiple pairwise comparisons were conducted across different experimental groups (encoders, prompts, feature types, aggregation strategies), the Benjamini-Hochberg (BH) procedure was applied to control the false discovery rate (FDR) at the $\alpha = 0.05$ level~\cite{benjamini1995controlling}. Adjusted $p$-values are reported throughout the Results chapter, and significance is indicated in summary tables using \checkmark~(significant) and $\times$~(not significant). Configurations for which no formal test was conducted are marked with ---\ in the significance columns.
+
+\paragraph{Scope of Testing.}
+
+Statistical testing was applied selectively to the primary experimental comparisons of interest: embedding model selection, prompt conditioning, embedding aggregation strategy (mean and smart mean variants only), domain feature contribution, and author feature contribution. Configurations exhibiting near-zero or negative effects relative to baseline, such as TF-IDF and sentiment features, were not subjected to formal testing as their practical relevance was considered negligible based on the observed metric values.
+
+For the dataset composition comparison, the test was applied specifically to predictions on the shared subset of self posts in order to ensure a fair paired comparison between the self-only and combined training configurations. This avoids confounding the result with differences in post-type distribution between the two models.
+
 \subsection{Experimental Configurations}
 
 To assess the contribution of different feature groups, multiple model configurations were evaluated. These include embedding-only models, embedding models augmented with domain, temporal, author, TF-IDF, and sentiment features, as well as combinations thereof.
