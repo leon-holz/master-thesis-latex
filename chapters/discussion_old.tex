@@ -1,0 +1,142 @@
+\chapter{Discussion}
+\section{Learning/Limitation}
+
+19 subreddits is very small compared to all the subreddits out there, results such as cross generalizeability of left, right, neutral might not hold for different subreddit set. Most "neutral" subreddits were discussion subreddits. 
+
+
+1. The target itself is noisy
+
+Upvote ratio is not a pure measure of “quality” or “appeal.” It is influenced by visibility, timing, early votes, brigading, moderator intervention, subreddit norms, and Reddit’s ranking dynamics. That means the model is partly learning social exposure effects, not just content properties.
+
+You could frame this as:
+
+the prediction target reflects a mixture of textual quality, topical fit, platform dynamics, and community-specific moderation effects
+
+therefore, predictive performance should not be interpreted as the model uncovering a stable causal relationship between wording and popularity
+
+
+2. Predictive performance is meaningful, but still limited
+
+Your results seem strong enough to show signal exists, but not strong enough to claim post success is highly predictable from text and metadata alone. This is an important balancing point in the discussion.
+
+A good discussion angle is:
+
+the models capture non-trivial variance, which suggests publicly available data is sufficient to infer some drivers of reception
+
+however, a large share of variance remains unexplained, indicating that popularity depends heavily on factors outside the observed feature space
+
+This lets you avoid overstating either the success or the limitation.
+
+
+3. Selection bias from filtering is not just a data loss problem
+
+the filtering done by us for deleted/removed/banned users 23.4\% and then minimum engagement 35.3\% or the remaining 77.6\% leaves us with with only 50.2\% of the initial pushshift dataset. And there might be alot more posts that have not even made it into the dataset itselt (there might be alot more posts that dont make it into datasets/that cant be scraped because they are not even allowed to be posted or removed instantly by actively moderated communities)
+
+Your filtering is not only reducing sample size; it is changing what kind of posts remain in the dataset. By removing deleted, inaccessible, banned-user, and very low-engagement posts, you are likely enriching for posts that were more visible, more norm-compliant, or produced by more established users.
+
+That matters because:
+
+the final dataset may overrepresent “successful” or at least “surviving” content
+
+the model may learn patterns associated with posts that pass moderation and attract early interaction, not patterns representative of all attempted participation
+
+4. Neutral/left/right categories may partly reflect subreddit format rather than ideology
+
+This seems especially important given your note that many neutral subreddits are discussion-oriented. If neutral communities systematically differ in posting rules, expected effort, title style, or moderation strictness, then differences between ideological groupings may partly be structural rather than political.
+
+That means:
+
+observed cross-group differences may conflate political leaning with community design
+
+generalization failures may reflect differences in subreddit norms and affordances, not only ideological language patterns
+
+This is a very good discussion point because it directly limits interpretation of your leaning-based findings.
+
+
+
+
+\subsection{Pipeline}
+
+5. Temporal drift likely affects both training and deployment
+
+moderation changes over the years might make it so posts are removed that were popular previously without the training data showing them as not being allowed (i.e. "looking for book with x" being very popular, but subreddit decides it should only be posted as a comment in specific thread)
+
+You already mention moderation changes over time. I would broaden that into platform drift:
+
+subreddit rules evolve
+
+user culture changes
+
+political salience of topics changes
+
+Reddit interface and ranking behavior may shift
+
+LLM-generated content itself may alter community expectations over time
+
+So even if a model works on historical data, its usefulness may decay. This is especially relevant for your live posting experiment.
+
+6. Missing comments limits the social interpretation of posts
+
+missing interaction in comments, similar style of post with no context, connection or continuity between them make the post seems AI generated
+
+Your note about lack of interaction/context is strong. I would make the consequence more explicit: Reddit posts are rarely interpreted in isolation. Comment history, author reputation, prior posting behavior, and ongoing conversation threads influence how users judge a submission.
+
+This means the model is operating on an incomplete approximation of how humans evaluate content. A post that looks coherent in text-only form may still fail because it is disconnected from an ongoing community conversation.
+
+"Why does op constantly post non sequitor one lines every day? Sre they training an LLM or just a bot themselves." from progun
+"This user has 58 OPs and 1 comment. Please don't expect any engagement. " TrueAtheism
+
+7. Live deployment creates a distribution shift
+
+If you used generated posts and model-based selection, the deployment setting is not the same as the training setting. Historical Reddit data mostly reflects human-authored posts, but the live test involves generated content selected by the model.
+
+That gives you a very useful discussion point:
+
+strong offline performance does not guarantee real-world effectiveness under deployment
+
+once the system begins generating or selecting posts, it changes the data-generating process itself
+
+This is one of the strongest conceptual points you can add.
+
+
+9. Ethical risk is broader than misinformation
+
+Your current note says potential misuse could amplify misinformation. I would expand it to:
+
+manipulation of community discourse
+
+automated astroturfing
+
+optimization of divisive or emotionally provocative framing
+
+circumvention of moderation by learning what survives and gains traction
+
+scaling low-authenticity participation
+
+This makes the integrity implications more concrete.
+
+
+10. The study likely underestimates the difficulty of real abuse in some ways, and overestimates it in others
+
+This nuance is worth adding.
+
+It may underestimate abuse difficulty because:
+
+real malicious actors could use comments, multiple accounts, feedback loops, and community-specific fine-tuning
+
+It may overestimate general effectiveness because:
+
+the evaluated setup lacks many real-world constraints
+
+historical targets may not transfer well to future settings
+
+model success offline does not mean scalable success across subreddits
+
+That kind of balanced statement usually improves a discussion chapter a lot.
+
+
+amount of posts might not be a big enough sample, especially with the banned subreddits reducing the size further
+
+using different accounts to make it less suspicious might be better, but needs accounts that fulfill the requirements of the respective subreddit with most having atleast a minimum age
+
+find out what the model uses specifically to predict upvote ratio to better tune prompts and posts
