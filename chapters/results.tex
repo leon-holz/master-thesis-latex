@@ -19,7 +19,7 @@ The chapter then investigates the generalizability of popularity prediction acro
 
 Finally, the regression framework is compared with a classification-based formulation of the task. The chapter concludes with a live experiment in which generated posts are scored using the trained models and selectively published to evaluate whether model-guided post selection leads to improved real-world engagement outcomes.
 
-The experiments aim to determine whether publicly available data can be used to predict post popularity and whether such predictions can be leveraged to guide automated content generation.
+Taken together, the experiments aim to determine how accurately publicly available data can be used to predict post popularity, and whether such predictions are sufficient to guide automated content selection in a live deployment. The broader implication assessed here is whether the barrier to constructing such a pipeline is low enough to warrant serious attention from a platform integrity perspective.
 
 \section{Embedding Model Comparison}
 
@@ -220,7 +220,7 @@ Each temporal feature group was evaluated independently to isolate its marginal 
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction results for popularity regressor with different author feature combinations. Results show mean performance across all subreddits.}
+\caption{Popularity prediction results for popularity regressor with different temporal feature combinations. Results show mean performance across all subreddits.}
 \label{tab:temporal_features}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -259,7 +259,7 @@ Three configurations were tested: continuous correlation scores, binary indicato
 
 \begin{table}[ht]
 \centering
-\caption{Popularity prediction results for popularity regressor with different author feature combinations. Results show mean performance across all subreddits.}
+\caption{Popularity prediction results for popularity regressor with different domain feature combinations. Results show mean performance across all subreddits.}
 \label{tab:domain_features}
 \begin{tabular}{lrrrr}
 \toprule
@@ -614,6 +614,8 @@ This difference indicates that even the highest-ranked generated posts rarely re
 
 For this reason, the live experiment focuses primarily on the relative ranking of generated posts rather than their absolute predicted scores. Even if generated posts do not reach the historical median threshold, the model may still correctly identify which posts are more likely to perform well relative to other generated candidates.
 
+A secondary objective of this evaluation is to contextualize the pipeline's feasibility. Regardless of whether the model-guided arm outperforms random selection at a statistically significant level, the experiment demonstrates that the end-to-end pipeline — data collection, model training, candidate generation, and automated posting — is operational with minimal resources. The significance of the result is therefore not limited to the A/B comparison: a null result would still constitute evidence that such systems can be constructed and deployed by actors without specialized infrastructure.
+
 \subsection{Baseline Subreddit Statistics}
 
 To provide context for evaluating the live experiment results, baseline engagement statistics were calculated for each subreddit. Only self posts were included in this analysis, as the generation pipeline produces discussion posts rather than link submissions.
@@ -633,12 +635,14 @@ Table~X summarizes these baseline engagement statistics across the subreddits in
 
 During the live experiment, the account used for posting was banned from several subreddits. Specifically, r/anarchism banned the account after the first post, r/truegaming after the third post, and r/Fantasy after the sixth post.
 
-These bans reduced the number of observations available for those communities and limited the ability to evaluate long-term posting behavior within those subreddits. The bans also highlight practical challenges associated with conducting controlled experiments in live online communities.
+These bans reduced the number of observations available for those communities and limited the ability to evaluate long-term posting behavior within those subreddits. The reasons for the bans are not directly observable — subreddit moderators do not provide detailed explanations, and it is not possible to determine whether removals were triggered by content style, account history, automated spam filters, or other community-specific policies. Rather than treating the bans as a methodological failure, they are documented here as an empirical observation: automated posting by a newly created account encountered moderation resistance in a subset of communities, which is itself relevant context for assessing the practical constraints of such a pipeline.
 
 \subsection{Post Results}
 
-The primary objective of the live experiment is to determine whether posts selected using the regression model outperform randomly selected generated posts.
+The primary objective of the live experiment is to determine whether posts selected using the regression model outperform randomly selected generated posts. However, the experiment should be interpreted in a dual frame: a positive result demonstrates that the model provides actionable signal for automated content optimization; a null result demonstrates that the pipeline is deployable and operationally viable even without a detectable performance advantage from model-guided selection. Either outcome contributes evidence relevant to the feasibility question.
 
 For each posting opportunity, a coin flip determined whether the post would be selected from the top 10\% of predicted posts or randomly from the generated pool. This randomized selection process allows comparison between model-guided and random posting strategies under similar conditions.
+
+
 
 [Results and statistical analysis of realized post performance will be presented here.]
