@@ -1,4 +1,5 @@
 \chapter{Methodology}
+\label{chap:methodology}
 
 This chapter describes the data sources, preprocessing steps, feature engineering pipeline, regression model, and experimental deployment used in this study. The overall objective is twofold: first, to assess how well community approval of Reddit posts — measured via upvote ratio — can be predicted from publicly available data; and second, to demonstrate that such a model, combined with a generative language model, is sufficient to construct a functional influence pipeline requiring no resources beyond what is freely accessible to any actor online. The latter objective is intentionally proof-of-concept in scope: the experiment is designed to minimize real-world impact while still providing a meaningful evaluation of technical feasibility.
 
@@ -237,9 +238,7 @@ The baseline embedding model used in this study is the \textit{Stella} model (10
 
 Additional embedding models were evaluated to assess robustness across different architectural designs and training objectives. While the Stella model serves as the primary baseline configuration, several alternative sentence embedding models were also tested. Each model was used to encode the same dataset, and the resulting embeddings were evaluated using an identical regression setup to isolate the effect of the representation method. Comparative performance results are reported and discussed in the Results chapter.
 
-All models were run locally to ensure consistent preprocessing and to avoid variability introduced by external APIs.
-
-Using \textit{Stella}, each embedding vector has a dimensionality of 1024 features in the baseline configuration.
+All models were run locally to ensure consistent preprocessing and to avoid variability introduced by external APIs. Using \textit{Stella}, each embedding vector has a dimensionality of 1024 features in the baseline configuration.
 
 \subsection{Input Text Construction}
 
@@ -292,22 +291,73 @@ If subreddit communities exhibit distinct embedding distributions, this suggests
 
 \subsection{Dimensionality Reduction}
 
-Because the baseline embedding vectors are 1024-dimensional, dimensionality reduction techniques were applied for visualization purposes. Principal Component Analysis (PCA) was used to project embeddings into two- and three-dimensional spaces.
+Because the baseline embedding vectors are 1024-dimensional, dimensionality reduction techniques were applied for visualization purposes. Specifically, PaCMAP (Pairwise Controlled Manifold Approximation Projection) \cite{wang2021understanding} was used to project the high-dimensional embeddings into a two-dimensional space. PaCMAP is a neighbor-graph-based method that preserves both local neighborhood structure and global topology more faithfully than linear projections such as PCA, making it well suited for visualizing high-dimensional sentence embedding spaces.
 
+Figure~\ref{fig:pacmap_embeddings} shows a two-dimensional PaCMAP projection of the top 500 posts per subreddit, colored by political leaning of the source community, with cluster centroids marked by cross symbols.
 
-% todo PCA plots 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{figs/embedding_plot_top500_pacmap.png}
+    \caption{PaCMAP projection of Stella 400M embeddings for the top 500 posts per subreddit. Each point represents a single post, colored by political leaning of its source community. Cluster centroids are indicated by cross markers.}
+    \label{fig:pacmap_embeddings}
+\end{figure}
 
-The PCA projection reveals visible clustering tendencies across subreddit groups, suggesting that the embedding representation captures meaningful semantic structure. While these visualizations are not used directly for prediction, they provide preliminary evidence that the embedding space contains information relevant for downstream modeling.
+The projection reveals several notable structural patterns. The neutral discussion communities r/PoliticalDiscussion and r/changemyview form a compact, well-separated cluster in the upper-right, reflecting their shared emphasis on structured, moderated debate. Adjacent to this cluster, the religion- and identity-focused communities r/DebateReligion, r/TrueAtheism, r/TrueChristian, and r/DecidingToBeBetter occupy a distinct region, suggesting semantic overlap in discourse centered on belief, self-improvement, and worldview. The politically charged communities spanning the ideological spectrum — including r/Conservative, r/Libertarian, r/democrats, r/Liberal, r/mensrights, r/progun, r/anarchism, and r/racism — form a broad, partially overlapping central mass, reflecting the shared political vocabulary that cuts across ideological lines. Notably, r/geopolitics is displaced to the far left, likely due to its distinctive focus on international affairs and foreign policy framing. The apolitical communities r/Coffee, r/truegaming, r/Frugal, and r/Fantasy occupy isolated peripheral positions consistent with their thematically distinct, non-political content.
+
+These patterns provide preliminary evidence that the Stella embeddings capture meaningful semantic and stylistic structure across subreddit communities. While the visualization is not used directly in the regression pipeline, it supports the hypothesis that the embedding space encodes information relevant for downstream community-specific modeling.
 
 \subsection{Subreddit Classification Experiment}
 
-To quantitatively evaluate separability, a supervised classification experiment was conducted in which subreddit membership was predicted directly from embedding vectors. A standard classification model was trained using embedding features as input and subreddit labels as targets.
+To quantitatively evaluate separability, a supervised classification experiment was conducted in which subreddit membership was predicted directly from embedding vectors. For each subreddit, a binary classifier was trained on the full combined dataset to distinguish posts belonging to that community from all others. The same train/validation split used throughout the thesis was applied, and all models used the Stella 400M embeddings with concatenation aggregation as input features.
 
-The resulting classification performance demonstrates that embeddings contain sufficient information to distinguish between communities at rates substantially above chance level.
+The dataset is heavily imbalanced by construction: even the largest subreddit (r/Conservative) accounts for only 25\% of validation posts, while smaller communities such as r/TrueAtheism and r/racism represent under 1\%. In this setting, AUC is the more appropriate primary metric, as it measures discriminative capacity independent of any fixed classification threshold. F1 is reported as a secondary metric to reflect threshold-dependent performance.
 
-% todo table for classification here
+To mitigate the effects of class imbalance during training, each binary classifier was trained on a balanced subset in which the number of negative samples was downsampled to match the number of positive examples from the target subreddit. The validation set was left unmodified to reflect the natural class distribution, meaning that F1 scores — particularly for small subreddits — remain affected by the imbalance at evaluation time.
 
-These results confirm that transformer-based embeddings capture systematic linguistic differences between subreddit communities. However, this analysis serves only as validation of representational quality and is not the primary focus of the thesis.
+\begin{table}[htbp]
+\centering
+\small
+\caption{Subreddit classification results per community, grouped by political leaning. Each model is trained on a balanced subset and evaluated on the unmodified held-out validation split. Val.~Pos.\ denotes the number of positive examples in the validation set.}
+\label{tab:subreddit_classification_per_community}
+\begin{tabular}{llrrr}
+\toprule
+\textbf{Group} & \textbf{Subreddit} & \textbf{Val. Pos.} & \textbf{F1} & \textbf{AUC} \\
+\midrule
+\multirow{5}{*}{Right}
+ & Conservative        & 92{,}535 & 0.718 & 0.921 \\
+ & Libertarian         & 51{,}495 & 0.536 & 0.905 \\
+ & mensrights          & 35{,}054 & 0.808 & 0.991 \\
+ & progun              &  7{,}143 & 0.454 & 0.986 \\
+ & TrueChristian       & 11{,}529 & 0.780 & 0.996 \\
+\midrule
+\multirow{5}{*}{Left}
+ & anarchism           & 19{,}798 & 0.486 & 0.959 \\
+ & democrats           & 17{,}945 & 0.330 & 0.914 \\
+ & Liberal             &  5{,}949 & 0.098 & 0.863 \\
+ & racism              &  2{,}614 & 0.154 & 0.974 \\
+ & TrueAtheism         &  2{,}554 & 0.272 & 0.988 \\
+\midrule
+\multirow{4}{*}{Neutral}
+ & changemyview        & 17{,}786 & 0.992 & 1.000 \\
+ & DebateReligion      &  7{,}734 & 0.682 & 0.997 \\
+ & geopolitics         &  5{,}929 & 0.396 & 0.992 \\
+ & PoliticalDiscussion & 10{,}222 & 0.527 & 0.986 \\
+\midrule
+\multirow{5}{*}{Apolitical}
+ & Coffee              & 22{,}223 & 0.961 & 1.000 \\
+ & DecidingToBeBetter  &  8{,}973 & 0.779 & 0.999 \\
+ & Fantasy             & 22{,}854 & 0.952 & 1.000 \\
+ & Frugal              & 21{,}162 & 0.888 & 0.999 \\
+ & truegaming          &  6{,}335 & 0.899 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:subreddit_classification_per_community} reports per-subreddit results grouped by political leaning. AUC values are consistently high across all 19 communities (range: 0.863--1.000), indicating that the embedding space reliably separates subreddit-specific posts from the broader corpus at the ranking level. This holds even for communities where F1 scores are low: r/Liberal (AUC = 0.863, F1 = 0.098) and r/racism (AUC = 0.974, F1 = 0.154) both exhibit near-random F1 due to extreme class imbalance at evaluation time, while their AUC values confirm that the model does learn a meaningful signal.
+
+F1 performance varies substantially and correlates more with community size and thematic distinctiveness than with political leaning per se. Apolitical communities — r/Coffee, r/Fantasy, r/Frugal, r/truegaming — achieve the highest F1 scores (0.888--0.961), reflecting content that is lexically distant from the political majority of the corpus. Among political subreddits, r/changemyview is a notable outlier (F1 = 0.992, AUC = 1.000), attributable to its highly distinctive posting conventions including mandatory citation deltas that make its posts trivially identifiable from text alone. The remaining political communities show moderate to low F1, consistent with the substantial lexical overlap between ideologically adjacent communities visible in the PaCMAP projection.
+
+These results confirm that transformer-based embeddings capture systematic linguistic differences between subreddit communities across all political leaning groups. This analysis serves as a validation of representational quality rather than a primary contribution: the consistent separation observed in embedding space supports the use of these representations as features in the downstream upvote ratio regression task.
 
 \subsection{Relevance for Popularity Prediction}
 
@@ -388,14 +438,11 @@ To capture lexical signals beyond dense embeddings, TF-IDF-based features were c
 
 Three categories of features were derived:
 
-\paragraph{Coverage Features}
-The fraction of characteristic vocabulary associated with popular or unpopular posts appearing in a given submission.
-
-\paragraph{Score-Based Features}
-The average correlation weight of the post's tokens, computed both globally across subreddits and within individual communities.
-
-\paragraph{Binary Indicators}
-Binary features indicating whether a post contains at least one globally top-ranked popular or unpopular term.
+\begin{itemize}
+    \item \textbf{Coverage Features:} The fraction of characteristic vocabulary associated with popular or unpopular posts appearing in a given submission.
+    \item \textbf{Score-Based Features:} The average correlation weight of the post's tokens, computed both globally across subreddits and within individual communities.
+    \item \textbf{Binary Indicators:} Binary features indicating whether a post contains at least one globally top-ranked popular or unpopular term.
+\end{itemize}
 
 These features provide interpretable lexical signals complementing embedding-based semantic representations.
 
@@ -448,10 +495,9 @@ The model was trained with the following hyperparameters:
 These settings provide a balance between model capacity and regularization. Subsampling and column sampling reduce overfitting risk, while moderate tree depth allows modeling nonlinear feature interactions.
 
 \subsection{Training Procedure}
-
 The dataset was randomly partitioned into training and validation sets using an 80/20 split. No cross-validation was performed due to the large dataset size and the computational cost associated with repeatedly training high-dimensional models.
 
-Models were trained both on individual subreddit datasets and on a combined dataset aggregating posts from multiple communities. The subreddit identifier itself was not included as an explicit feature, ensuring that predictions are based solely on textual and contextual characteristics rather than label leakage.
+Models were trained in three configurations: on individual subreddit datasets, on datasets aggregating posts from subreddits within the same political leaning, and on a combined dataset aggregating posts from all communities. For the combined dataset, the subreddit identifier was included as an explicit feature to allow the model to learn community-specific patterns. In contrast, for the leaning-aggregated and individual subreddit models, the subreddit identifier was excluded to evaluate generalization performance on unseen communities.
 
 \subsection{Evaluation Metrics}
 
@@ -570,21 +616,13 @@ The resulting predictions and rankings were computed once and stored in the expe
 \paragraph{Experimental Posting Procedure}
 
 The experiment aimed to evaluate whether model-guided selection improves post reception compared to random selection.
-
-For each subreddit and posting day, a coin flip determined the selection strategy:
-
-With probability 0.5, a post was selected randomly from the entire ranked candidate pool.
-
-With probability 0.5, a post was selected randomly from the top 10\% of the predicted ranking.
-
+For each subreddit and posting day, a coin flip determined the selection strategy: With probability 0.5, a post was selected randomly from the entire ranked candidate pool. With probability 0.5, a post was selected randomly from the top 10\% of the predicted ranking.
 This procedure created a simple randomized A/B setup comparing random candidate selection against model-guided high-score selection.
 
 Originally, the experiment was designed to run for 30 days, posting once per day to each subreddit included in the experiment. With 19 subreddits, this would have resulted in a theoretical maximum of 570 submitted posts.
+However, practical platform constraints affected the execution of the experiment. Due to subreddit moderation policies and account restrictions, several communities banned the experimental account during the initial phase of the study. To reduce the risk of additional bans, the posting frequency was subsequently reduced to one post every two days.
 
-However, practical platform constraints affected the execution of the experiment. Due to subreddit moderation policies and account restrictions, several communities banned the experimental account during the initial phase of the study. To reduce the risk of additional bans, the posting frequency was subsequently reduced to one post every two days, resulting in 15 active posting days for the remainder of the experiment.
-
-Because many subreddits require a minimum account age for participation, the experiment relied on a single Reddit account that satisfied the minimum age requirements across communities.
-
+Because many subreddits require a minimum account age for participation, the experiment relied on a single Reddit account that satisfied the age requirements across communities.
 To reduce temporal posting bias, submission times were randomized across the full 24-hour day, with a minimum spacing of five minutes between consecutive posts.
 
 \section{Performance Measurement}
