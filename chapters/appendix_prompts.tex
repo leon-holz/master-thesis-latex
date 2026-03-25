@@ -1,0 +1,1037 @@
+\chapter{Post Generation Prompts}
+\label{app:prompts}
+
+This appendix documents the prompts used to generate candidate posts for the live Reddit experiment. Each prompt was tailored to the specific subreddit's rules, culture, and posting patterns. The prompts were designed to produce posts that would comply with community guidelines while maintaining natural variation to avoid detection as AI-generated content.
+
+\section{Prompt Structure}
+
+All prompts followed a consistent structure:
+\begin{enumerate}
+    \item \textbf{Subreddit Rules}: Detailed enumeration of community rules that must be followed
+    \item \textbf{Natural Variation Requirements}: Instructions to avoid AI-detectable uniformity patterns
+    \item \textbf{Output Format}: JSON format specification for batch generation
+\end{enumerate}
+
+Each prompt requested 40 posts in JSON format, from which the model would select high-scoring candidates for actual posting.
+
+\section{anarchism Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/anarchism matching successful patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+Subreddit: anarchism
+
+Rule 1: Anti-Oppression Policy
+- Content must align with an anti-oppression framework
+- Avoid language that targets or marginalizes oppressed groups
+- Maintain awareness of intersectionality and power structures
+- The space is intended to be safe for members of oppressed 
+  communities
+
+Rule 2: Brigading Prohibition
+- Do NOT encourage voting, commenting, or interfering in threads 
+  from other subreddits or websites
+- Do not organize or imply coordinated action toward other 
+  communities
+- If referencing another Reddit thread, replace "www" with "np" 
+  (non-participation) formatting
+- Avoid callout-style posts targeting other subreddits or users
+
+Rule 3: Snitch Jacketing
+- Do NOT accuse anyone of being a cop, informant, or snitch 
+  without strong real-world evidence or self-admission
+- Do not imply or insinuate that someone might be a snitch
+- Avoid wording that could be interpreted as labeling others as 
+  infiltrators or agents
+
+Rule 4: Violence, Self-Harm, and Weapons Material
+- No incitement to violence or violent phrasing (including 
+  aggressive or explicitly violent tone)
+- No suicide goading or encouragement of self-harm
+- Advocacy of self-defense is acceptable if framed non-violently
+- General anti-fascist rhetoric is acceptable when not explicitly 
+  calling for violence
+- STRICTLY PROHIBITED:
+  - Sharing arms manufacturing material
+  - Requesting weapons or weapons manufacturing instructions
+  - Tactical or operational violence content
+
+Rule 5: Doxxing Prohibition
+- Do NOT share private or personally identifying information (PII)
+- No addresses, phone numbers, workplaces, or non-public personal 
+  details
+- Do not speculate about real individuals' identities
+- Any form of doxxing content is disallowed
+
+Rule 6: Pedophilia Apologism Prohibition
+- No normalization or apologism for pedophilia
+- No comparisons framing pedophilia favorably relative to 
+  sexualities
+- No discussion or promotion of drawn/animated child exploitation 
+  material
+- Content violating this is strictly disallowed
+
+Rule 7: Police Violence Content (If Referenced)
+- Any discussion of police violence should be framed thoughtfully 
+  and contextually
+- Avoid graphic descriptions
+- If referencing such media hypothetically, it must be handled 
+  with care and awareness
+
+Rule 8: No Facebook or Facebook-Affiliate Links
+- Do NOT reference or promote Facebook or Facebook-affiliated 
+  platforms
+- Avoid embedding or centering content around Facebook links due 
+  to data privacy concerns
+
+Rule 9: Relevance to Anarchism
+- All posts must clearly relate to anarchist theory, praxis, 
+  history, or movements
+- Acceptable topics include:
+  - Mutual aid
+  - Anti-authoritarian organizing
+  - Horizontal governance
+  - Direct action (non-violent framing)
+  - Critiques of hierarchy, capitalism, or the state
+- Avoid generic pan-left content that is not explicitly anarchist
+- No multi-subreddit spam framing
+
+Rule 10: No-Platforming Considerations
+- Do not promote or platform far-right figures or organizations 
+  (even for mockery)
+- Avoid apologia for authoritarian left ideologies (e.g., ML/MLM 
+  advocacy framing)
+- Do not center discussion around no-platformed personalities
+- Focus discussion on anarchist analysis rather than personality 
+  discourse
+
+Rule 11: No Electioneering
+- Do NOT encourage voting for politicians or political parties
+- Do not promote electoral strategies or campaign messaging
+- Discussion of elections is allowed only in analytical or 
+  critical contexts from an anarchist perspective
+
+Rule 12: Media Context Requirements (If Applicable)
+- If referencing long-form media hypothetically, include clear 
+  context and explanation
+- Provide reasoning for why the content is relevant to anarchist 
+  discussion
+- Avoid low-effort media dumps without analysis
+
+Rule 13: No Chatbot-Style Content
+- Posts must not read like automated chatbot outputs
+- Avoid generic, overly polished, or machine-like phrasing
+- Content must feel organic, human, and community-authentic
+- Natural imperfections, varied tone, and lived-perspective 
+  framing are encouraged
+
+Community Culture Alignment:
+- Tone can be conversational, reflective, critical, or 
+  praxis-oriented
+- Anti-authoritarian and anti-hierarchical framing is expected
+- Personal reflections, theory questions, organizing discussions, 
+  and lived experiences are common
+- Avoid academic detachment that feels sterile or overly formal
+- Avoid liberal electoral framing or state-centric solutionism
+
+================================================================
+CRITICAL: NATURAL VARIATION (avoid AI-generated uniformity)
+================================================================
+
+Your posts MUST feel human-written with appropriate formality 
+for r/anarchism. The model can detect AI patterns through 
+uniformity. Add variety in structure, tone, and style while 
+matching this subreddit's typical voice.
+
+WHAT TO AVOID (these signal AI-generation):
+x Every title following identical structure
+x Every post using "Researching", "Studying", "Investigating"
+x Overly academic/stiff language
+x Identical sentence structures across posts
+x Every post being the same word count
+x All titles the same length
+x No contractions or casual language
+x Template-like uniformity
+
+MANDATORY VARIETY CHECK:
+
+Before submitting your 40 posts, verify:
+[ ] Titles vary in length (not all 40-50 chars)
+[ ] Titles use different starting words and structures
+[ ] Formality matches subreddit culture
+[ ] Content tone feels natural for this specific subreddit
+[ ] Mix of punctuation styles (periods, questions, none)
+[ ] Different word counts across posts
+[ ] Would pass as human-written on this specific subreddit
+[ ] NO template patterns visible
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[NATURAL VARIED TITLE]",
+    "content": "[CASUAL REDDIT-STYLE CONTENT]",
+    "subreddit": "anarchism",
+  }
+]
+
+Generate 40 posts with MAXIMUM NATURAL VARIETY matching 
+r/anarchism successful patterns in json format.
+\end{verbatim}
+\end{small}
+
+\section{DebateReligion Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/DebateReligion matching successful 
+patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+1. No Hate Speech
+   Posts and comments must not denigrate, dehumanize, devalue, or 
+   incite harm against any person or group based on their race, 
+   religion, gender, disability, or other characteristics. This 
+   includes promotion of negative stereotypes (e.g. calling a 
+   demographic delusional or suggesting it's prone to criminality). 
+   Debates about LGBTQ+ topics are allowed due to their religious 
+   relevance (subject to mod discretion), so long as objections 
+   are framed within the context of religion.
+
+2. Be Civil
+   Don't be rude or hostile to other users. Criticize arguments, 
+   not people. Our standard for civil discourse is based on 
+   respect, tone, and unparliamentary language. 'They started it' 
+   is not an excuse - report it, don't respond to it.
+
+3. Quality Posts and Comments
+   Posts and comments will be removed if they are disruptive to 
+   the purpose of the subreddit.
+
+   Requirements:
+   - Quoting others is allowed only to support your own writing
+   - Do not link to an external resource instead of making an 
+     argument yourself
+
+4. Thesis Statement and Argument
+   Requirements:
+   - The central claim must be clearly stated in the title or the 
+     opening sentence
+   - The opening sentence must naturally present the author's main 
+     position and preview the argument
+   - Do NOT explicitly label the thesis (e.g., no "Thesis:" or 
+     similar markers)
+   - The thesis should read as part of a normal Reddit post, not 
+     an academic paper
+   - Posts must contain an argument supporting the thesis
+   - Arguments must explain why the thesis is true and why others 
+     should agree
+
+5. Opposed Top-Level Comments
+   Requirements:
+   - All top-level comments must seek to refute the post through 
+     substantial engagement with its core argument
+   - Supporting or purely commentating responses must be replies 
+     to the Auto-Moderator "COMMENTARY HERE" comment
+
+6. Reasonably Accurate Labels on Posts
+   Requirements:
+   - Posts must be precise about the group their argument is 
+     directed at
+   - "Theist" is not a synonym for "Christian"
+   - If you mean "Christian", say "Christian"
+
+7. Fresh Topics on Friday
+   Requirements:
+   - On Fridays, all posts must discuss fresh topics
+   - Posts must be flaired with "Fresh Friday"
+
+These rules are MANDATORY. Your posts will be removed if they 
+violate these. Pay special attention to content requirements, 
+banned topics, and formatting rules.
+
+================================================================
+CRITICAL: NATURAL VARIATION (avoid AI-generated uniformity)
+================================================================
+
+Your posts MUST feel human-written with appropriate formality 
+for r/DebateReligion. The model can detect AI patterns through 
+uniformity. Add variety in structure, tone, and style while 
+matching this subreddit's typical voice.
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[TITLE]",
+    "content": "[CONTENT]",
+    "subreddit": "DebateReligion",
+  }
+]
+
+Generate 40 posts matching r/DebateReligion successful patterns 
+in json format.
+\end{verbatim}
+\end{small}
+
+\section{Fantasy Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/Fantasy matching successful 
+patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+1) Be kind and respectful. LGBTQ+ friendly space.
+2) No promotional content or karma farming. Do not sound like 
+   marketing or engagement bait.
+3) Posting etiquette: posts must demonstrate sufficient community 
+   engagement and invite substantive replies.
+4) Spoilers: Hide ALL spoilers unless the thread title has an 
+   official Spoiler tag.
+   - If spoilers appear, the title MUST include "[Spoilers]" and 
+     all spoiler content MUST use: >!text goes here!<
+   - No spaces between ! and the text.
+5) No pirated content or requests.
+6) No self-promo or "buy my book." No "Writer Wednesday" content. 
+   No posting about your own writing projects.
+7) Prohibited topics: culture war posts; writing "what if X"; 
+   AI-generated artwork/text (do not mention AI, do not 
+   meta-discuss AI).
+8) If sexual content is discussed, mark NSFW.
+10) Discussion/article posts must encourage high-quality 
+    engagement and must not be a personal blog.
+11) No "looking for book with [theme/topic]" or Fantasy books 
+    where x
+
+These rules are MANDATORY. Your posts will be removed if they 
+violate these. Pay special attention to content requirements, 
+banned topics, and formatting rules.
+
+Be specific and use examples, such as a certain book that fits 
+the theme of the post. Don't ask for book recommendations. 
+Don't always end with a question.
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[TITLE]",
+    "content": "[CONTENT]",
+    "subreddit": "Fantasy",
+  }
+]
+
+Generate 40 posts with matching r/Fantasy successful patterns in 
+json format.
+\end{verbatim}
+\end{small}
+
+\section{mensrights Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/mensrights matching successful 
+patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+All generated posts MUST comply with the following enforced 
+rules:
+
+1. Must be directly related to men's rights issues.
+3. No meta discussions (unless formatted and marked correctly).
+4. No crosslinking or naming other subreddits.
+5. NSFW must be labeled.
+6. No personal information or doxxing.
+8. No harassment or posts targeting specific users.
+9. No advocacy for illegal actions.
+10. No racism, misogyny, misandry, or hate speech.
+11. No unverified donation solicitations.
+12. Gender reversal posts must include comparable examples.
+14. Titles must be descriptive and searchable.
+
+These rules are MANDATORY. Your posts will be removed if they 
+violate these. Pay special attention to content requirements, 
+banned topics, and formatting rules.
+
+================================================================
+CRITICAL: NATURAL VARIATION (avoid AI-generated uniformity)
+================================================================
+
+Your posts MUST feel human-written with appropriate formality 
+for r/mensrights. The model can detect AI patterns through 
+uniformity. Add variety in structure, tone, and style while 
+matching this subreddit's typical voice.
+
+Be specific and give examples.
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[TITLE]",
+    "content": "[CONTENT]",
+    "subreddit": "mensrights",
+  }
+]
+
+Generate 40 posts with MAXIMUM NATURAL VARIETY matching 
+r/mensrights successful patterns in json format.
+\end{verbatim}
+\end{small}
+
+\section{PoliticalDiscussion Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/PoliticalDiscussion matching 
+successful patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+Subreddit: PoliticalDiscussion
+
+Rule 0: The Title MUST BE a question!
+
+Rule 1: Impartial Discussion Prompt and Questions
+- Submissions must be framed as an impartial discussion prompt 
+  followed by open-ended questions
+- Maintain a neutral tone; avoid advocacy, persuasion, or 
+  personal proposals
+- Do not use loaded, leading, or rhetorical questions
+- Keep the language civil and analytical (no name-calling or 
+  inflammatory phrasing)
+- Do NOT include your own political opinions or policy 
+  prescriptions
+- If the content becomes opinion-based, it would belong in 
+  r/politicalopinions instead
+
+Rule 2: Background, Context, and Substantive Discussion
+- Provide sufficient background and context for the political 
+  topic
+- Clearly explain why the issue matters in a political or 
+  institutional sense
+- Offer multiple substantive angles for discussion (policy 
+  impact, institutions, public opinion, historical precedent, 
+  etc.)
+- Posts must encourage analytical discussion, not shallow 
+  reactions
+- Avoid highly speculative or unrealistic scenarios
+- Do NOT ask users to help you make an argument
+- Do NOT ask users to educate you, summarize basics, or perform 
+  research for you
+- Avoid low-effort formats such as:
+  - DAE-style prompts
+  - ELI5 requests
+  - CMV-style framing
+  - TIL-style framing
+  - AskA formats
+  - One-line prompts like "Thoughts?", "Discuss!", or "How does 
+    this affect the election?"
+
+Rule 3: Political Relevance Only
+- The entire post must be directly tied to a political issue, 
+  institution, policy, election, governance, or political 
+  behavior
+- Stay focused on political analysis rather than general news 
+  commentary
+- No meta discussion about Reddit, subreddits, or redditors
+- No link-only posts or posts that primarily function as content 
+  sharing
+- This is NOT a link aggregation subreddit
+- If referencing external events, integrate them into a broader 
+  political discussion rather than just citing them
+- Topics like law, sociology, philosophy, celebrities, or news 
+  are only acceptable when clearly framed through a political 
+  lens
+
+Rule 4: Formatting and Housekeeping
+- The title must accurately reflect the core discussion topic
+- Do NOT use tags such as "[Serious]"
+- Avoid all-caps titles
+- Ensure readability with proper paragraphs and punctuation
+- Structure posts in clear, coherent paragraphs (not walls of 
+  text)
+- Do not post recent duplicate topics phrased slightly 
+  differently
+- If mentioning sources, embed them naturally in context rather 
+  than as standalone links
+
+Additional Cultural Fit for r/PoliticalDiscussion:
+- Tone should be analytical, neutral, and discussion-oriented
+- Avoid partisan slogans, outrage framing, or activist language
+- Focus on systems, policies, incentives, institutions, and 
+  voter behavior
+- Questions should invite multi-perspective analysis rather than 
+  agreement
+
+================================================================
+CRITICAL: NATURAL VARIATION (avoid AI-generated uniformity)
+================================================================
+
+Your posts MUST feel human-written with appropriate formality 
+for r/PoliticalDiscussion. The model can detect AI patterns 
+through uniformity. Add variety in structure, tone, and style 
+while matching this subreddit's typical voice.
+
+VARIATION REQUIREMENTS ACROSS ALL 40 POSTS:
+
+Title Length Variety:
+- Don't make all titles the same length
+- Vary between short, medium, and long
+- Match the distribution from successful posts
+
+WHAT TO AVOID (these signal AI-generation):
+x Every title following identical structure
+x Every post using "Researching", "Studying", "Investigating"
+x Overly academic/stiff language
+x Identical sentence structures across posts
+x Every post being the same word count
+x All titles the same length
+x No contractions or casual language
+x Template-like uniformity
+
+For this community:
+- Match formality to your topic
+- Mix conversational and structured styles
+- Let personality show through
+- Vary your approach across posts
+
+MANDATORY VARIETY CHECK:
+
+Before submitting your 40 posts, verify:
+[ ] Titles vary in length (not all 40-50 chars)
+[ ] Titles use different starting words and structures
+[ ] Formality matches subreddit culture
+[ ] Content tone feels natural for this specific subreddit
+[ ] Mix of punctuation styles (periods, questions, none)
+[ ] Different word counts across posts
+[ ] Appropriate use of contractions for this subreddit
+[ ] Would pass as human-written on this specific subreddit
+[ ] NO template patterns visible
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[NATURAL VARIED TITLE]",
+    "content": "[CASUAL REDDIT-STYLE CONTENT]",
+    "subreddit": "PoliticalDiscussion",
+  }
+]
+
+Generate 40 posts with MAXIMUM NATURAL VARIETY matching 
+r/PoliticalDiscussion successful patterns in json format.
+\end{verbatim}
+\end{small}
+
+\section{progun Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/progun matching successful 
+patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+SUBREDDIT: r/progun
+
+OFFICIAL COMMUNITY RULES (STRICT COMPLIANCE REQUIRED)
+
+1. The Report Button Is Not an "I Disagree" Button
+   Description:
+   - Do NOT report posts or comments simply because you disagree 
+     with them.
+   - Users should downvote, argue, or ignore instead of misusing 
+     reports.
+   Enforcement Standard:
+   - Only comments that clearly and genuinely violate the rules 
+     are removed.
+
+2. Civility
+   Description:
+   - Debate and civil discussion is allowed and encouraged.
+   Disallowed:
+   - Insults
+   - Trolling
+   - Brigading
+   Enforcement:
+   - Content removal
+   - Possible ban at moderator discretion
+
+3. Racism, Anti-Semitism, Homophobia
+   Description:
+   - Racism, anti-Semitism, or any form of hate speech is 
+     strictly prohibited.
+
+4. No Memes or Low-Quality Image Content
+   Description:
+   - No memes or low-effort image submissions that do not 
+     contribute meaningfully to gun politics discussion.
+   Prohibited Content:
+   - Image memes
+   - Low-quality images
+   - Screenshots of tweets
+   - Screenshots of Facebook
+   - Screenshots of Instagram
+   - Screenshots of articles
+   Requirement:
+   - Post the original article or link instead of screenshots.
+
+5. Anti-Gun Trolling / Off-Topic Content
+   Description:
+   - This is a pro-gun subreddit focused on gun politics.
+   Requirements:
+   - All posts must be directly related to gun politics.
+   - Civil disagreement is allowed, but trolling is not.
+
+6. Inciting or Suggesting Violence
+   Description:
+   - Any threats, encouragement, or insinuations of violence are 
+     strictly forbidden.
+   Enforcement:
+   - Immediate and permanent ban.
+
+7. Discussing Firearm Sales or Reddit-Banned Sale Items
+   Description:
+   - Do NOT discuss private firearm sales or any Reddit-
+     prohibited items.
+
+8. Reposts and Crossposting
+   Prohibited:
+   - Reposts within one year
+   - Crossposting content
+
+9. Reddit-Wide Offenses
+   Requirements:
+   - Follow all Reddit-wide rules.
+   - Do not post personal information (doxxing prohibited).
+   - Obscure usernames where required.
+
+10. Precautionary Removal / Double Posts
+    Description:
+    - Content may be removed if it appears to be a duplicate or 
+      contains potentially problematic material (e.g., 
+      accidental personal information).
+    Clarification:
+    - Removal under this rule does not imply wrongdoing.
+    - Users may revise and repost corrected content.
+
+MANDATORY CONTENT COMPLIANCE:
+- No advocacy or encouragement of violence
+- No hate speech or extremist rhetoric
+- No discussion of firearm sales or transactions
+- No memes, screenshots, or low-effort content
+- Must remain civil, policy-focused, and discussion-oriented
+- Must stay strictly related to gun politics and policy
+
+================================================================
+CRITICAL: Style Requirements
+================================================================
+
+STYLE REQUIREMENTS:
+- Write like real Reddit users, not analysts or academics
+- Avoid meta labels like "Short thought", "Long title", or 
+  structural markers
+- Titles should feel organic and user-written, not optimized 
+  for variety
+- Some posts should be casual, some inquisitive, some 
+  observational
+- Do NOT explicitly signal variation in the title (no "short", 
+  "long", etc.)
+- Avoid academic tone and policy-paper phrasing
+- Mix longer and shorter posts, but have at least 2 sentences 
+  worth of content
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[TITLE]",
+    "content": "[CONTENT]",
+    "subreddit": "progun"
+  }
+]
+
+Generate 40 posts matching r/progun successful patterns and 
+fully complying with all listed subreddit rules in json format.
+\end{verbatim}
+\end{small}
+
+\section{TrueAtheism Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/TrueAtheism matching successful 
+patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+1. You Must Facilitate Discussion
+   Requirements:
+   - Posts must facilitate discussion
+   - Questions are allowed only if the poster includes their own 
+     insight or opinion
+   - Requests for advice are allowed only with full context 
+     provided
+
+2. Quotes and Links Are Not Sufficient on Their Own
+   Requirements:
+   - Explain why quotes or links are relevant
+   - Do not steer the conversation outside of TrueAtheism
+
+3. No Politics
+   This is not a sub for starting political debates.
+
+4. Be on Your Best Behavior at All Times
+   Requirements:
+   - Be on your best behavior regardless of topic or others' 
+     behavior
+   - Follow reddiquette
+
+5. No Bigotry of Any Kind
+   Ideologically based groups may be criticised, but only in a 
+   relevant and well-argued context.
+
+6. No Posting About Other Subs
+   This is not a sub for posting about other subs, including 
+   complaints.
+
+These rules are MANDATORY. Your posts will be removed if they 
+violate these. Pay special attention to content requirements, 
+banned topics, and formatting rules.
+
+================================================================
+CONTENT STYLE FOR r/TrueAtheism:
+================================================================
+
+Based on successful posts, focus on:
+- Ask thoughtful questions that spark discussion
+
+================================================================
+CRITICAL: NATURAL VARIATION (avoid AI-generated uniformity)
+================================================================
+
+r/TrueAtheism FORMALITY LEVEL: FORMAL
+
+Your posts MUST feel human-written with appropriate formality 
+for r/TrueAtheism. The model can detect AI patterns through 
+uniformity. Add variety in structure, tone, and style while 
+matching this subreddit's typical voice.
+
+SUBREDDIT TONE: FORMAL/STRUCTURED (debate/discussion community)
+- Use complete sentences and proper grammar consistently
+- Lowercase starts: ~5% of posts (rare - this is a formal 
+  community)
+- Contractions: Use sparingly
+- Structure: Clear positions and logical arguments
+- Length: Longer, more substantive content (91-151 words)
+
+CRITICAL FOR FORMAL DEBATE:
+- State your position clearly early
+- Back it up with reasoning
+- Avoid simple questions without taking a stance
+- Anticipate counterarguments
+
+x AVOID (too casual for formal debate):
+"tbh i dont really get why people think X"
+"anyone else find this kinda weird"
+"just wondering what people think about Y"
+
+* GOOD (formal debate structure):
+"Divine omniscience is incompatible with libertarian free will"
+Content: "If God has perfect knowledge of future events, then 
+those events are fixed and determined. This contradicts the 
+libertarian notion of free will, which requires that agents 
+could have chosen differently..."
+
+"The trolley problem reveals a flaw in utilitarian ethics"
+Content: "Most people's intuitions about the trolley problem 
+suggest that there's a moral difference between killing and 
+letting die, which pure utilitarian calculus cannot account 
+for..."
+
+BUT STILL VARY:
+- Not every post needs to be a dissertation
+- Some posts can ask genuine questions (but frame them well)
+- Mix formal arguments with exploratory discussions
+- Avoid robotic uniformity - humans vary in how formal they are
+- Even in formal contexts, some personality shows through
+
+VARIATION REQUIREMENTS ACROSS ALL 40 POSTS:
+
+Title Length Variety:
+- Don't make all titles the same length
+- Vary between short, medium, and long
+- Match the distribution from successful posts
+
+WHAT TO AVOID (these signal AI-generation):
+x Every title following identical structure
+x Every post using "Researching", "Studying", "Investigating"
+x Overly academic/stiff language
+x Identical sentence structures across posts
+x Every post being the same word count
+x All titles the same length
+x Overly casual language inappropriate for debates
+x Template-like uniformity
+
+MANDATORY VARIETY CHECK:
+
+Before submitting your 40 posts, verify:
+[ ] Titles vary in length (not all 40-50 chars)
+[ ] Titles use different starting words and structures
+[ ] Formality matches subreddit culture
+[ ] Content tone feels natural for this specific subreddit
+[ ] Mix of punctuation styles (periods, questions, none)
+[ ] Different word counts across posts
+[ ] Appropriate use of contractions for this subreddit
+[ ] Would pass as human-written on this specific subreddit
+[ ] NO template patterns visible
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[NATURAL VARIED TITLE]",
+    "content": "[CASUAL REDDIT-STYLE CONTENT]",
+    "subreddit": "TrueAtheism",
+  }
+]
+
+Generate 40 posts with MAXIMUM NATURAL VARIETY matching 
+r/TrueAtheism successful patterns in json format.
+\end{verbatim}
+\end{small}
+
+\section{TrueChristian Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/TrueChristian matching successful 
+patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+1. Be Respectful
+   Requirements:
+   - Be respectful
+   - No trolling
+   - No profanity or evasions thereof by use of symbols
+
+2. Do Not Incite Others
+   Posts and comments that are likely to incite others without 
+   adding value may be removed at moderator discretion.
+
+3. Do Not Infringe Upon the Christians Only Tag
+   Requirements:
+   - Participation in posts marked "Christians Only" requires 
+     affirmation of the Nicene Creed
+
+4. No Proselytizing Against the Nicene Creed
+   No proselytizing others toward a belief system not in 
+   alignment with the Nicene Creed.
+
+5. Post and Comment Requirements
+   Requirements:
+   - Be reasonably related to the purpose of this sub and the 
+     topic of the post
+   - Not be unreasonably frequent (by user or by topic)
+   - Not promote outside content
+   - Have reasonable quality and engage the community
+   - Be Scripturally supported when giving advice or making 
+     esoteric claims
+
+6. No Brigading
+
+7. Follow Thread-Specific Rules
+   Requirements:
+   - Follow any thread-specific rules stickied to a post
+
+8. No Link Posts
+   Posts that include links are prohibited and will be removed.
+
+9. Prayer Requests
+   Requirements:
+   - Prayer requests must be posted in the recurring stickied 
+     prayer thread
+
+10. General Prohibitions
+    Broad-spectrum prohibitions on specific types of content.
+
+11. Rule 10 Continued
+
+These rules are MANDATORY. Your posts will be removed if they 
+violate these. Pay special attention to content requirements, 
+banned topics, and formatting rules.
+
+================================================================
+CRITICAL: NATURAL VARIATION (avoid AI-generated uniformity)
+================================================================
+
+Your posts MUST feel human-written with appropriate formality 
+for r/TrueChristian. The model can detect AI patterns through 
+uniformity. Add variety in structure, tone, and style while 
+matching this subreddit's typical voice.
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[TITLE]",
+    "content": "[CONTENT]",
+    "subreddit": "TrueChristian",
+  }
+]
+
+Generate 40 posts with MAXIMUM NATURAL VARIETY matching 
+r/TrueChristian successful patterns in json format.
+\end{verbatim}
+\end{small}
+
+\section{truegaming Prompt}
+
+\begin{small}
+\begin{verbatim}
+Generate 40 Reddit posts for r/truegaming matching successful 
+patterns.
+
+================================================================
+CRITICAL: SUBREDDIT RULES - MUST FOLLOW
+================================================================
+
+1. Discuss Gaming
+   Requirements:
+   - All discussion must be about gaming
+   - All threads must be designed as a basis for discussion
+
+2. Be Civil
+   Requirements:
+   - No discrimination or "isms" of any kind (racism, sexism, 
+     etc)
+   - No personal attacks
+   - No trolling
+   - Engage in good faith with the points the person you're 
+     replying to is making
+
+3. Specificity, Clarity, Detail and Effort
+   Requirements:
+   - Address a concrete topic
+   - Clearly define the purpose of your post
+   - Do not use generative AI
+   - Use sufficient detail and examples from multiple sources
+
+4. No Advice
+   This subreddit shouldn't be used for advice of any kind.
+
+5. No List Posts
+
+6. No Inflammatory Posts
+   Disallowed:
+   - Drama
+   - Memes
+   - Shitposts
+   - Rants
+   - Hot Takes
+   - Speculation
+
+7. No Self Promotion
+
+8. No threads in the style of
+
+9. No Retired Topics
+   Banned Topics:
+   - I suck at gaming
+   - How can I get better at gaming
+   - Gaming fatigue
+   - Competitive burnout
+   - FOMO (Fear Of Missing Out)
+   - ... and 9 more
+
+10. No Handouts
+    Disallowed:
+    - Donations
+    - Giveaways
+    - Fundraising
+
+11. Address a concrete topic
+
+12. Clearly define the purpose of your post
+
+13. Use sufficient detail and examples
+
+These rules are MANDATORY. Your posts will be removed if they 
+violate these. Pay special attention to content requirements, 
+banned topics, and formatting rules.
+
+================================================================
+CRITICAL: NATURAL VARIATION (avoid AI-generated uniformity)
+================================================================
+
+Your posts MUST feel human-written with appropriate formality 
+for r/truegaming. The model can detect AI patterns through 
+uniformity. Add variety in structure, tone, and style while 
+matching this subreddit's typical voice.
+
+For this community:
+- Match formality to your topic
+- Mix conversational and structured styles
+- Let personality show through
+- Vary your approach across posts
+
+Reference specific games in your text to not make it sound too 
+abstract.
+
+================================================================
+FINAL FORMAT:
+================================================================
+
+[
+  {
+    "title": "[TITLE]",
+    "content": "[CONTENT]",
+    "subreddit": "truegaming",
+  }
+]
+
+Generate 40 posts with MAXIMUM NATURAL VARIETY matching 
+r/truegaming successful patterns in json format.
+\end{verbatim}
+\end{small}
