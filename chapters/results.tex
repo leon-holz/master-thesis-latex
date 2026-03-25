@@ -1,4 +1,3 @@
-% todo: rewrite texts with significance
 % todo: make tables easier to interpret:
 % - highlight best scores (maybe underline second best)
 % - write if lower or higher is better, maybe show with arrows in table columns
@@ -460,7 +459,7 @@ The partial recovery achieved by adding a subreddit indicator feature suggests t
 
 \clearpage
 
-\begin{longtable}{lrrrr}
+\begin{longtable}[c]{lrrrr}
 \caption{Per-subreddit Pearson $r$ by training strategy. \textit{Specific} trains a separate model per subreddit; \textit{Leaning} trains one model per political leaning group; \textit{Combined} trains a single model on all subreddits; \textit{Combined + Sub.} adds a subreddit indicator feature to the combined model.}
 \label{tab:per_subreddit_pearson} \\
 \toprule
@@ -573,19 +572,77 @@ From this perspective, precision on the positive class is more critical than rec
 
 Because regression supports ranking and precision-oriented filtering without retraining, it provides a more suitable framework for the generation-and-selection pipeline used in the live experiment.
 
-
 \section{Hyperparameter Optimization}
+\label{sec:hyperparam_optimization}
 
-Initial experiments were conducted using a fixed XGBoost configuration to enable controlled comparison of embedding and feature effects. After identifying promising model configurations, hyperparameter optimization was performed to assess potential additional performance gains.
+Initial experiments were conducted using a fixed XGBoost configuration (Table~\ref{tab:xgb_baseline_params}) to enable controlled comparison of embedding and feature effects. After identifying promising model configurations, hyperparameter optimization was performed to determine the best configuration for live deployment.
+
+\subsection{Grid Search}
+
+The hyperparameter optimization was conducted via grid search over four key parameters, while holding other configuration settings constant. The search space and selected values are shown in Table~\ref{tab:hyperparameter_tuning}.
+
+\begin{table}[htbp]
+\centering
+\caption{XGBoost hyperparameter search space and selected values for live deployment}
+\label{tab:hyperparameter_tuning}
+\begin{threeparttable}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Hyperparameter} & \textbf{Search Range} & \textbf{Selected Value} \\
+\midrule
+\texttt{max\_depth} & \{4, 6, 8\} & 6 \\
+\texttt{learning\_rate} & \{0.05, 0.1\} & 0.05 \\
+\texttt{subsample} & \{0.70, 0.85\} & 0.85 \\
+\texttt{colsample\_bytree} & \{0.70, 0.85\} & 0.85 \\
+\texttt{n\_estimators} & 500 (fixed) & 2000\textsuperscript{a} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item[a] Increased from 500 to 2000 using early stopping with \texttt{early\_stopping\_rounds=50}
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The grid search evaluated all 24 combinations of the four tuned hyperparameters. During the search phase, \texttt{n\_estimators} was fixed at 500 and \texttt{DETERMINISTIC} mode was enabled to ensure reproducible comparison of configurations. Models were evaluated using Mean Absolute Error (MAE) on the validation set, averaged across all subreddits.
+
+The best performing configuration from the grid search used \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, and \texttt{colsample\_bytree=0.85}, achieving an average MAE of 0.113135. Within the grid search itself, the improvement over the least optimal configuration (MAE of 0.115786) represents a 2.3\% relative improvement, confirming that the hyperparameter selection had measurable impact.
+
+Compared to the initial baseline configuration used in early experiments (\texttt{n\_estimators=100}, \texttt{learning\_rate=0.1}, no subsampling), which achieved an average MAE of 0.115338, the optimized configuration represents a 1.91\% improvement in MAE and a 7.14\% improvement in Pearson correlation (from 0.409 to 0.438). However, it should be noted that the experimental results reported in this chapter were obtained using the intermediate baseline configuration shown in Table~\ref{tab:xgb_baseline_params} (\texttt{n\_estimators=500}, \texttt{subsample=0.8}, \texttt{colsample\_bytree=0.8}), not the early baseline, ensuring fair comparison across all ablation studies.
+
+\subsection{Early Stopping Calibration}
+
+The grid search was conducted with \texttt{n\_estimators} fixed at 500 to ensure computational feasibility across 24 configurations. To determine the optimal number of trees for the selected hyperparameter values, a calibration run was performed with early stopping enabled (\texttt{early\_stopping\_rounds=50}) and \texttt{DETERMINISTIC=False}.
+
+This calibration identified that 2000 estimators provided the best validation performance with the selected learning rate of 0.05. The final deployed model therefore used \texttt{n\_estimators=2000} while keeping all other hyperparameters at their grid-search-optimal values.
+
+All other hyperparameters, including regularization terms (\texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, \texttt{reg\_lambda=1.0}), remained at the values used throughout the experimental phase.
 
 
+
+% TODO
+% - adjust the Sections Text Embedding, Additional Features and Model Architecture
+% - 
 \section{Final Model Configuration}
-
-Final Model Configuration
-   - embedding model
-   - aggregation strategy
-   - hyperparameters
-   - training split
+ 
+Based on the experiments reported in this chapter, the final model deployed in the live Reddit experiment was configured as follows:
+ 
+\paragraph{Text Embedding.}
+The Stella 400M v5 model was used with the default ``content'' prompt configuration. Title and selftext embeddings were generated independently and aggregated via concatenation without dimensionality reduction, yielding a 2048-dimensional feature vector per post.
+ 
+\paragraph{Additional Features.}
+Domain overlap features were included, encoding the frequency with which the post's linked domain appears in the training data for the target subreddit. Domain features were only applied to link posts; for self posts, the domain feature was masked to zero to avoid introducing spurious noise from the universal \texttt{reddit.com} domain. No author, time-of-posting, sentiment, or TF-IDF features were used, as these either showed negligible performance gains or introduced dependencies on metadata unavailable at generation time.
+ 
+\paragraph{Dataset Composition.}
+The model was trained on the combined \texttt{self\_link} dataset, which includes both self posts and link posts from 2008 to 2022, filtered to subreddits with at least three posts per day on average. This dataset composition was selected based on its superior regression performance compared to self-only datasets (Section~\ref{sec:dataset_composition}).
+ 
+\paragraph{Model Architecture.}
+XGBoost regression with the optimized hyperparameters from Table~\ref{tab:hyperparameter_tuning}: \texttt{n\_estimators=2000}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, \texttt{colsample\_bytree=0.85}. Regularization parameters were kept at \texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, and \texttt{reg\_lambda=1.0}.
+ 
+\paragraph{Training Configuration.}
+Each subreddit's model was trained independently using an 80/20 train/validation split. The subreddit identifier was not included as a feature, as posts were generated and scored on a per-subreddit basis.
+ 
+This configuration represents the culmination of the experimental findings, balancing predictive performance with practical constraints on feature availability during the live posting phase.
 
 \section{Live Experiment Evaluation}
 
@@ -635,6 +692,8 @@ This approach ensures that a small number of highly popular or highly active use
 
 % TODO add table
 % TODO maybe do use engagement filter..., but adjust mentions of no engagement filter then too
+
+TODO
 
 Table~X summarizes these baseline engagement statistics across the subreddits included in the live experiment.
 
