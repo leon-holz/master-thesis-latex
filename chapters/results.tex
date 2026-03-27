@@ -184,6 +184,7 @@ Global PCA with 256 and 128 components results in only minor performance degrada
 However, global PCA with 512 components exhibits a significant drop in performance, with $R^2$ decreasing to 0.0976 and correlation falling to 0.2630. This suggests that globally computed principal components may fail to preserve community-specific variance patterns critical for predicting popularity.
 
 \section{Dataset Composition Effects}
+\label{sec:dataset_composition_results}
 
 In order to assess whether including link posts during training improves the model’s ability to predict post popularity, models were trained using three dataset configurations: self posts only, link posts only, and the combined dataset containing both post types. Table~\ref{tab:dataset_composition} compares regression performance across these dataset configurations.
 
@@ -634,7 +635,7 @@ The Stella 400M v5 model was used with the default ``content'' prompt configurat
 Domain overlap features were included, encoding the frequency with which the post's linked domain appears in the training data for the target subreddit. Domain features were only applied to link posts; for self posts, the domain feature was masked to zero to avoid introducing spurious noise from the universal \texttt{reddit.com} domain. No author, time-of-posting, sentiment, or TF-IDF features were used, as these either showed negligible performance gains or introduced dependencies on metadata unavailable at generation time.
  
 \paragraph{Dataset Composition.}
-The model was trained on the combined \texttt{self\_link} dataset, which includes both self posts and link posts from 2008 to 2022, filtered to subreddits with at least three posts per day on average. This dataset composition was selected based on its superior regression performance compared to self-only datasets (Section~\ref{sec:dataset_composition}).
+The model was trained on the combined \texttt{self\_link} dataset, which includes both self posts and link posts from 2008 to 2022, filtered to subreddits with at least three posts per day on average. This dataset composition was selected based on its superior regression performance compared to self-only datasets (Section~\ref{sec:dataset_composition_results}).
  
 \paragraph{Model Architecture.}
 XGBoost regression with the optimized hyperparameters from Table~\ref{tab:hyperparameter_tuning}: \texttt{n\_estimators=2000}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, \texttt{colsample\_bytree=0.85}. Regularization parameters were kept at \texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, and \texttt{reg\_lambda=1.0}.
