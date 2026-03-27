@@ -1,0 +1,107 @@
+\chapter{Data Filtering Statistics}
+\label{app:filtering_stats}
+
+This appendix provides detailed statistics on data filtering at each stage 
+of the pipeline described in Section~\ref{sec:data_collection}.
+
+\section{API Enrichment Losses}
+
+Table~\ref{tab:subreddit_filtering} shows the impact of API enrichment on the initial Pushshift dataset.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Post Counts and Filtering Losses per Subreddit (Adjusted Original Size)}
+\label{tab:subreddit_filtering}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Subreddit} & \textbf{Original} & \textbf{Remaining} & \textbf{Deleted} & \textbf{\% Filtered} \\
+\hline
+anarchism & 182{,}082 & 153{,}447 & 28{,}635 & 15.73 \\
+changemyview & 255{,}187 & 106{,}222 & 148{,}965 & 58.38 \\
+Coffee & 208{,}060 & 191{,}772 & 16{,}288 & 7.83 \\
+conservative & 938{,}422 & 772{,}529 & 165{,}893 & 17.68 \\
+DebateReligion & 60{,}222 & 39{,}747 & 20{,}475 & 33.99 \\
+DecidingToBeBetter & 101{,}165 & 68{,}721 & 32{,}444 & 32.06 \\
+democrats & 175{,}929 & 143{,}813 & 32{,}116 & 18.26 \\
+Fantasy & 173{,}384 & 139{,}517 & 33{,}867 & 19.53 \\
+Frugal & 188{,}139 & 156{,}188 & 31{,}951 & 16.99 \\
+geopolitics & 63{,}475 & 46{,}663 & 16{,}812 & 26.48 \\
+Liberal & 67{,}446 & 51{,}761 & 15{,}685 & 23.26 \\
+Libertarian & 525{,}563 & 459{,}502 & 66{,}061 & 12.57 \\
+mensrights & 308{,}715 & 261{,}078 & 47{,}637 & 15.43 \\
+NeutralPolitics & 21{,}728 & 6{,}731 & 14{,}997 & 69.03 \\
+PoliticalDiscussion & 177{,}351 & 60{,}033 & 117{,}318 & 66.14 \\
+progun & 59{,}998 & 50{,}600 & 9{,}398 & 15.66 \\
+racism & 52{,}984 & 34{,}731 & 18{,}253 & 34.45 \\
+TrueAtheism & 20{,}006 & 16{,}102 & 3{,}904 & 19.52 \\
+TrueChristian & 100{,}404 & 68{,}664 & 31{,}740 & 31.61 \\
+truegaming & 61{,}368 & 39{,}355 & 22{,}013 & 35.85 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Post Counts and Filtering Losses by Political Leaning (Adjusted Original Size)}
+\label{tab:leaning_filtering}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Political Leaning} & \textbf{Original} & \textbf{Remaining} & \textbf{Deleted} & \textbf{\% Filtered} \\
+\hline
+Right        & 1{,}933{,}102 & 1{,}612{,}373 & 320{,}729 & 16.59 \\
+Left         &   498{,}447 &   399{,}854 &  98{,}593 & 19.78 \\
+Neutral      &   577{,}963 &   259{,}396 & 318{,}567 & 55.12 \\
+Apolitical  &   732{,}116 &   595{,}553 & 136{,}563 & 18.65 \\
+\hline
+\textbf{Overall} & \textbf{3{,}741{,}628} & \textbf{2{,}867{,}176} & \textbf{874{,}452} & \textbf{23.38} \\
+\hline
+\end{tabular}
+\end{table}
+
+Tables~\ref{tab:subreddit_filtering} and~\ref{tab:leaning_filtering} show that the enrichment step led to a substantial but uneven reduction of the initial Pushshift-based corpus. Overall, 874{,}452 posts were excluded, corresponding to 23.38\% of the adjusted original dataset, leaving 2{,}867{,}176 posts for further preprocessing. However, these losses were not distributed uniformly across subreddits. While some communities such as \textit{Coffee} (7.83\%) and \textit{Libertarian} (12.57\%) experienced comparatively little reduction, others such as \textit{NeutralPolitics} (69.03\%), \textit{PoliticalDiscussion} (66.14\%), and \textit{changemyview} (58.38\%) lost a large share of posts during enrichment.
+
+A similar pattern appears when aggregating by political leaning. Right-leaning, left-leaning, and apolitical groups show relatively moderate filtering rates between 16.59\% and 19.78\%, whereas the neutral category is affected much more strongly, with 55.12\% of posts removed. This indicates that the availability of Reddit API metadata varied systematically across communities rather than randomly across the corpus. As a result, the final dataset does not only differ from the original Pushshift archive in size, but also in composition. These differences must be taken into account when interpreting later analyses, especially comparisons between political leanings, since some groups -- most notably neutral subreddits -- are underrepresented after filtering.
+
+\section{Minimum Engagement Filtering}
+\label{sec:minimum_engagement_constraint}
+
+To ensure that posts reflect meaningful community interaction, only posts with a minimum score of three or at least three comments were retained. This filtering step removes posts with negligible engagement, where upvote ratios may be based on only one or two votes rather than broader community evaluation.
+
+The impact of this filtering step on each subreddit is summarized in Table~\ref{tab:subreddit_filtering_engagement}. Prior to filtering, the dataset contained 2,867,176 posts. After applying the minimum engagement constraint, 1,853,933 posts remained, corresponding to the removal of 35.3\% of posts due to insufficient interaction.
+
+\begin{table}[htbp]
+\centering
+\caption{Subreddit dataset sizes before and after applying the minimum engagement constraint (score $\geq$ 3 or $\geq$ 3 comments).}
+\label{tab:subreddit_filtering_engagement}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Subreddit} & \textbf{Original} & \textbf{After Filter} & \textbf{Filtered Out} & \textbf{\% Filtered} \\
+\midrule
+Coffee              & 191,772 & 110,527 &  81,245 & 42.4\% \\
+Conservative        & 772,529 & 463,002 & 309,527 & 40.1\% \\
+DebateReligion      &  39,747 &  38,162 &   1,585 &  4.0\% \\
+DecidingToBeBetter  &  68,721 &  45,450 &  23,271 & 33.9\% \\
+Fantasy             & 139,517 & 114,399 &  25,118 & 18.0\% \\
+Frugal              & 156,188 & 105,745 &  50,443 & 32.3\% \\
+Liberal             &  51,761 &  29,340 &  22,421 & 43.3\% \\
+Libertarian         & 459,502 & 260,261 & 199,241 & 43.4\% \\
+PoliticalDiscussion &  60,033 &  52,146 &   7,887 & 13.1\% \\
+TrueAtheism         &  16,102 &  12,681 &   3,421 & 21.2\% \\
+TrueChristian       &  68,664 &  58,137 &  10,527 & 15.3\% \\
+anarchism           & 153,447 &  99,337 &  54,110 & 35.3\% \\
+changemyview        & 106,222 &  89,309 &  16,913 & 15.9\% \\
+democrats           & 143,813 &  90,159 &  53,654 & 37.3\% \\
+geopolitics         &  46,663 &  29,155 &  17,508 & 37.5\% \\
+mensrights          & 261,078 & 175,768 &  85,310 & 32.7\% \\
+progun              &  50,600 &  35,792 &  14,808 & 29.3\% \\
+racism              &  34,731 &  13,426 &  21,305 & 61.3\% \\
+truegaming          &  39,355 &  31,137 &   8,218 & 20.9\% \\
+\midrule
+\textbf{Total}      & \textbf{2,867,176} & \textbf{1,853,933} & \textbf{1,013,243} & \textbf{35.3\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The proportion of removed posts varies substantially across subreddits, reflecting differences in baseline engagement levels. Some communities such as DebateReligion exhibit consistently high interaction rates, whereas others contain a larger proportion of low-engagement posts.

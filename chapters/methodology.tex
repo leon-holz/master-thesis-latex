@@ -90,6 +90,7 @@ At the time this issue was identified, access to the Pushshift archive was tempo
 Although Pushshift access was later restored, repeating the full embedding generation and model training pipeline was not feasible within the available time frame. The exclusion of r/NeutralPolitics does not materially affect the overall conclusions, as the dataset retains representation from politically neutral discussion communities through other included subreddits.
 
 \section{Data Collection}
+\label{sec:data_collection}
 
 \subsection{Initial Retrieval from Pushshift}
 
@@ -121,115 +122,61 @@ Given the scale of the dataset, which exceeded two million posts prior to filter
 \subsection{Construction of the Final Dataset}
 \label{sec:construction_final_dataset}
 
-The final dataset was constructed by merging the Pushshift archive data with the metadata retrieved via the Reddit API. Posts that could not be accessed during enrichment or for which required metadata was unavailable were excluded prior to model training.
+The final dataset was constructed by merging the Pushshift archive data with metadata retrieved via the Reddit API. Posts that could not be accessed during enrichment or for which required metadata was unavailable were excluded prior to model training.
 
-\begin{table}[htbp]
+\begin{figure}[htbp]
 \centering
-\small
-\caption{Post Counts and Filtering Losses per Subreddit (Adjusted Original Size)}
-\label{tab:subreddit_filtering}
-\begin{tabular}{lrrrr}
-\hline
-\textbf{Subreddit} & \textbf{Original} & \textbf{Remaining} & \textbf{Deleted} & \textbf{\% Filtered} \\
-\hline
-anarchism & 182{,}082 & 153{,}447 & 28{,}635 & 15.73 \\
-changemyview & 255{,}187 & 106{,}222 & 148{,}965 & 58.38 \\
-Coffee & 208{,}060 & 191{,}772 & 16{,}288 & 7.83 \\
-conservative & 938{,}422 & 772{,}529 & 165{,}893 & 17.68 \\
-DebateReligion & 60{,}222 & 39{,}747 & 20{,}475 & 33.99 \\
-DecidingToBeBetter & 101{,}165 & 68{,}721 & 32{,}444 & 32.06 \\
-democrats & 175{,}929 & 143{,}813 & 32{,}116 & 18.26 \\
-Fantasy & 173{,}384 & 139{,}517 & 33{,}867 & 19.53 \\
-Frugal & 188{,}139 & 156{,}188 & 31{,}951 & 16.99 \\
-geopolitics & 63{,}475 & 46{,}663 & 16{,}812 & 26.48 \\
-Liberal & 67{,}446 & 51{,}761 & 15{,}685 & 23.26 \\
-Libertarian & 525{,}563 & 459{,}502 & 66{,}061 & 12.57 \\
-mensrights & 308{,}715 & 261{,}078 & 47{,}637 & 15.43 \\
-NeutralPolitics & 21{,}728 & 6{,}731 & 14{,}997 & 69.03 \\
-PoliticalDiscussion & 177{,}351 & 60{,}033 & 117{,}318 & 66.14 \\
-progun & 59{,}998 & 50{,}600 & 9{,}398 & 15.66 \\
-racism & 52{,}984 & 34{,}731 & 18{,}253 & 34.45 \\
-TrueAtheism & 20{,}006 & 16{,}102 & 3{,}904 & 19.52 \\
-TrueChristian & 100{,}404 & 68{,}664 & 31{,}740 & 31.61 \\
-truegaming & 61{,}368 & 39{,}355 & 22{,}013 & 35.85 \\
-\hline
-\end{tabular}
-\end{table}
+\begin{lstlisting}[
+    basicstyle=\ttfamily\small,
+    frame=single,
+    numbers=none,
+    xleftmargin=2em,
+    framexleftmargin=1.5em
+]
++----------------------------------------+
+|  Pushshift Archive Retrieval           |
+|  2008-2022, 19 subreddits              |
+|  3,741,628 posts                       |
++--------------------+-------------------+
+                     |
+                     v
++----------------------------------------+
+|  Reddit API Enrichment                 |
+|  Upvote ratio, author metadata         |
+|  2,867,176 posts (-23.4%)              |
++--------------------+-------------------+
+                     |
+                     v
++----------------------------------------+
+|  Minimum Engagement Filter             |
+|  score >= 3 OR comments >= 3           |
+|  1,853,933 posts (-35.3%)              |
++--------------------+-------------------+
+                     |
+                     v
++----------------------------------------+
+|  Final Dataset (80/20 split)           |
+|  Train: 1,484,099  Val: 369,834        |
++----------------------------------------+
+\end{lstlisting}
+\caption{Data collection and filtering pipeline. The dataset was constructed through three stages: initial retrieval from the Pushshift archive, metadata enrichment via the Reddit API, and engagement-based filtering. Percentages indicate the proportion of posts removed at each stage relative to the previous step. Detailed per-subreddit statistics are provided in Appendix~\ref{app:filtering_stats}.}
+\label{fig:data_pipeline}
+\end{figure}
 
-\begin{table}[htbp]
-\centering
-\small
-\caption{Post Counts and Filtering Losses by Political Leaning (Adjusted Original Size)}
-\label{tab:leaning_filtering}
-\begin{tabular}{lrrrr}
-\hline
-\textbf{Political Leaning} & \textbf{Original} & \textbf{Remaining} & \textbf{Deleted} & \textbf{\% Filtered} \\
-\hline
-Right        & 1{,}933{,}102 & 1{,}612{,}373 & 320{,}729 & 16.59 \\
-Left         &   498{,}447 &   399{,}854 &  98{,}593 & 19.78 \\
-Neutral      &   577{,}963 &   259{,}396 & 318{,}567 & 55.12 \\
-Apolitical  &   732{,}116 &   595{,}553 & 136{,}563 & 18.65 \\
-\hline
-\textbf{Overall} & \textbf{3{,}741{,}628} & \textbf{2{,}867{,}176} & \textbf{874{,}452} & \textbf{23.38} \\
-\hline
-\end{tabular}
-\end{table}
+Figure~\ref{fig:data_pipeline} illustrates the data processing pipeline and 
+filtering stages. The initial Pushshift retrieval produced 3,741,628 posts 
+across 19 subreddits. API enrichment reduced this to 2,867,176 posts due to 
+deleted posts, inaccessible accounts, and missing metadata (23.4\% reduction). 
 
-Tables~\ref{tab:subreddit_filtering} and~\ref{tab:leaning_filtering} show that the enrichment step led to a substantial but uneven reduction of the initial Pushshift-based corpus. Overall, 874{,}452 posts were excluded, corresponding to 23.38\% of the adjusted original dataset, leaving 2{,}867{,}176 posts for further preprocessing. However, these losses were not distributed uniformly across subreddits. While some communities such as \textit{Coffee} (7.83\%) and \textit{Libertarian} (12.57\%) experienced comparatively little reduction, others such as \textit{NeutralPolitics} (69.03\%), \textit{PoliticalDiscussion} (66.14\%), and \textit{changemyview} (58.38\%) lost a large share of posts during enrichment.
+To ensure that posts reflect meaningful community interaction, only posts with a minimum score of three or at least three comments were retained. This filtering step removes posts with negligible engagement, where upvote ratios may be based on only one or two votes rather than broader community evaluation. This further reduced the dataset to 1,853,933 posts (35.3\% additional 
+reduction). The final dataset was split into 1,484,099 training samples and 
+369,834 validation samples using an 80/20 split.
 
-A similar pattern appears when aggregating by political leaning. Right-leaning, left-leaning, and apolitical groups show relatively moderate filtering rates between 16.59\% and 19.78\%, whereas the neutral category is affected much more strongly, with 55.12\% of posts removed. This indicates that the availability of Reddit API metadata varied systematically across communities rather than randomly across the corpus. As a result, the final dataset does not only differ from the original Pushshift archive in size, but also in composition. These differences must be taken into account when interpreting later analyses, especially comparisons between political leanings, since some groups -- most notably neutral subreddits -- are underrepresented after filtering.
-
-At this stage, the dataset contained both textual content (title and selftext) and structured metadata fields necessary for feature engineering. Subsequent preprocessing steps further refined the dataset to ensure consistency and reliability of the prediction target.
-
-\subsection{Minimum Engagement Constraint}
-\label{sec:minimum_engagement_constraint}
-
-To ensure that posts reflect meaningful community interaction, only posts with a minimum score of three or at least three comments were retained. This filtering step removes posts with negligible engagement, where upvote ratios may be based on only one or two votes rather than broader community evaluation.
-
-The impact of this filtering step on each subreddit is summarized in Table~\ref{tab:subreddit_filtering}. Prior to filtering, the dataset contained 2,867,176 posts. After applying the minimum engagement constraint, 1,853,933 posts remained, corresponding to the removal of 35.3\% of posts due to insufficient interaction.
-
-\begin{table}[htbp]
-\centering
-\caption{Subreddit dataset sizes before and after applying the minimum engagement constraint (score $\geq$ 3 or $\geq$ 3 comments).}
-\label{tab:subreddit_filtering}
-\begin{tabular}{lrrrr}
-\toprule
-\textbf{Subreddit} & \textbf{Original} & \textbf{After Filter} & \textbf{Filtered Out} & \textbf{\% Filtered} \\
-\midrule
-Coffee              & 191,772 & 110,527 &  81,245 & 42.4\% \\
-Conservative        & 772,529 & 463,002 & 309,527 & 40.1\% \\
-DebateReligion      &  39,747 &  38,162 &   1,585 &  4.0\% \\
-DecidingToBeBetter  &  68,721 &  45,450 &  23,271 & 33.9\% \\
-Fantasy             & 139,517 & 114,399 &  25,118 & 18.0\% \\
-Frugal              & 156,188 & 105,745 &  50,443 & 32.3\% \\
-Liberal             &  51,761 &  29,340 &  22,421 & 43.3\% \\
-Libertarian         & 459,502 & 260,261 & 199,241 & 43.4\% \\
-PoliticalDiscussion &  60,033 &  52,146 &   7,887 & 13.1\% \\
-TrueAtheism         &  16,102 &  12,681 &   3,421 & 21.2\% \\
-TrueChristian       &  68,664 &  58,137 &  10,527 & 15.3\% \\
-anarchism           & 153,447 &  99,337 &  54,110 & 35.3\% \\
-changemyview        & 106,222 &  89,309 &  16,913 & 15.9\% \\
-democrats           & 143,813 &  90,159 &  53,654 & 37.3\% \\
-geopolitics         &  46,663 &  29,155 &  17,508 & 37.5\% \\
-mensrights          & 261,078 & 175,768 &  85,310 & 32.7\% \\
-progun              &  50,600 &  35,792 &  14,808 & 29.3\% \\
-racism              &  34,731 &  13,426 &  21,305 & 61.3\% \\
-truegaming          &  39,355 &  31,137 &   8,218 & 20.9\% \\
-\midrule
-\textbf{Total}      & \textbf{2,867,176} & \textbf{1,853,933} & \textbf{1,013,243} & \textbf{35.3\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The proportion of removed posts varies substantially across subreddits, reflecting differences in baseline engagement levels. Some communities such as DebateReligion exhibit consistently high interaction rates, whereas others contain a larger proportion of low-engagement posts.
-
-The filtered dataset was split into 1,484,099 training samples and 369,834 validation samples.
-
-% \section{temp}
-
-% todo: figure of pipeline
+Detailed per-subreddit filtering statistics are provided in 
+Appendix~\ref{app:filtering_stats}.
 
 \section{Text Representation}
+\label{sec:text_representation}
 
 \subsection{Embedding Models}
 
@@ -493,6 +440,88 @@ These sentiment features allow the regression model to incorporate affective sig
 
 The performance impact of individual feature groups and their combinations is evaluated in the Results chapter. This modular design allows systematic comparison of embedding-only models and extended feature configurations.
 
+\subsection{Pipeline Overview}
+
+Figure~\ref{fig:feature_pipeline} provides an overview of the complete feature engineering pipeline. Raw Reddit posts are processed through two parallel paths: textual content undergoes transformer-based encoding and aggregation, while structured metadata features are extracted from post attributes. Different experimental configurations combine these components in various ways - ranging from embedding-only models (no metadata features) to full-feature models incorporating domain, temporal, author, TF-IDF, and sentiment signals. The aggregation strategy also varies across experiments: concatenation produces a 2048-dimensional representation (2d), pooling-based methods maintain the original 1024 dimensions (d), and multi-feature aggregation adds an explicit title-selftext similarity score (2d+1 dimensions). The resulting feature vectors serve as input to the XGBoost regression model for upvote ratio prediction.
+
+\begin{figure}[htbp]
+\centering
+\begin{lstlisting}[
+    basicstyle=\ttfamily\footnotesize,
+    frame=single,
+    numbers=none,
+    xleftmargin=1em,
+    framexleftmargin=0.5em
+]
++----------------------+
+|   Raw Reddit Post    |
+|  - title (text)      |
+|  - selftext (text)   |
+|  - metadata          |
++----------+-----------+
+           |
+           +----------------------------------+
+           |                                  |
+           v                                  v
++---------------------+           +---------------------+
+| Transformer Encoder |           |  Metadata Features  |
+| (1024-d embeddings) |           |  - domain features  |
+|                     |           |  - temporal (cyclic)|
++----------+----------+           |  - author features  |
+           |                      |  - TF-IDF features  |
+           v                      |  - sentiment scores |
+  +--------+--------+             +----------+----------+
+  |                 |                        |
+  v                 v                        |
++----------+   +----------+                  |
+| title_   |   | selftext_|                  |
+| emb      |   | emb      |                  |
+| (d-dim)  |   | (d-dim)  |                  |
++----+-----+   +-----+----+                  |
+     |               |                       |
+     +-------+-------+                       |
+             |                               |
+             v                               |
+  +----------+-----------+                   |
+  | Aggregation Strategy |                   |
+  |  - concatenation     |                   |
+  |    (2d-dim)          |                   |
+  |  - mean/max/min      |                   |
+  |    (d-dim)           |                   |
+  |  - hadamard (d-dim)  |                   |
+  |  - smart mean        |                   |
+  |    (d-dim)           |                   |
+  |  - multi-feature     |                   |
+  |    (2d+1-dim)        |                   |
+  +----------+-----------+                   |
+             |                               |
+             v                               |
+  +----------+-----------+                   |
+  |  Aggregated Text     |                   |
+  |  Embedding           |                   |
+  |  (varies by strategy)|                   |
+  +----------+-----------+                   |
+             |                               |
+             +---------------+---------------+
+                             |
+                             v
+                  +----------+-----------+
+                  |  Final Feature Vec  |
+                  |  - text embeddings  |
+                  |  - metadata (opt.)  |
+                  |  (varies by config) |
+                  +----------+-----------+
+                             |
+                             v
+                  +----------+-----------+
+                  |   XGBoost Regressor |
+                  |   (upvote ratio)    |
+                  +---------------------+
+\end{lstlisting}
+\caption{Feature engineering pipeline. Raw posts are processed through two parallel paths: text content is encoded using a transformer model and aggregated using one of several strategies (concatenation, pooling variants, smart mean, or multi-feature with similarity score), while structured metadata features (domain, temporal, author, TF-IDF, sentiment) are optionally extracted from post attributes. The resulting feature vector combines text embeddings with zero, some, or all metadata features depending on the experimental configuration, serving as input to the XGBoost regression model for upvote ratio prediction.}
+\label{fig:feature_pipeline}
+\end{figure}
+
 \section{Popularity Prediction Model}
 
 \subsection{Prediction Target}
@@ -625,7 +654,75 @@ This modular design enables systematic comparison of feature contributions and a
 
 \section{Prediction Pipeline and Live Experiment}
 
-% todo: add pipeline diagram and/or short pseudo code
+Figure~\ref{fig:live_experiment_pipeline} illustrates the complete live experiment workflow. Unlike adaptive influence systems that continuously update based on feedback, this pipeline operates as a one-shot process: all predictions are computed once and stored before any posting begins, eliminating the possibility of a real-time feedback loop.
+
+\begin{figure}[htbp]
+\centering
+\begin{lstlisting}[
+    basicstyle=\ttfamily\footnotesize,
+    frame=single,
+    numbers=none,
+    xleftmargin=1em,
+    framexleftmargin=0.5em
+]
++---------------------------+
+| Candidate Post Generation |
+| ChatGPT (200 posts per    |
+| subreddit, fixed pool)    |
++-------------+-------------+
+              |
+              v
++---------------------------+
+| Feature Extraction        |
+| - Text embeddings (Stella)|
+| - Temporal features       |
+| - No author/domain        |
+|   (experimental account)  |
++-------------+-------------+
+              |
+              v
++---------------------------+
+| XGBoost Prediction        |
+| Predict upvote ratio for  |
+| all 200 candidates        |
++-------------+-------------+
+              |
+              v
++---------------------------+
+| Ranking & Storage         |
+| Sort by predicted score   |
+| Store predictions once    |
+| (no feedback loop)        |
++-------------+-------------+
+              |
+              v
++---------------------------+
+| Daily A/B Selection       |
+| Coin flip (p=0.5):        |
+|   Heads: Random from all  |
+|   Tails: Random from top  |
+|          10% predicted    |
++-------------+-------------+
+              |
+              v
++---------------------------+
+| Reddit Posting            |
+| - Randomized post times   |
+| - 5-min spacing           |
+| - Single experimental     |
+|   account                 |
++-------------+-------------+
+              |
+              v
++---------------------------+
+| Performance Measurement   |
+| Collect upvote ratios     |
+| 1 week post-experiment    |
++---------------------------+
+\end{lstlisting}
+\caption{Live experiment pipeline. Candidate posts are generated once using ChatGPT and processed through the feature extraction and prediction pipeline to produce ranked lists stored without further updates. Each day, a coin flip determines whether to select randomly from all candidates or from the top 10\% by predicted score. This one-shot design with pre-computed rankings ensures no adaptive feedback loop operates during posting. Performance is measured one week after the final post to allow sufficient engagement time.}
+\label{fig:live_experiment_pipeline}
+\end{figure}
 
 \subsection{Overview}
 
@@ -656,13 +753,13 @@ Embeddings were generated using the same embedding model employed during trainin
 
 After feature extraction, the regression model predicted the expected upvote ratio for each candidate post. For each subreddit, the 200 generated posts were then sorted according to their predicted upvote ratio, producing a ranked list of candidate posts ranging from lowest to highest predicted community reception.
 
-The resulting predictions and rankings were computed once and stored in the experimental dataset to ensure that the subsequent post selection process remained deterministic and reproducible. Crucially, this also means that no real-time feedback loop between posting outcomes and candidate selection was active during the experiment — the system operated as a one-shot pipeline rather than an adaptive influence agent.
+The resulting predictions and rankings were computed once and stored in the experimental dataset to ensure that the subsequent post selection process remained deterministic and reproducible (see the "Ranking \& Storage" stage in Figure~\ref{fig:live_experiment_pipeline}). Crucially, this also means that no real-time feedback loop between posting outcomes and candidate selection was active during the experiment — the system operated as a one-shot pipeline rather than an adaptive influence agent.
 
 \paragraph{Experimental Posting Procedure}
 
 The experiment aimed to evaluate whether model-guided selection improves post reception compared to random selection.
 For each subreddit and posting day, a coin flip determined the selection strategy: With probability 0.5, a post was selected randomly from the entire ranked candidate pool. With probability 0.5, a post was selected randomly from the top 10\% of the predicted ranking.
-This procedure created a simple randomized A/B setup comparing random candidate selection against model-guided high-score selection.
+This procedure created a simple randomized A/B setup comparing random candidate selection against model-guided high-score selection, as illustrated in the "Daily A/B Selection" stage of Figure~\ref{fig:live_experiment_pipeline}.
 
 Originally, the experiment was designed to run for 30 days, posting once per day to each subreddit included in the experiment. With 19 subreddits, this would have resulted in a theoretical maximum of 570 submitted posts.
 However, practical platform constraints affected the execution of the experiment. Due to subreddit moderation policies and account restrictions, several communities banned the experimental account during the initial phase of the study. To reduce the risk of additional bans, the posting frequency was subsequently reduced to one post every two days.
