@@ -36,6 +36,36 @@ These behavioral mechanisms imply that popularity cannot be fully explained by t
 
 Transformer architectures have become the dominant modeling paradigm in natural language processing due to their ability to efficiently capture long-range contextual dependencies in text. Introduced by Vaswani et al.~\cite{Vaswani2017}, the Transformer replaces recurrent and convolutional structures with a self-attention mechanism that allows each token in a sequence to attend to all other tokens in parallel. This design enables scalable training on large corpora and facilitates the learning of rich contextual representations.
 
+\subsubsection{Self-Attention Mechanism}
+
+The self-attention mechanism computes a weighted representation of input tokens by comparing each token against all others. Given an input sequence of embeddings $\mathbf{X} \in \mathbb{R}^{n \times d}$, where $n$ is the sequence length and $d$ is the embedding dimension, self-attention first projects the input into query, key, and value representations:
+
+\begin{align}
+\mathbf{Q} &= \mathbf{X}\mathbf{W}_Q \\
+\mathbf{K} &= \mathbf{X}\mathbf{W}_K \\
+\mathbf{V} &= \mathbf{X}\mathbf{W}_V
+\end{align}
+
+where $\mathbf{W}_Q, \mathbf{W}_K, \mathbf{W}_V \in \mathbb{R}^{d \times d_k}$ are learned projection matrices and $d_k$ is the key dimension.
+
+The attention weights are computed using scaled dot-product attention:
+
+\begin{equation}
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right)\mathbf{V}
+\end{equation}
+
+The scaling factor $\sqrt{d_k}$ prevents the dot products from growing too large in magnitude, which would push the softmax function into regions with vanishingly small gradients~\cite{VSP+17}.
+
+Multi-head attention extends this mechanism by computing $h$ parallel attention operations with different learned projections, then concatenating and projecting the results:
+
+\begin{align}
+\text{head}_i &= \text{Attention}(\mathbf{Q}\mathbf{W}_Q^i, \mathbf{K}\mathbf{W}_K^i, \mathbf{V}\mathbf{W}_V^i) \\
+\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) &= \text{Concat}(\text{head}_1, \ldots, \text{head}_h)\mathbf{W}_O
+\end{align}
+
+where $\mathbf{W}_O \in \mathbb{R}^{hd_k \times d}$ is the output projection matrix.
+
+
 Unlike traditional bag-of-words or n-gram models, Transformer-based approaches produce context-sensitive representations in which the meaning of a token depends on its surrounding text. Earlier contextual embedding models, such as ELMo \cite{Peters2018}, demonstrated the importance of context-aware representations, a principle that Transformer architectures generalize and extend. These properties are particularly relevant for social media content, where short texts, informal language, and implicit references are common.
 
 For downstream tasks, Transformer models are often used as encoders that map variable-length text into fixed-dimensional vector representations, commonly referred to as \emph{embeddings}. These embeddings can serve as input features for task-specific models, enabling a separation between representation learning and predictive modeling.
@@ -91,6 +121,42 @@ To limit the real-world impact of the experiment, no feedback loop between predi
 \section{Gradient Boosting and XGBoost}
 
 Gradient Boosting is an ensemble learning technique that constructs a predictive model by iteratively combining multiple weak learners, typically decision trees, into a single strong learner. Rather than training all models independently, Gradient Boosting builds models sequentially, where each new learner is trained to correct the errors made by the ensemble thus far. This is achieved by fitting each learner to the negative gradient of a loss function with respect to the current model predictions, hence the term \emph{gradient} boosting.
+
+\subsubsection{Mathematical Formulation}
+
+Gradient boosting constructs an ensemble model $F(\mathbf{x})$ as an additive combination of $M$ base learners $f_m(\mathbf{x})$:
+
+\begin{equation}
+F(\mathbf{x}) = \sum_{m=1}^{M} f_m(\mathbf{x})
+\end{equation}
+
+The model is trained iteratively by minimizing a differentiable loss function $L(y, F(\mathbf{x}))$. At each iteration $m$, a new base learner $f_m$ is fit to the negative gradient of the loss with respect to the current ensemble prediction:
+
+\begin{equation}
+f_m(\mathbf{x}) = \arg\min_{f} \sum_{i=1}^{n} \left( -\frac{\partial L(y_i, F_{m-1}(\mathbf{x}_i))}{\partial F_{m-1}(\mathbf{x}_i)} - f(\mathbf{x}_i) \right)^2
+\end{equation}
+
+where $F_{m-1}$ represents the ensemble after $m-1$ iterations.
+
+For regression tasks with squared error loss, the negative gradient corresponds to the residual:
+
+\begin{equation}
+-\frac{\partial L(y, F(\mathbf{x}))}{\partial F(\mathbf{x})} = y - F(\mathbf{x})
+\end{equation}
+
+XGBoost extends this formulation with an explicit regularization term. The objective function at iteration $m$ becomes:
+
+\begin{equation}
+\mathcal{L}^{(m)} = \sum_{i=1}^{n} L(y_i, F_{m-1}(\mathbf{x}_i) + f_m(\mathbf{x}_i)) + \Omega(f_m)
+\end{equation}
+
+where the regularization term is defined as:
+
+\begin{equation}
+\Omega(f) = \gamma T + \frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
+\end{equation}
+
+Here, $T$ is the number of leaves in the tree, $w_j$ are the leaf weights, $\gamma$ controls tree complexity, and $\lambda$ is the L2 regularization parameter on leaf weights~\cite{CG16}.
 
 One of the central advantages of Gradient Boosting is its ability to model complex, non-linear relationships without requiring explicit feature engineering. By combining many shallow decision trees, the model can capture interactions between features while remaining robust to noise and heterogeneous input types. These properties make Gradient Boosting particularly suitable for regression tasks involving a mixture of numerical features and high-dimensional representations.
 

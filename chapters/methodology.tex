@@ -271,7 +271,36 @@ Since titles and selftexts were encoded separately, an aggregation step was requ
     \item \textbf{Multi-Feature Aggregation:} The most expressive aggregation strategy concatenates the title and selftext embeddings and appends an additional similarity feature computed as the dot product between the two embeddings. This similarity score provides an explicit signal indicating how closely related the title and body content are. High similarity values suggest semantic alignment, while lower values may indicate divergence between headline and content.
 \end{itemize}
 
-Aggregation strategies that increase dimensionality, such as concatenation and multi-feature aggregation, offer greater representational capacity but also increase computational cost and the risk of overfitting. Simpler pooling-based approaches reduce dimensionality but may discard potentially informative interactions. Comparative evaluation of these strategies is presented in the Results chapter.
+Formally, given a title embedding $\mathbf{e}_t \in \mathbb{R}^d$ and a selftext embedding $\mathbf{e}_s \in \mathbb{R}^d$, the aggregation strategies are defined as:
+
+\begin{align}
+\text{Concatenation:} \quad & \mathbf{e} = [\mathbf{e}_t; \mathbf{e}_s] \in \mathbb{R}^{2d} \\
+\text{Mean Pooling:} \quad & \mathbf{e} = \frac{1}{2}(\mathbf{e}_t + \mathbf{e}_s) \in \mathbb{R}^{d} \\
+\text{Max Pooling:} \quad & \mathbf{e} = \max(\mathbf{e}_t, \mathbf{e}_s) \in \mathbb{R}^{d} \\
+\text{Min Pooling:} \quad & \mathbf{e} = \min(\mathbf{e}_t, \mathbf{e}_s) \in \mathbb{R}^{d} \\
+\text{Hadamard Product:} \quad & \mathbf{e} = \mathbf{e}_t \odot \mathbf{e}_s \in \mathbb{R}^{d}
+\end{align}
+
+where $\max$ and $\min$ are applied element-wise, and $\odot$ denotes the Hadamard (element-wise) product.
+
+The smart mean aggregation accounts for posts without body text:
+
+\begin{equation}
+\mathbf{e}_{\text{smart}} = \begin{cases}
+\mathbf{e}_t & \text{if selftext is empty} \\
+\frac{1}{2}(\mathbf{e}_t + \mathbf{e}_s) & \text{otherwise}
+\end{cases}
+\end{equation}
+
+The multi-feature aggregation extends concatenation with an explicit similarity score:
+
+\begin{equation}
+\mathbf{e}_{\text{multi}} = [\mathbf{e}_t; \mathbf{e}_s; \mathbf{e}_t^T \mathbf{e}_s] \in \mathbb{R}^{2d+1}
+\end{equation}
+
+where $\mathbf{e}_t^T \mathbf{e}_s$ is the dot product similarity between title and selftext embeddings.
+
+Aggregation strategies that increase dimensionality, such as concatenation and multi-feature aggregation, offer greater representational capacity but also increase computational cost and the risk of overfitting. Simpler pooling-based approaches reduce dimensionality but may discard potentially informative interactions. Comparative evaluation of these strategies is presented in \autoref{tab:aggregation_comparison} in the Results chapter.
 
 
 \section{Dataset Composition Effects}
@@ -539,22 +568,27 @@ penalizes larger prediction deviations more strongly than MAE.
 RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
 \end{equation}
 
-\paragraph{Coefficient of Determination ($R^2$).}
-The coefficient of determination indicates the proportion of variance in the
-observed upvote ratios that can be explained by the model predictions.
-Higher values indicate that the model captures a larger share of the variability
-in post popularity.
+\paragraph{Coefficient of Determination ($R^2$).} 
+The coefficient of determination indicates the proportion of variance in the observed upvote ratios that can be explained by the model predictions:
 
-\paragraph{Pearson Correlation Coefficient.}
-Pearson correlation measures the linear relationship between predicted and
-observed upvote ratios. While MAE and RMSE quantify absolute prediction
-accuracy, correlation assesses whether the model correctly preserves the
-relative ordering of posts according to expected popularity.
+\begin{equation}
+R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2}
+\end{equation}
 
-Using multiple metrics provides complementary perspectives on model
-performance. Error-based metrics such as MAE and RMSE evaluate prediction
-accuracy, while $R^2$ and Pearson correlation measure how well the model
-captures variability and relative ranking patterns in post popularity.
+where $\bar{y} = \frac{1}{n}\sum_{i=1}^{n}y_i$ is the mean of the observed values.
+
+\paragraph{Pearson Correlation Coefficient.} 
+Pearson correlation measures the linear relationship between predicted and observed upvote ratios:
+
+\begin{equation}
+r = \frac{\sum_{i=1}^{n}(y_i - \bar{y})(\hat{y}_i - \bar{\hat{y}})}{\sqrt{\sum_{i=1}^{n}(y_i - \bar{y})^2}\sqrt{\sum_{i=1}^{n}(\hat{y}_i - \bar{\hat{y}})^2}}
+\end{equation}
+
+where $\bar{\hat{y}} = \frac{1}{n}\sum_{i=1}^{n}\hat{y}_i$ is the mean of the predicted values.
+
+Note that while $R^2 = r^2$ holds for ordinary least squares regression, this equality does not apply to non-linear models such as XGBoost used in this study.
+
+Using multiple metrics provides complementary perspectives on model performance. Error-based metrics such as MAE and RMSE evaluate prediction accuracy, while $R^2$ and Pearson correlation measure how well the model captures variability and relative ranking patterns in post popularity.
 
 In addition to the regression-based approach, a classification formulation of the
 task was also explored for comparison. In this setting, posts were categorized
