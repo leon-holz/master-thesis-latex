@@ -54,7 +54,7 @@ The attention weights are computed using scaled dot-product attention:
 \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right)\mathbf{V}
 \end{equation}
 
-The scaling factor $\sqrt{d_k}$ prevents the dot products from growing too large in magnitude, which would push the softmax function into regions with vanishingly small gradients~\cite{VSP+17}.
+The scaling factor $\sqrt{d_k}$ prevents the dot products from growing too large in magnitude, which would push the softmax function into regions with vanishingly small gradients~\cite{Vaswani2017}.
 
 Multi-head attention extends this mechanism by computing $h$ parallel attention operations with different learned projections, then concatenating and projecting the results:
 
@@ -156,7 +156,7 @@ where the regularization term is defined as:
 \Omega(f) = \gamma T + \frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
 \end{equation}
 
-Here, $T$ is the number of leaves in the tree, $w_j$ are the leaf weights, $\gamma$ controls tree complexity, and $\lambda$ is the L2 regularization parameter on leaf weights~\cite{CG16}.
+Here, $T$ is the number of leaves in the tree, $w_j$ are the leaf weights, $\gamma$ controls tree complexity, and $\lambda$ is the L2 regularization parameter on leaf weights~\cite{chen2016xgboost}.
 
 One of the central advantages of Gradient Boosting is its ability to model complex, non-linear relationships without requiring explicit feature engineering. By combining many shallow decision trees, the model can capture interactions between features while remaining robust to noise and heterogeneous input types. These properties make Gradient Boosting particularly suitable for regression tasks involving a mixture of numerical features and high-dimensional representations.
 
