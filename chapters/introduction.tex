@@ -1,63 +1,67 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-Reddit is a large-scale social media platform where users engage in discussions 
-across topic-specific communities known as subreddits. Within these communities, 
-posts are evaluated through explicit feedback mechanisms such as upvotes and 
-downvotes, which collectively influence content visibility and shape ongoing 
-discourse. With hundreds of millions of active users and a substantial role in 
-political discussion and news consumption, Reddit has become an important object 
-of study for understanding online engagement and information dynamics~\cite{redditinc,pewresearch}.
+Reddit is a large-scale social media platform where users engage in discussions across topic-specific communities known as subreddits. Within these communities, posts are evaluated through explicit feedback mechanisms such as upvotes and downvotes, which collectively influence content visibility and shape ongoing discourse. With hundreds of millions of active users and a substantial role in political discussion and news consumption, Reddit has become an important object of study for understanding online engagement and information dynamics~\cite{redditinc,pewresearch}.
 
-The ability to anticipate how online content will be received has significant 
-implications for marketing, recommendation systems, and the study of social media 
-engagement~\cite{deaton2017using}. At the same time, the same predictive capability 
-raises a less frequently examined question: how easily could such a system be 
-assembled by an actor with adversarial intent, using only publicly available data 
-and off-the-shelf tools?
+The ability to anticipate how online content will be received has significant implications for marketing, recommendation systems, and the study of social media engagement~\cite{deaton2017using}. At the same time, the same predictive capability raises a less frequently examined question: how easily could such a system be assembled by an actor with adversarial intent, using only publicly available data and off-the-shelf tools?
 
-This thesis addresses that question directly. A large-scale archive of Reddit 
-posts is publicly accessible and trivially scrapable. \cite{baumgartner2020pushshift, redarcs} General-purpose language models capable of generating plausible discussion content are freely available. \cite{muennighoff2022mteb}
-Gradient boosting models\cite{chen2016xgboost}s of the kind used in this work require no specialized infrastructure. Taken together, these conditions suggest that assembling these components into a functional pipeline for automated, model-guided content deployment on social media is feasible without specialized infrastructure or privileged access - and that demonstrating this concretely is a contribution in itself.
+This thesis addresses that question directly. A large-scale archive of Reddit posts is publicly accessible and trivially scrapable~\cite{baumgartner2020pushshift, redarcs}. General-purpose language models capable of generating plausible discussion content are freely available~\cite{muennighoff2022mteb}. Gradient boosting models~\cite{chen2016xgboost} of the kind used in this work require no specialized infrastructure. Taken together, these conditions suggest that assembling these components into a functional pipeline for automated, model-guided content deployment on social media is feasible without specialized infrastructure or privileged access---and that demonstrating this concretely is a contribution in itself.
 
-Popularity on social media platforms is not a monolithic concept. Absolute engagement measures such as raw score are shaped by exposure effects, platform-specific ranking mechanisms, and timing\cite{hessel2019something, stoddard2015popularity}, which makes them difficult to compare across communities. This thesis therefore focuses on predicting how positively a post will be received by its community rather than how much attention it will attract. Popularity is operationalized as a normalized upvote ratio, framed as a continuous regression problem using only information available at post creation time. Compared with raw score or comment volume, this target more directly captures community approval and is less dependent on differences in exposure across subreddits.
+Popularity on social media platforms is not a monolithic concept. Absolute engagement measures such as raw score are shaped by exposure effects, platform-specific ranking mechanisms, and timing~\cite{hessel2019something, stoddard2015popularity}, which makes them difficult to compare across communities. This thesis therefore focuses on predicting how positively a post will be received by its community rather than how much attention it will attract. Popularity is operationalized as a normalized upvote ratio, framed as a continuous regression problem using only information available at post creation time. Compared with raw score or comment volume, this target more directly captures community approval and is less dependent on differences in exposure across subreddits.
 
-Building on this formulation, the thesis investigates whether Transformer-based 
-text embeddings combined with static metadata can predict post reception across 
-diverse subreddits. In addition to offline evaluation on historical data, the 
-work extends to a live deployment setting: posts generated by a large language 
-model are scored by the trained popularity predictor and selectively published 
-on Reddit. This live experiment serves a dual purpose. It provides an external 
-validity check on the predictive model, and it demonstrates that the full 
-pipeline - data collection, model training, content generation, automated 
-posting - is operationally viable without specialized resources.
+Building on this formulation, the thesis investigates whether Transformer-based text embeddings combined with static metadata can predict post reception across diverse subreddits. In addition to offline evaluation on historical data, the work extends to a live deployment setting: posts generated by a large language model are scored by the trained popularity predictor and selectively published on Reddit. This live experiment serves a dual purpose. It provides an external validity check on the predictive model, and it demonstrates that the full pipeline---data collection, model training, content generation, automated posting---is operationally viable without specialized resources.
 
-The experiment was designed to limit real-world impact. Candidate posts were 
-sampled from a fixed pool without targeting trending topics or exploiting 
-current events, no adaptive feedback loop between prediction and observed 
-outcomes was employed, and generated content reflects community-typical 
-discussion prompts rather than coordinated messaging. These constraints are 
-methodological choices, not inherent properties of the approach; a less 
-restrained instantiation of the same pipeline would likely face relatively few additional technical barriers.
+The experiment was designed to limit real-world impact. Candidate posts were sampled from a fixed pool without targeting trending topics or exploiting current events, no adaptive feedback loop between prediction and observed outcomes was employed, and generated content reflects community-typical discussion prompts rather than coordinated messaging. These constraints are methodological choices, not inherent properties of the approach; a less restrained instantiation of the same pipeline would likely face relatively few additional technical barriers.
 
 The contributions of this thesis are threefold:
 \begin{itemize}
-    \item the development of a popularity regression model that predicts relative 
-    community reception using only information available at post creation time,
-    \item a systematic evaluation of Transformer-based text embeddings and 
-    auxiliary features for popularity prediction across politically diverse 
-    subreddits, and
-    \item a proof-of-concept demonstration that publicly available data and 
-    widely accessible tools are sufficient to construct and deploy an automated, 
-    model-guided content pipeline on a major social media platform.
+    \item the development of a popularity regression model that predicts relative community reception using only information available at post creation time,
+    \item a systematic evaluation of Transformer-based text embeddings and auxiliary features for popularity prediction across politically diverse subreddits, and
+    \item a proof-of-concept demonstration that publicly available data and widely accessible tools are sufficient to construct and deploy an automated, model-guided content pipeline on a major social media platform.
 \end{itemize}
 
-% todo: add refs and maybe adjust writing to fit chapters
+\section{Ethical Motivation and Risk Assessment}
 
-The remainder of this thesis is structured as follows. 
-\autoref{chap:basics} introduces the conceptual and technical foundations 
-required for understanding Reddit engagement dynamics and the employed modeling 
-techniques. \autoref{chap:related_work} reviews related work on popularity prediction and online 
-engagement. \autoref{chap:methodology} describes the dataset, feature extraction, and modeling 
-methodology. \autoref{chap:results} presents experimental results, followed by a discussion 
-of limitations and implications in \autoref{chap:discussion}. \autoref{chap:conclusion} and \autoref{chap:future_work} conclude the thesis and discuss possible directions for future work.
+While the technical contributions of this thesis are framed as predictive modeling and system evaluation, the broader motivation is a warning. The demonstrated pipeline---combining publicly scraped Reddit data, off-the-shelf language models, and standard regression techniques---represents a reproducible blueprint for automated, model-guided influence operations on social media platforms.
+
+The influence operations literature documents extensive real-world deployments of coordinated inauthentic behavior~\cite{woolley2018computational, linvill2020troll}. 
+Section~\ref{sec:influence_ops} provides a detailed review of these campaigns and their implications for the present work.
+What these documented cases often have in common is reliance on manual coordination, specialized infrastructure, or proprietary tools. The present work demonstrates that a functionally similar capability can be constructed using only publicly available data and standard open-source components.
+
+Several threat scenarios warrant consideration:
+
+\textbf{Automated content optimization at scale.} The pipeline enables systematic 
+A/B testing of generated content against predicted community reception, allowing 
+rapid iteration toward posts likely to be well-received. Unlike manual content 
+creation, this approach scales trivially across thousands of candidate posts 
+and dozens of target communities.
+
+\textbf{Community-specific behavioral mimicry.} Rather than deploying generic 
+bot content, the regression model learns subreddit-specific norms directly from 
+historical data. This produces posts aligned with local discourse patterns, 
+making content-based detection substantially more difficult than identifying 
+crude spam or off-topic material.
+
+\textbf{Low barrier to deployment.} The resource requirements are modest. No 
+privileged platform access is required. The computational demands are well within 
+the reach of cloud computing services or academic facilities. An adversary need 
+not develop novel techniques---only combine existing public tools in the manner 
+demonstrated here.
+
+The deliberate design constraints applied in this study---fixed candidate pools, 
+no adaptive feedback loops, no exploitation of trending topics---were chosen 
+specifically to limit real-world impact. However, these constraints are 
+methodological choices rather than technical barriers. An adversary operating 
+without such self-imposed limitations would face few additional obstacles to 
+deploying a more aggressive variant of the same pipeline.
+
+This work therefore serves a dual purpose: it evaluates the predictive limits 
+of publicly observable engagement data, and it documents the accessibility of 
+the infrastructure required to operationalize such predictions. The low barrier 
+to entry is itself a finding, and one that warrants attention from platform 
+operators, policymakers, and researchers concerned with online information 
+integrity.
+
+\section{Thesis Structure}
+
+The remainder of this thesis is structured as follows. \autoref{chap:basics} introduces the conceptual and technical foundations required for understanding Reddit engagement dynamics and the employed modeling techniques. \autoref{chap:relatedwork} reviews related work on popularity prediction and online engagement. \autoref{chap:methodology} describes the dataset, feature extraction, and modeling methodology. \autoref{chap:results} presents experimental results, followed by a discussion of limitations and implications in \autoref{chap:discussion}. \autoref{chap:conclusion} and \autoref{chap:future_work} conclude the thesis and discuss possible directions for future work.

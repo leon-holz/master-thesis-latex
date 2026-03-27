@@ -21,6 +21,56 @@ Temporal instability presents an additional limitation. Reddit communities evolv
 
 The live posting setup likely also underestimates what a more sophisticated malicious actor could achieve, while at the same time overestimating how transferable the present results are to broader misuse scenarios. On the one hand, the experiment used a relatively constrained setup and did not fully exploit tactics such as aged accounts, community-specific personas, richer comment interaction, or coordinated multi-account behavior. On the other hand, even if such tactics improved practical effectiveness, the present findings cannot simply be generalized to all subreddits or future platform conditions. The real risk therefore lies not in the exact performance achieved in this thesis, but in the demonstration that meaningful predictive signal can be extracted from publicly available data and integrated into an automated selection pipeline with comparatively modest resources.
 
-This leads to an important ethical implication. A system of this kind could be misused not only to amplify misinformation, but more broadly to optimize manipulative participation in online communities. Potential abuse includes automated testing of content likely to receive favorable feedback, adaptation to community-specific norms in order to evade suspicion, and scaling of low-authenticity participation across multiple forums. Even if the present pipeline has clear limitations, the fact that it can predict aspects of community reception at all raises platform integrity concerns. In this sense, the main lesson of this thesis is not that Reddit popularity can be predicted perfectly, but that enough of the signal is accessible to make automated influence-oriented experimentation plausible.
+\section{Platform Integrity Implications}
+
+The findings of this thesis have direct implications for online platform integrity and content moderation. While the experimental deployment was deliberately constrained to minimize real-world impact, the demonstrated feasibility of the pipeline raises several concerns that warrant explicit discussion.
+
+\subsection{Threat Model}
+
+A malicious actor deploying a variant of this system could achieve several objectives that current platform defenses struggle to address:
+
+\textbf{Evading content-based detection.} Traditional spam and bot detection systems rely on identifying low-quality, repetitive, or off-topic content. A model trained to predict community approval generates content that is, by construction, aligned with community norms and expectations. Such content is difficult to flag as inauthentic based on textual features alone.
+
+\textbf{Scaling community-specific personas.} Rather than deploying generic bot content across multiple communities, an attacker could train separate models for each target subreddit, generating posts optimized for the specific linguistic patterns, ideological framings, and discussion norms of each community. This enables persona-based operations at scale without the manual overhead traditionally required for tailored content.
+
+\textbf{Iterative optimization through A/B testing.} While the present study did not implement adaptive feedback loops, nothing prevents a malicious operator from doing so. Observed engagement outcomes could be used to retrain models or refine generation prompts, creating a closed-loop system that continuously improves its ability to produce well-received content.
+
+\textbf{Coordinated narrative amplification.} Multiple accounts running the same pipeline could post complementary content across related subreddits, creating the appearance of organic, distributed discussion on a chosen topic. By selecting content predicted to receive positive reception, such operations could avoid the downvote-based suppression that typically limits low-quality spam.
+
+\subsection{Detection Challenges}
+
+Current platform integrity systems face several challenges in detecting model-guided influence operations:
+
+\textbf{Behavioral mimicry.} The model learns from authentic user behavior, making generated content statistically similar to genuine posts. Standard anomaly detection methods, which flag deviations from typical user behavior, are less effective against content explicitly optimized to match community norms.
+
+\textbf{Delayed detection.} Many documented influence campaigns were identified only after they had achieved their objectives. Real-time detection of community-optimized content is particularly difficult when the content itself is on-topic, grammatically correct, and well-received by the community.
+
+\textbf{Adversarial adaptation.} As platforms develop more sophisticated detection methods, operators can adapt their generation and selection strategies. The regression-based approach used in this thesis is interpretable and modifiable, allowing rapid iteration in response to changing platform conditions.
+
+\subsection{Mitigation Strategies}
+
+Several potential countermeasures exist, though each comes with trade-offs:
+
+\textbf{Stronger authentication requirements.} Platforms could require verified accounts, phone numbers, or identity documents to reduce the ease of creating large numbers of inauthentic personas. However, such measures raise privacy concerns and may exclude legitimate users who prefer anonymity.
+
+\textbf{Posting rate limits and aging requirements.} Restricting new accounts from posting, or limiting posting frequency, can slow the deployment of automated systems. However, sophisticated operators can pre-age accounts and distribute posting across many personas to evade such limits.
+
+\textbf{Behavioral graph analysis.} Detecting coordinated behavior through account interaction graphs, shared posting patterns, or temporal clustering may be more effective than content-based analysis alone. However, this requires platform-internal data not available to researchers or external auditors.
+
+\textbf{Community-driven moderation.} Subreddit moderators and engaged community members often notice patterns that automated systems miss. Empowering moderators with better tools and signals may improve detection, though this approach does not scale uniformly across all communities.
+
+\subsection{Responsible Disclosure Considerations}
+
+This thesis presents a methodological demonstration rather than a deployed attack system. The decision to publish these methods rests on several considerations:
+
+First, the techniques used are not novel individually. Scraped Reddit data, transformer embeddings, gradient boosting, and generative language models are all established technologies. The contribution is demonstrating that they can be straightforwardly combined into a functional pipeline, a fact that is likely already known to adversarial actors.
+
+Second, transparency about platform vulnerabilities is essential for informed policy and technical responses. Documenting the feasibility of such systems enables platform operators, researchers, and policymakers to assess risks and develop appropriate countermeasures.
+
+Third, the experimental deployment was designed to minimize harm. The posting volume was low, the content was constrained to avoid trending topics or coordinated messaging, and no adaptive optimization was performed. The objective was validation of feasibility, not demonstration of maximum impact.
+
+Nevertheless, the techniques documented here could be misused. This tension---between transparency and security through obscurity---is inherent in computational social science research on platform manipulation. The position taken in this thesis is that the benefits of open research and public awareness outweigh the risks of marginal increases in adversarial capability.
+
+\section{Summary}
 
 Taken together, these findings indicate that semantic and structured features capture a meaningful part of Reddit post reception, but they do not represent the full social process underlying popularity. The observed predictive performance should therefore be understood as evidence of partial predictability under the specific conditions of this study, rather than as proof that post success can be universally optimized. At the same time, the limitations identified in this chapter point to several promising directions for future work, including the incorporation of comment context, richer behavioral histories, more diverse subreddit samples, and temporally adaptive modeling strategies.
