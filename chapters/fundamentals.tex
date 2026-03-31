@@ -11,7 +11,7 @@ User interaction on Reddit is primarily expressed through upvotes and downvotes.
 
 % todo: explain karma  (might use reddiquette website as citation)
 
-The exact mechanics of voting and ranking on Reddit are intentionally opaque. Reddit has historically employed \emph{vote fuzzing}, i.e., the deliberate display of inexact vote totals to hinder spam and vote manipulation \cite{stoddard2015popularity,redditReddiquette,redditJedbergVoteFuzzing}. Reddit’s Reddiquette still warns that votes are not a reliable basis for polls because of vote fuzzing. An administrator comment linked there further states that the displayed counts are fuzzed for anti-spam reasons and that the discrepancy becomes larger for more active posts \cite{redditReddiquette,redditJedbergVoteFuzzing}. This complicates the interpretation of vote-based engagement signals and motivates caution when treating them as exact quantities. We did not find evidence in the cited sources that the \textit{upvote ratio} is subject to the same fuzzing mechanism.
+The exact mechanics of voting and ranking on Reddit are intentionally opaque. Reddit has historically employed \emph{vote fuzzing}, i.e., the deliberate display of inexact vote totals to hinder spam and vote manipulation \cite{stoddard2015popularity,redditReddiquette,redditJedbergVoteFuzzing}. Reddit’s \textit{Reddiquette}\cite{reddit_reddiquette} still warns that votes are not a reliable basis for polls because of vote fuzzing. An administrator comment linked there further states that the displayed counts are fuzzed for anti-spam reasons and that the discrepancy becomes larger for more active posts \cite{redditReddiquette,redditJedbergVoteFuzzing}. This complicates the interpretation of vote-based engagement signals and motivates caution when treating them as exact quantities. We did not find evidence in the cited sources that the \textit{upvote ratio} is subject to the same fuzzing mechanism.
 
 Importantly, content visibility on Reddit is determined at the subreddit level rather than globally. Ranking algorithms operate within individual communities, meaning that engagement outcomes are inherently context-dependent. A post that is successful in one subreddit may perform poorly in another due to differences in audience size, topical focus, and community norms.\cite{chandrasekharan2018internet, zhang2017community, hamilton2017loyalty} This community-specific nature of engagement is a central consideration throughout this thesis.
 
@@ -66,13 +66,13 @@ For downstream tasks, Transformer models are often used as encoders that map var
 
 \paragraph{Large Language Models and Text Embeddings}
 
-Large Language Models (LLMs) are Transformer-based models trained on large-scale text corpora using self-supervised learning objectives. While many LLMs are optimized for text generation, a growing class of models is specifically designed to produce high-quality embeddings for downstream tasks. Sentence-BERT \cite{Reimers2019}, for example, demonstrated that embedding-specialized architectures can outperform generic language models on semantic similarity and clustering tasks.
+Large Language Models (LLMs) are Transformer-based models trained on large-scale text corpora using self-supervised learning objectives. While many LLMs are optimized for text generation, a growing class of models is specifically designed to produce high-quality embeddings for downstream tasks. Sentence-BERT~\cite{Reimers2019}, for example, demonstrated that embedding-specialized architectures can outperform generic language models on semantic similarity and clustering tasks.
 
 Recent benchmarks such as the Massive Text Embedding Benchmark (MTEB)\cite{muennighoff2022mteb} provide systematic evaluations of embedding models across a wide range of tasks, including clustering, retrieval, and classification \cite{muennighoff2022mteb}. Results from MTEB indicate that embedding-specialized models often outperform generative LLMs when used purely as feature extractors, while also being more computationally efficient.
 
 A key practical consideration in large-scale embedding-based analyses is dimensionality. Higher-dimensional embeddings can capture more nuanced semantic information, but incur increased storage and computational costs. When encoding millions of documents, these trade-offs become critical. Consequently, embedding models that offer strong performance at moderate dimensionality are preferable for large-scale studies.
 
-In this thesis, Transformer-based embedding models are used exclusively as frozen encoders. No fine-tuning is performed on Reddit data, as the objective is to evaluate how well general-purpose semantic representations transfer to the task of popularity prediction. Among the evaluated models, \texttt{stella\_en\_400M\_v5} \cite{stella_en_400M_v5} was selected as a primary candidate due to its competitive performance on semantic benchmarks and its configurable embedding dimensionality, which allows balancing representational capacity and resource constraints.
+In this thesis, Transformer-based embedding models are used exclusively as frozen encoders. No fine-tuning is performed on Reddit data, as the objective is to evaluate how well general-purpose semantic representations transfer to the task of popularity prediction. Among the evaluated models, \textit{stella\_en\_400M\_v5} \cite{stella_en_400M_v5} was selected as a primary candidate due to its competitive performance on semantic benchmarks and its configurable embedding dimensionality, which allows balancing representational capacity and resource constraints.
 
 While embeddings capture semantic properties of text, they do not encode platform-specific dynamics such as ranking algorithms, voting behavior, or temporal effects. As a result, embeddings alone are insufficient to explain engagement outcomes, motivating their combination with additional features and predictive models in subsequent chapters.
 
@@ -122,9 +122,13 @@ XGBoost (Extreme Gradient Boosting)\cite{chen2016xgboost} is a widely used and h
 
 In the context of this thesis, popularity prediction is formulated as a regression problem with a continuous target variable representing relative community reception. Gradient Boosting models are well suited for this setting, as they can naturally accommodate non-linear relationships between textual embeddings, temporal features, and auxiliary metadata. Unlike linear regression models, Gradient Boosting does not assume additive or independent effects between features, which is particularly important given the complex and context-dependent nature of social media engagement.
 
-Another practical advantage of XGBoost is its flexibility with respect to feature scaling and distributional assumptions. Decision tree–based models are invariant to monotonic transformations of input features and do not require normalization to achieve stable training. This property is beneficial when combining dense text embeddings with heterogeneous metadata features.
+Another practical advantage of XGBoost is its flexibility with respect to feature scaling and distributional assumptions. 
+Decision tree–based models are invariant to monotonic transformations of input features and do not require normalization to achieve stable training. 
+This property is beneficial when combining dense text embeddings with heterogeneous metadata features.
 
-Finally, the use of Gradient Boosting as a downstream regressor allows for a clear separation between representation learning and prediction. Transformer-based models are employed solely to generate fixed text representations, while XGBoost operates on these representations to estimate popularity. This modular design simplifies analysis, enables controlled ablation studies, and facilitates comparison between different embedding models without altering the predictive framework.
+Finally, the use of Gradient Boosting as a downstream regressor allows for a clear separation between representation learning and prediction. 
+Transformer-based models are employed solely to generate fixed text representations, while XGBoost operates on these representations to estimate popularity. 
+This modular design simplifies analysis, enables controlled ablation studies, and facilitates comparison between different embedding models without altering the predictive framework.
 
 \section{Evaluation Metrics for Regression Tasks}
 \label{sec:evaluation_metrics}
@@ -181,9 +185,10 @@ When comparing the performance of different model configurations, it is essentia
 \subsection{Wilcoxon Signed-Rank Test}
 \label{subsec:wilcoxon}
 
-The Wilcoxon signed-rank test is a non-parametric statistical test used to assess whether the median of paired differences differs significantly from zero~\cite{wilcoxon1945individual}. Unlike parametric tests such as the paired t-test, the Wilcoxon signed-rank test does not assume that the data follow a normal distribution, making it appropriate for small sample sizes or data with unknown distributional properties.
-
-The test is commonly applied in paired experimental designs, where each observation unit is measured under two conditions. In the context of model evaluation, this corresponds to comparing two configurations on the same set of validation instances, producing paired metric values.
+The Wilcoxon signed-rank test is a non-parametric statistical test used to assess whether the median of paired differences differs significantly from zero~\cite{wilcoxon1945individual}. 
+Unlike parametric tests such as the paired t-test, the Wilcoxon signed-rank test does not assume that the data follow a normal distribution, making it appropriate for small sample sizes or data with unknown distributional properties.
+The test is commonly applied in paired experimental designs, where each observation unit is measured under two conditions. 
+In the context of model evaluation, this corresponds to comparing two configurations on the same set of validation instances, producing paired metric values.
 
 Given $n$ paired observations $(x_1, y_1), \ldots, (x_n, y_n)$, the test procedure is as follows:
 
@@ -196,17 +201,19 @@ Given $n$ paired observations $(x_1, y_1), \ldots, (x_n, y_n)$, the test procedu
 \end{enumerate}
 
 Under the null hypothesis that the median difference is zero, the distribution of the test statistic is known and can be used to compute a $p$-value. A small $p$-value provides evidence against the null hypothesis, suggesting that the observed difference is unlikely to have occurred by chance.
-
 The Wilcoxon signed-rank test is particularly well-suited for experiments with a modest number of paired observations, where normality assumptions may not hold but where the paired design allows for effective control of baseline variability.
 
 \subsection{Multiple Comparison Correction}
 \label{subsec:multiple_testing}
 
-When conducting multiple hypothesis tests within a single study, the probability of observing at least one false positive increases with the number of tests performed. This phenomenon, known as the \emph{multiple testing problem}, can lead to spurious findings if individual $p$-values are interpreted without adjustment.
+When conducting multiple hypothesis tests within a single study, the probability of observing at least one false positive increases with the number of tests performed. 
+This phenomenon, known as the \emph{multiple testing problem}, can lead to spurious findings if individual $p$-values are interpreted without adjustment.
+Several procedures exist to control error rates in multiple testing scenarios. 
+One widely used approach is the Benjamini-Hochberg (BH) procedure~\cite{benjamini1995controlling}, which controls the \emph{false discovery rate} (FDR) rather than the more conservative family-wise error rate (FWER).
 
-Several procedures exist to control error rates in multiple testing scenarios. One widely used approach is the Benjamini-Hochberg (BH) procedure~\cite{benjamini1995controlling}, which controls the \emph{false discovery rate} (FDR) rather than the more conservative family-wise error rate (FWER).
-
-The false discovery rate is defined as the expected proportion of false positives among all rejected null hypotheses. Controlling FDR at level $\alpha$ means that, on average, no more than $\alpha \times 100\%$ of the discoveries are expected to be false positives. This approach is less conservative than FWER-controlling methods such as the Bonferroni correction, making it more appropriate when some false positives are acceptable in exchange for greater statistical power.
+The false discovery rate is defined as the expected proportion of false positives among all rejected null hypotheses. 
+Controlling FDR at level $\alpha$ means that, on average, no more than $\alpha \times 100\%$ of the discoveries are expected to be false positives. 
+This approach is less conservative than FWER-controlling methods such as the Bonferroni correction, making it more appropriate when some false positives are acceptable in exchange for greater statistical power.
 
 The Benjamini-Hochberg procedure operates as follows. Given $m$ hypothesis tests with $p$-values $p_1, \ldots, p_m$:
 
