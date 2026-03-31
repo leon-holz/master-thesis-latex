@@ -126,40 +126,16 @@ The final dataset was constructed by merging the Pushshift archive data with met
 
 \begin{figure}[htbp]
 \centering
-\begin{lstlisting}[
-    basicstyle=\ttfamily\small,
-    frame=single,
-    numbers=none,
-    xleftmargin=2em,
-    framexleftmargin=1.5em
-]
-+----------------------------------------+
-|  Pushshift Archive Retrieval           |
-|  2008-2022, 19 subreddits              |
-|  3,741,628 posts                       |
-+--------------------+-------------------+
-                     |
-                     v
-+----------------------------------------+
-|  Reddit API Enrichment                 |
-|  Upvote ratio, author metadata         |
-|  2,867,176 posts (-23.4%)              |
-+--------------------+-------------------+
-                     |
-                     v
-+----------------------------------------+
-|  Minimum Engagement Filter             |
-|  score >= 3 OR comments >= 3           |
-|  1,853,933 posts (-35.3%)              |
-+--------------------+-------------------+
-                     |
-                     v
-+----------------------------------------+
-|  Final Dataset (80/20 split)           |
-|  Train: 1,484,099  Val: 369,834        |
-+----------------------------------------+
-\end{lstlisting}
-\caption{Data collection and filtering pipeline. The dataset was constructed through three stages: initial retrieval from the Pushshift archive, metadata enrichment via the Reddit API, and engagement-based filtering. Percentages indicate the proportion of posts removed at each stage relative to the previous step. Detailed per-subreddit statistics are provided in Appendix~\ref{app:filtering_stats}.}
+\includegraphics[width=\textwidth]{figs/pipelines/DatasetFilteringPipeline.pdf}
+\caption{Data collection and filtering pipeline. The dataset was constructed through 
+three stages: initial retrieval of 3.7 million posts from the Pushshift archive 
+(2008--2022, 19 subreddits), metadata enrichment via the Reddit API (retaining 2.9M 
+posts, $-23.4\%$ after failed lookups), and engagement-based filtering requiring 
+minimum interaction (score $\geq$ 3 OR comments $\geq$ 3, yielding 1.9M posts, 
+$-35.3\%$). The final dataset was split 80/20 into training (1.5M) and validation 
+(0.4M) sets. Percentages indicate the proportion of posts removed at each filtering 
+stage. Detailed per-subreddit statistics are provided in 
+Appendix~\ref{app:filtering_stats}.}
 \label{fig:data_pipeline}
 \end{figure}
 
@@ -446,79 +422,16 @@ Figure~\ref{fig:feature_pipeline} provides an overview of the complete feature e
 
 \begin{figure}[htbp]
 \centering
-\begin{lstlisting}[
-    basicstyle=\ttfamily\footnotesize,
-    frame=single,
-    numbers=none,
-    xleftmargin=1em,
-    framexleftmargin=0.5em
-]
-+----------------------+
-|   Raw Reddit Post    |
-|  - title (text)      |
-|  - selftext (text)   |
-|  - metadata          |
-+----------+-----------+
-           |
-           +----------------------------------+
-           |                                  |
-           v                                  v
-+---------------------+           +---------------------+
-| Transformer Encoder |           |  Metadata Features  |
-| (1024-d embeddings) |           |  - domain features  |
-|                     |           |  - temporal (cyclic)|
-+----------+----------+           |  - author features  |
-           |                      |  - TF-IDF features  |
-           v                      |  - sentiment scores |
-  +--------+--------+             +----------+----------+
-  |                 |                        |
-  v                 v                        |
-+----------+   +----------+                  |
-| title_   |   | selftext_|                  |
-| emb      |   | emb      |                  |
-| (d-dim)  |   | (d-dim)  |                  |
-+----+-----+   +-----+----+                  |
-     |               |                       |
-     +-------+-------+                       |
-             |                               |
-             v                               |
-  +----------+-----------+                   |
-  | Aggregation Strategy |                   |
-  |  - concatenation     |                   |
-  |    (2d-dim)          |                   |
-  |  - mean/max/min      |                   |
-  |    (d-dim)           |                   |
-  |  - hadamard (d-dim)  |                   |
-  |  - smart mean        |                   |
-  |    (d-dim)           |                   |
-  |  - multi-feature     |                   |
-  |    (2d+1-dim)        |                   |
-  +----------+-----------+                   |
-             |                               |
-             v                               |
-  +----------+-----------+                   |
-  |  Aggregated Text     |                   |
-  |  Embedding           |                   |
-  |  (varies by strategy)|                   |
-  +----------+-----------+                   |
-             |                               |
-             +---------------+---------------+
-                             |
-                             v
-                  +----------+-----------+
-                  |  Final Feature Vec  |
-                  |  - text embeddings  |
-                  |  - metadata (opt.)  |
-                  |  (varies by config) |
-                  +----------+-----------+
-                             |
-                             v
-                  +----------+-----------+
-                  |   XGBoost Regressor |
-                  |   (upvote ratio)    |
-                  +---------------------+
-\end{lstlisting}
-\caption{Feature engineering pipeline. Raw posts are processed through two parallel paths: text content is encoded using a transformer model and aggregated using one of several strategies (concatenation, pooling variants, smart mean, or multi-feature with similarity score), while structured metadata features (domain, temporal, author, TF-IDF, sentiment) are optionally extracted from post attributes. The resulting feature vector combines text embeddings with zero, some, or all metadata features depending on the experimental configuration, serving as input to the XGBoost regression model for upvote ratio prediction.}
+\includegraphics[width=\textwidth]{figs/pipelines/PostDataToRegressorPipeline.pdf}
+\caption{Feature engineering pipeline. Raw posts are processed through two parallel 
+paths: text content (title and selftext) is encoded using a transformer model 
+(Stella 400M, d=1024) and aggregated using one of several tested strategies 
+(concatenation, mean/max/min pooling, Hadamard product, smart mean, or multi-feature 
+with cosine similarity), while structured metadata features (domain, temporal cyclic, 
+author statistics, TF-IDF, and sentiment scores) are optionally extracted from post 
+attributes. The resulting feature vector combines text embeddings with zero, some, 
+or all metadata features depending on the experimental configuration, serving as 
+input to the XGBoost regression model for upvote ratio prediction.}
 \label{fig:feature_pipeline}
 \end{figure}
 
@@ -658,69 +571,20 @@ Figure~\ref{fig:live_experiment_pipeline} illustrates the complete live experime
 
 \begin{figure}[htbp]
 \centering
-\begin{lstlisting}[
-    basicstyle=\ttfamily\footnotesize,
-    frame=single,
-    numbers=none,
-    xleftmargin=1em,
-    framexleftmargin=0.5em
-]
-+---------------------------+
-| Candidate Post Generation |
-| ChatGPT (200 posts per    |
-| subreddit, fixed pool)    |
-+-------------+-------------+
-              |
-              v
-+---------------------------+
-| Feature Extraction        |
-| - Text embeddings (Stella)|
-| - Temporal features       |
-| - No author/domain        |
-|   (experimental account)  |
-+-------------+-------------+
-              |
-              v
-+---------------------------+
-| XGBoost Prediction        |
-| Predict upvote ratio for  |
-| all 200 candidates        |
-+-------------+-------------+
-              |
-              v
-+---------------------------+
-| Ranking & Storage         |
-| Sort by predicted score   |
-| Store predictions once    |
-| (no feedback loop)        |
-+-------------+-------------+
-              |
-              v
-+---------------------------+
-| Daily A/B Selection       |
-| Coin flip (p=0.5):        |
-|   Heads: Random from all  |
-|   Tails: Random from top  |
-|          10% predicted    |
-+-------------+-------------+
-              |
-              v
-+---------------------------+
-| Reddit Posting            |
-| - Randomized post times   |
-| - 5-min spacing           |
-| - Single experimental     |
-|   account                 |
-+-------------+-------------+
-              |
-              v
-+---------------------------+
-| Performance Measurement   |
-| Collect upvote ratios     |
-| 1 week post-experiment    |
-+---------------------------+
-\end{lstlisting}
-\caption{Live experiment pipeline. Candidate posts are generated once using ChatGPT and processed through the feature extraction and prediction pipeline to produce ranked lists stored without further updates. Each day, a coin flip determines whether to select randomly from all candidates or from the top 10\% by predicted score. This one-shot design with pre-computed rankings ensures no adaptive feedback loop operates during posting. Performance is measured one week after the final post to allow sufficient engagement time.}
+\includegraphics[width=\textwidth]{figs/pipelines/LiveExperimentPipeline.pdf}
+\caption{Live experiment pipeline. Candidate posts are generated once per subreddit 
+using ChatGPT guided by subreddit-specific rules and generation prompts (200 posts per 
+subreddit, fixed pool). Each candidate is processed through the feature extraction 
+pipeline (text embeddings via Stella 400M and temporal metadata features, excluding 
+author and domain features as all posts originate from the experimental account) and 
+evaluated by the XGBoost regression model. Predictions are computed once and stored as 
+ranked lists without further updates. Each day, a coin flip ($p = 0.5$) determines the 
+selection strategy per subreddit: heads selects randomly from the top 10\% by predicted 
+score, tails selects randomly from all candidates. This one-shot design with 
+pre-computed rankings ensures no adaptive feedback loop operates during posting. Posts 
+are submitted to Reddit with randomized timing (5-minute minimum spacing), and 
+performance is measured one week after the final posting to allow sufficient engagement 
+time.}
 \label{fig:live_experiment_pipeline}
 \end{figure}
 
