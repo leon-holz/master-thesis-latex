@@ -23,6 +23,8 @@ Taken together, the experiments aim to determine how accurately publicly availab
 
 \section{Embedding Model Comparison}
 
+The choice of text embedding model influences both the semantic quality of post representations and the computational efficiency of the pipeline. This section evaluates several transformer-based encoder models to determine which provides the best balance between predictive performance and resource constraints. The evaluation criteria, experimental setup, and results are presented below.
+
 \subsection{Embedding Model Selection Criteria}
 
 Embedding models were selected based on a combination of computational feasibility and representational performance. Since embeddings are stored for more than 1.5 million posts, embedding dimensionality directly impacts storage requirements and training efficiency of downstream regression models.
@@ -110,6 +112,8 @@ The superior performance of the content-oriented prompts may indicate that gener
 Given the negligible performance differences observed across configurations, the Stella model without prompt augmentation continues to serve as the baseline embedding setup for all subsequent aggregation and feature engineering experiments.
 
 \section{Aggregation Strategy Evaluation}
+
+Given that Reddit posts contain multiple text fields (title and selftext), the method for combining their embeddings may affect downstream prediction performance. This section compares different aggregation strategies to determine the most effective approach for representing complete posts. The evaluation setup, configurations tested, and results are detailed below.
 
 \subsection{Evaluation Setup}
 
@@ -218,6 +222,8 @@ A Wilcoxon signed-rank test on the per-subreddit Pearson correlation differences
 These results suggest that including link posts during training provides a marginal but statistically detectable benefit to self-post prediction quality, likely by exposing the model to a broader range of writing styles and community engagement patterns. However, the effect size is small, and the improvement in MAE does not reach significance, indicating that the combined dataset's primary advantage lies in better ranking rather than lower absolute prediction error.
 
 \section{Feature Contribution Analysis}
+
+Beyond text embeddings, various structured metadata features may provide additional predictive signal. This section evaluates the contribution of temporal, domain, author, TF-IDF, and sentiment features to popularity prediction. Each feature group is assessed independently to isolate its effect on model performance.
 
 \subsection{Temporal Feature Contribution}
 
@@ -646,6 +652,8 @@ Each subreddit's model was trained independently using an 80/20 train/validation
 This configuration represents the culmination of the experimental findings, balancing predictive performance with practical constraints on feature availability during the live posting phase.
 
 \section{Live Experiment Evaluation}
+
+The live experiment evaluates whether the trained regression model can successfully guide automated content selection in real-world posting scenarios. This section presents the distribution of predictions for generated posts, baseline subreddit engagement statistics, experimental constraints encountered during deployment, and the comparative performance of model-guided versus randomly selected posts.
 
 \subsection{Generated Post Prediction Distribution}
 
