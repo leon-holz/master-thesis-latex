@@ -1,0 +1,73 @@
+\chapter{Complete Feature Inventory}
+\label{app:feature_inventory}
+
+This appendix provides a comprehensive catalog of all features available to the upvote ratio prediction model. The actual feature set used in any given experiment depends on the configuration: embedding-only models use exclusively the text embeddings (1024 or 2048 dimensions depending on aggregation strategy), while full-feature models incorporate metadata features from multiple groups.
+
+Table~\ref{tab:feature_inventory} enumerates all features with their types and dimensionalities. The dimensionality column indicates the number of features produced after encoding. The total metadata feature count when all features are enabled is 29 dimensions (assuming default configurations). When combined with text embeddings, this yields feature vectors ranging from 1024 (embedding-only, pooled) to 2077 (concatenated embeddings with full metadata) dimensions.
+
+\begin{longtable}[c]{llcp{6cm}}
+\caption{Complete feature inventory for upvote ratio prediction. Dimensionality reflects the number of features produced after encoding. Actual feature sets used vary by experimental configuration.} 
+\label{tab:feature_inventory} \\
+\toprule
+Feature Group & Type & Dim. & Description \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{c}{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+\toprule
+Feature Group & Type & Dim. & Description \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{4}{r}{\textit{Continued on next page}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+\multicolumn{4}{l}{\textit{\textbf{Text Embeddings}}} \\
+\quad Title embedding & Continuous & 1024 & Stella 400M encoding of title \\
+\quad Selftext embedding & Continuous & 1024 & Stella 400M encoding of body \\
+\quad Title-selftext similarity & Continuous & 1 & Cosine similarity (multi-feature only) \\
+\midrule
+\multicolumn{4}{l}{\textit{\textbf{Temporal Features}}} \\
+\quad Hour of day (cyclic) & Continuous & 2 & Sine and cosine transformation \\
+\quad Day of week (cyclic) & Continuous & 2 & Sine and cosine transformation \\
+\quad Month of year (cyclic) & Continuous & 2 & Sine and cosine transformation \\
+\quad Weekend flag & Binary & 1 & Saturday or Sunday indicator \\
+\quad Time-of-day buckets & Categorical & 4 & One-hot encoded \\
+\quad Holiday indicators & Binary & 1--2 & U.S. holidays (minor and/or major) \\
+\midrule
+\multicolumn{4}{l}{\textit{\textbf{Author Features}}} \\
+\quad Account age & Continuous & 1 & Days since creation (log-scaled) \\
+\quad Link karma & Continuous & 1 & Signed log transformation \\
+\quad Comment karma & Continuous & 1 & Signed log transformation \\
+\quad Total karma & Continuous & 1 & Signed log transformation \\
+\quad Moderator status & Binary & 1 & Subreddit moderator flag \\
+\quad Verified email & Binary & 1 & Email verification status \\
+\quad Premium membership & Binary & 1 & Reddit Gold/Premium status \\
+\midrule
+\multicolumn{4}{l}{\textit{\textbf{TF-IDF Features}}} \\
+\quad Popular term coverage & Continuous & 1 & Fraction of high-correlation terms \\
+\quad Unpopular term coverage & Continuous & 1 & Fraction of low-correlation terms \\
+\quad Global score (popular) & Continuous & 1 & Avg. correlation weight (popular) \\
+\quad Global score (unpopular) & Continuous & 1 & Avg. correlation weight (unpopular) \\
+\quad Contains top term & Binary & 1 & Top-ranked term present \\
+\quad Contains bottom term & Binary & 1 & Bottom-ranked term present \\
+\midrule
+\multicolumn{4}{l}{\textit{\textbf{Domain Features}}} \\
+\quad Domain correlation score & Continuous & 1 & Domain correlation signal \\
+\quad Domain score (global) & Continuous & 1 & Global correlation weight \\
+\quad Top domain indicator & Binary & 1 & Top 50 positive domains \\
+\quad Bottom domain indicator & Binary & 1 & Bottom 50 negative domains \\
+\midrule
+\multicolumn{4}{l}{\textit{\textbf{Sentiment Features}}} \\
+\quad Positive sentiment & Continuous & 1--3 & VADER positive score \\
+\quad Neutral sentiment & Continuous & 1--3 & VADER neutral score \\
+\quad Negative sentiment & Continuous & 1--3 & VADER negative score \\
+\quad Compound sentiment & Continuous & 1--3 & VADER compound score \\
+\midrule
+\multicolumn{4}{l}{\textit{\textbf{Subreddit Feature}}} \\
+\quad Subreddit ID & Categorical & 1 & Integer ID (all\_combined only) \\
+\end{longtable}
