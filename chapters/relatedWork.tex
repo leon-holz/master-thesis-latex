@@ -36,19 +36,19 @@ This distinction between generation alone and generation combined with predictiv
 
 A broader literature has examined organized manipulation, propaganda, trolling, and disinformation campaigns on online platforms. Understanding these real-world precedents is essential for contextualizing the potential misuse of the methods developed in this thesis.
 
-\subsection{Documented Influence Campaigns}
+\paragraph{Documented Influence Campaigns}
 
 Large-scale influence operations have repeatedly demonstrated the vulnerability of social media platforms to coordinated manipulation. The 2016 U.S. presidential election saw extensive interference by Russian-linked actors operating through the Internet Research Agency (IRA), which deployed thousands of inauthentic accounts to amplify divisive content and suppress voter turnout~\cite{badawy2018analyzing,zannettou2019disinformation}. Similar operations have been documented in the context of Brexit~\cite{bastos2019brexit}, the 2017 French elections~\cite{DBLP:journals/corr/Ferrara17aa}, and numerous other political events worldwide~\cite{woolley2018computational}.
 
 These campaigns share several common characteristics: they exploit platform affordances such as recommendation algorithms and trending mechanisms; they adapt content to target-specific communities and ideological groups; and they operate at scale through a combination of human coordination and automated tooling. Importantly, detection efforts have consistently lagged behind deployment, with many operations discovered only after elections or referendums had concluded~\cite{shao2018spread}.
 
-\subsection{Troll Farms and Coordinated Inauthentic Behavior}
+\paragraph{Troll Farms and Coordinated Inauthentic Behavior}
 
 Linvill and Warren~\cite{linvill2020troll} provide a detailed behavioral analysis of IRA-linked troll accounts, identifying distinct operational roles including right-leaning, left-leaning, and hashtag-gaming personas. Their work demonstrates that successful influence operations do not rely solely on technical sophistication but on understanding and mimicking the linguistic patterns, posting schedules, and engagement strategies typical of authentic users within target communities.
 
 This behavioral mimicry is precisely what predictive models trained on historical community data enable at scale. Where human operatives must learn community norms through observation and trial-and-error, a regression model trained on millions of historical posts can encode those norms as statistical patterns and apply them to newly generated content.
 
-\subsection{Automation and Scalability}
+\paragraph{Automation and Scalability}
 
 The technical barriers to deploying influence operations have decreased substantially. Early bot networks were detectable through crude heuristics such as posting frequency, account age, and lexical repetition~\cite{varol2017online}. Modern detection methods have grown more sophisticated, incorporating graph-based coordination analysis~\cite{cresci2017paradigm}, temporal behavioral patterns~\cite{yang2020scalable}, and linguistic anomaly detection~\cite{hayawi2022anti}.
 
@@ -56,7 +56,7 @@ However, as detection methods improve, so too do evasion techniques. Advances in
 
 The present thesis contributes to this trajectory by demonstrating that community-specific optimization can be achieved through regression models trained on public data. Unlike earlier bot detection research, which assumed that inauthentic content would exhibit detectable anomalies, this work shows that models can be explicitly trained to produce content that aligns with community-specific approval patterns.
 
-\subsection{Low-Barrier Tools and Democratized Manipulation}
+\paragraph{Low-Barrier Tools and Democratized Manipulation}
 
 A particularly concerning trend is the commodification and democratization of influence tools. Commercial services offering fake engagement, coordinated upvoting, and persona management are widely available~\cite{thomas2013trafficking}. Open-source toolkits for automated posting, account management, and content scheduling reduce the technical expertise required to operate at scale.
 
@@ -64,7 +64,7 @@ The pipeline demonstrated in this thesis fits within this broader ecosystem. It 
 
 This accessibility is a double-edged outcome. On one hand, it enables academic research, platform auditing, and transparency efforts. On the other hand, it lowers the barrier to entry for malicious actors, enabling influence operations by non-state actors, commercial entities, and ideologically motivated individuals who previously lacked the resources or expertise to deploy such systems.
 
-\subsection{Platform Responses and Detection Challenges}
+\paragraph{Platform Responses and Detection Challenges}
 
 Social media platforms have implemented various countermeasures, including 
 rate limiting, CAPTCHA challenges, phone verification, account age 
