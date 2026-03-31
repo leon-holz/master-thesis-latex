@@ -11,21 +11,11 @@ This section establishes the operational definition of popularity used throughou
 \subsection{Defining and Operationalizing Popularity}
 \label{subsec:defining_popularity}
 
-In the context of social media platforms, the notion of \emph{popularity} is inherently ambiguous. On Reddit, multiple observable signals---including score, upvote ratio, and comment volume---reflect different aspects of how a community engages with a post. Prior work has shown that these signals are correlated but capture distinct engagement dynamics, and that models optimized for one signal do not necessarily generalize to others \cite{hessel2019something,stoddard2015popularity}.
+As established in \autoref{chap:basics}, upvote ratio provides a more robust measure of community approval than absolute score or comment volume, being less sensitive to subreddit size and exposure effects while directly capturing positive reception \cite{hessel2019something,stoddard2015popularity}. 
 
-In this thesis, \textbf{absolute score is not treated as a prediction target}. While score is a common proxy for popularity, it is strongly influenced by factors that are largely orthogonal to content quality or community approval. These include subreddit size, overall activity levels, ranking algorithms, and temporal exposure effects. In particular, posts that are submitted at the ``right time'' or benefit from early visibility may accumulate high scores even if their reception among viewers is mixed, whereas well-received posts with limited exposure may achieve comparatively low scores.
+This thesis operationalizes popularity as a \emph{continuous, relative measure of positive reception} using normalized upvote ratio values. Modeling popularity as a regression problem captures fine-grained differences in approval that threshold-based classification would obscure.
 
-Moreover, historical mechanisms such as vote fuzzing introduce additional noise into score-based signals, especially in older Reddit data \cite{stoddard2015popularity}. As a result, absolute score values might not be directly comparable across subreddits or time periods and conflate community approval with opportunity for exposure.
-
-Instead, this work focuses on predicting how positively a post would be \emph{received} by a community, independent of whether it gains widespread visibility. To this end, the \emph{upvote ratio} is used as the primary engagement signal. The upvote ratio reflects the proportion of positive votes among all votes cast and serves as a closer approximation of approval conditional on being seen. Unlike score, it is less sensitive to subreddit size and overall traffic volume, and it more directly captures evaluative judgment rather than raw attention.
-
-Comment volume is likewise not used as a primary target. While a high number of comments indicates engagement, it may reflect disagreement, controversy, or debate rather than positive reception \cite{hessel2019something}. Consequently, comment-based signals are better suited for modeling discussion intensity or polarization than popularity in the sense of approval.
-
-Given these considerations, popularity in this thesis is defined as a \emph{continuous, relative measure of positive reception}, operationalized through normalized upvote ratio values. Modeling popularity as a regression problem allows the capture of fine-grained differences in approval that would be obscured by threshold-based classification approaches.
-
-An additional constraint arises from the intended application of the model. In the context of predicting the popularity of newly generated posts, only information available at creation time can be used. Engagement-derived features such as early votes or initial comments, which are employed in some prior work \cite{terentiev2014predicting,wigsnes2019predicting}, are explicitly excluded to avoid information leakage. As a result, the target variable must be predictable solely from post content and static metadata.
-
-Overall, the operational definition of popularity adopted in this thesis prioritizes robustness to exposure bias and cross-subreddit comparability while remaining compatible with a regression-based modeling framework and a live deployment scenario in which predictions must be made prior to any user interaction.
+Given the intended application to newly generated posts, only features available at creation time are used. Engagement-derived features such as early votes \cite{terentiev2014predicting,wigsnes2019predicting} are excluded to avoid information leakage.
 
 \subsection{Problem Formulation: Prediction, Selection, and Generation}
 \label{subsec:problem_formulation}
@@ -38,7 +28,7 @@ The experimental pipeline developed in this thesis comprises three conceptually 
 
 Rather than treating generated content as a proxy for human behavior, this thesis uses AI-generated posts as a controlled source of candidate content. This enables systematic probing of the popularity prediction model by evaluating whether posts that are predicted to be well-received also tend to receive comparatively positive feedback when exposed to real communities. In this sense, the live deployment experiment serves as a robustness and external validity check rather than a claim of equivalence between human and AI-authored content.
 
-\textbf{Content selection} connects prediction and generation. A set of candidate posts is generated independently of the popularity model, after which predicted popularity scores are used as a filtering or ranking signal. Only a subset of generated posts is selected for publication. This formulation mirrors common decision-making scenarios in information retrieval and recommendation systems, where models are used to prioritize items rather than to generate them directly.
+\textbf{Content selection} connects prediction and generation. A set of candidate posts is generated independently of the popularity model, after which predicted popularity scores are used as a filtering or ranking signal. Only a subset of generated posts is selected for publication. This formulation mirrors common decision-making scenarios in information retrieval and recommendation systems, where models are used to prioritize items rather than to generate them directly~\cite{huang2024comprehensive}.
 
 Importantly, the experiment also allows for a relative comparison between AI-generated posts selected by the popularity model and baseline user behavior within the same communities. While generated posts are not representative of an average user, their performance relative to typical posts provides insight into whether the model captures signals that align with community preferences. If selected generated posts are able to match or exceed baseline engagement metrics, this suggests that the model has learned meaningful patterns of positive reception rather than merely exploiting artifacts of historical data.
 
@@ -125,20 +115,11 @@ Although Pushshift access was later restored, repeating the full embedding gener
 \section{Data Collection}
 \label{sec:data_collection}
 
+Data collection was performed in two stages: an initial bulk retrieval of historical submissions from the Pushshift archive, followed by metadata enrichment via the official Reddit API to obtain current engagement metrics and author-level features. This two-stage approach balanced the efficiency of large-scale archival access with the accuracy requirements for popularity labels and predictive features.
+
 \subsection{Initial Retrieval from Pushshift}
 
-Historical Reddit submissions were first retrieved from the Pushshift archive for each selected subreddit. The dataset spans posts from 2008 to 2022 and includes both link posts and self posts.
-
-For each submission, the following fields were extracted:
-
-\begin{itemize}
-    \item Title
-    \item Selftext (post body)
-    \item Author
-    \item Creation timestamp
-    \item Domain (for link posts)
-    \item Preliminary engagement metadata
-\end{itemize}
+Historical Reddit submissions were first retrieved from the Pushshift archive for each selected subreddit. The dataset spans posts from 2008 to 2022 and includes both link posts and self posts. For each submission, the title, selftext (post body), author, creation timestamp, domain (for link posts), and preliminary engagement metadata were extracted
 
 Pushshift provides large-scale access to archived Reddit data, enabling efficient retrieval of millions of submissions across multiple communities. However, because Pushshift captures posts at discrete points in time, engagement metrics may not reflect their final state. For this reason, additional metadata enrichment was performed using the official Reddit API.
 
@@ -353,15 +334,16 @@ For link posts, the external domain referenced by the submission may influence c
 
 Domains appearing at least 100 times were evaluated for correlation with popularity. Based on these statistics, the top and bottom 50 domains (ranked by correlation strength) were identified.
 
-Three types of domain features were constructed:
+Four types of domain features were constructed:
 
 \begin{itemize}
-    \item A continuous feature representing the estimated correlation signal associated with the post's domain.
-    \item A binary indicator denoting whether the domain belongs to the top-ranked positively correlated domains.
-    \item A binary indicator denoting whether the domain belongs to the lowest-ranked negatively correlated domains.
+    \item A continuous feature representing the global correlation signal associated with the post's domain.
+    \item A continuous feature representing the subreddit-specific correlation signal for the domain.
+    \item A binary indicator denoting whether the domain belongs to the top-ranked positively correlated domains globally.
+    \item A binary indicator denoting whether the domain belongs to the lowest-ranked negatively correlated domains globally.
 \end{itemize}
 
-These features allow the model to capture systematic community preferences for specific external content sources.
+These features allow the model to capture systematic community preferences for specific external content sources, both globally across all subreddits and within individual communities.
 
 \subsection{Temporal Features}
 
@@ -380,7 +362,7 @@ Additional temporal indicators include:
 \begin{itemize}
     \item Weekend flag (binary)
     \item Time-of-day buckets (night, morning, afternoon, evening; one-hot encoded)
-    \item Holiday indicators for major U.S. holidays
+    \item Holiday indicators: separate binary features for major and minor U.S. holidays (two features)
 \end{itemize}
 
 Cyclic encoding prevents artificial discontinuities (e.g., between hour 23 and hour 0) and enables the model to learn smooth periodic effects.
@@ -417,8 +399,8 @@ To capture lexical signals beyond dense embeddings, TF-IDF-based features were c
 Three categories of features were derived:
 
 \begin{itemize}
-    \item \textbf{Coverage Features:} The fraction of characteristic vocabulary associated with popular or unpopular posts appearing in a given submission.
-    \item \textbf{Score-Based Features:} The average correlation weight of the post's tokens, computed both globally across subreddits and within individual communities.
+    \item \textbf{Coverage Features:} Two features measuring the fraction of popular vocabulary and unpopular vocabulary (separately) appearing in a given submission, based on correlation with upvote ratio.
+    \item \textbf{Score-Based Features:} The average correlation weight of the post's tokens, computed both as a global score across all subreddits and as a subreddit-specific score within the individual community.
     \item \textbf{Binary Indicators:} Binary features indicating whether a post contains at least one globally top-ranked popular or unpopular term.
 \end{itemize}
 
@@ -444,6 +426,7 @@ The performance impact of individual feature groups and their combinations is ev
 \subsection{Pipeline Overview}
 
 Figure~\ref{fig:feature_pipeline} provides an overview of the complete feature engineering pipeline. Raw Reddit posts are processed through two parallel paths: textual content undergoes transformer-based encoding and aggregation, while structured metadata features are extracted from post attributes. Different experimental configurations combine these components in various ways - ranging from embedding-only models (no metadata features) to full-feature models incorporating domain, temporal, author, TF-IDF, and sentiment signals. The aggregation strategy also varies across experiments: concatenation produces a 2048-dimensional representation (2d), pooling-based methods maintain the original 1024 dimensions (d), and multi-feature aggregation adds an explicit title-selftext similarity score (2d+1 dimensions). The resulting feature vectors serve as input to the XGBoost regression model for upvote ratio prediction.
+A complete enumeration of all available features is provided in Appendix~\ref{app:feature_inventory}.
 
 \begin{figure}[htbp]
 \centering
@@ -461,6 +444,8 @@ input to the XGBoost regression model for upvote ratio prediction.}
 \end{figure}
 
 \section{Popularity Prediction Model}
+
+This section describes the design and evaluation of the regression model used to predict post popularity. The model predicts upvote ratios using XGBoost trained on text embeddings and structured metadata. The experimental setup, baseline hyperparameters, evaluation metrics, and statistical testing procedures are detailed below.
 
 \subsection{Prediction Target}
 
@@ -529,6 +514,7 @@ For the dataset composition comparison, the test was applied specifically to pre
 To assess the contribution of different feature groups, multiple model configurations were evaluated. These include embedding-only models, embedding models augmented with domain, temporal, author, TF-IDF, and sentiment features, as well as combinations thereof. This modular design enables systematic comparison of feature contributions and aggregation strategies, as reported in the Results chapter.
 
 \section{Prediction Pipeline and Live Experiment}
+\label{sec:live_experiment}
 
 Figure~\ref{fig:live_experiment_pipeline} illustrates the complete live experiment workflow. Unlike adaptive influence systems that continuously update based on feedback, this pipeline operates as a one-shot process: all predictions are computed once and stored before any posting begins, eliminating the possibility of a real-time feedback loop.
 
@@ -552,13 +538,9 @@ time.}
 \end{figure}
 
 \subsection{Overview}
+The live experiment evaluates whether publicly available Reddit data can be used to train a regression model capable of improving the predicted community reception of generated discussion posts. As established in \autoref{subsec:problem_formulation}, the pipeline comprises three stages: prediction, selection, and generation.
 
-The live experiment was designed to evaluate whether publicly available Reddit data can be used to train a regression model capable of improving the predicted community reception of generated discussion posts. As established in \autoref{subsec:problem_formulation}, the pipeline comprises three stages: prediction, selection, and generation. The objective of the experiment is not to optimize persuasive messaging or promote specific viewpoints, but rather to assess whether historical behavioral data combined with generative models can systematically increase the likelihood of positive community evaluation.
-
-This experiment serves as a proof-of-concept whose primary contribution is demonstrative rather than operational: it illustrates how an actor with access only to public data and widely available tools - a scraped Reddit archive, an off-the-shelf gradient boosting model, and a general-purpose language model - could construct a pipeline capable of systematically selecting content for higher community acceptance. The low barrier to replicating such a system is itself a finding of this work, and motivates closer scrutiny of how behavioral data collected at scale can be repurposed for influence-adjacent applications.
-The focus of the experiment is therefore on technical feasibility rather than ideological influence. The experiment does not attempt to shift opinion, exploit trending topics, or otherwise maximize real-world impact; the design choices described below were made explicitly to limit the scope of influence while still allowing a meaningful evaluation of the pipeline's predictive utility.
-
-To limit the real-world impact of the experiment, no feedback loop between prediction and generation was established, and the popularity predictor was not used to iteratively refine content based on observed outcomes. These are deliberate design constraints rather than inherent limitations of the approach. A less restrained instantiation of the same pipeline would face few additional technical barriers, which is precisely the concern this work aims to surface.
+The experiment uses a fixed pool of candidate posts generated by a large language model. Each candidate is scored by the trained popularity predictor, and posts with higher predicted upvote ratios are selected for publication. No feedback loop between prediction and generation was established, and the popularity predictor was not used to iteratively refine content based on observed outcomes.
 
 The generation pipeline focuses exclusively on self posts rather than link posts. Since the generation pipeline produces textual discussion prompts rather than external content, evaluating generated link posts would introduce additional confounding factors unrelated to the generated textual content. Link posts were nevertheless retained during model training because their inclusion increases dataset size and improves predictive performance, as demonstrated in the dataset composition experiments.
 
