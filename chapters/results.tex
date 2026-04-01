@@ -653,7 +653,7 @@ This configuration represents the culmination of the experimental findings, bala
 
 \section{Live Experiment Evaluation}
 
-The live experiment evaluates whether the trained regression model can successfully guide automated content selection in real-world posting scenarios. This section presents the distribution of predictions for generated posts, baseline subreddit engagement statistics, experimental constraints encountered during deployment, and the comparative performance of model-guided versus randomly selected posts.
+The live experiment evaluates whether the trained regression model can successfully guide automated content selection in real-world posting scenarios. The primary objective is to determine whether posts selected using the regression model outperform randomly selected generated posts. However, the experiment should be interpreted in a dual frame: a positive result demonstrates that the model provides actionable signal for automated content optimization; a null result demonstrates that the pipeline is deployable and operationally viable even without a detectable performance advantage from model-guided selection. Either outcome contributes evidence relevant to the feasibility question.
 
 \subsection{Generated Post Prediction Distribution}
 
@@ -677,6 +677,8 @@ progun               & 0.387 & 0.662 & 0.592 & 0.854 \\
 TrueAtheism          & 0.446 & 0.680 & 0.629 & 0.789 \\
 TrueChristian        & 0.285 & 0.591 & 0.535 & 0.798 \\
 truegaming           & 0.212 & 0.576 & 0.496 & 0.651 \\
+\midrule
+\textbf{Average}     & 0.340 & 0.621 & 0.555 & 0.755 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -714,10 +716,7 @@ These bans reduced the number of observations available for those communities an
 
 \subsection{Post Results}
 
-The primary objective of the live experiment is to determine whether posts selected using the regression model outperform randomly selected generated posts. However, the experiment should be interpreted in a dual frame: a positive result demonstrates that the model provides actionable signal for automated content optimization; a null result demonstrates that the pipeline is deployable and operationally viable even without a detectable performance advantage from model-guided selection. Either outcome contributes evidence relevant to the feasibility question.
-
 For each posting opportunity, a coin flip determined whether the post would be selected from the top 10\% of predicted posts or randomly from the generated pool. This randomized selection process allows comparison between model-guided and random posting strategies under similar conditions.
-
 
 
 [Results and statistical analysis of realized post performance will be presented here.]
