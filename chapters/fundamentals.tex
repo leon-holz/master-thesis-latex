@@ -136,6 +136,7 @@ This modular design simplifies analysis, enables controlled ablation studies, an
 Regression models are typically assessed using multiple complementary metrics that capture different aspects of prediction quality. The following metrics are commonly employed to evaluate continuous predictions against observed outcomes.
 
 \paragraph{Mean Absolute Error (MAE).}
+
 MAE measures the average absolute difference between predicted and observed
 upvote ratios. It provides a direct interpretation of prediction error magnitude
 within the bounded [0,1] range, since Reddit upvote ratios are naturally
@@ -148,6 +149,7 @@ MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
 where $y_i$ denotes the observed upvote ratio and $\hat{y}_i$ the predicted value.
 
 \paragraph{Root Mean Squared Error (RMSE).}
+
 RMSE measures the square root of the average squared prediction error and
 penalizes larger prediction deviations more strongly than MAE.
 
@@ -156,6 +158,7 @@ RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
 \end{equation}
 
 \paragraph{Coefficient of Determination ($R^2$).} 
+
 The coefficient of determination indicates the proportion of variance in the observed upvote ratios that can be explained by the model predictions:
 
 \begin{equation}
@@ -165,6 +168,7 @@ R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})
 where $\bar{y} = \frac{1}{n}\sum_{i=1}^{n}y_i$ is the mean of the observed values.
 
 \paragraph{Pearson Correlation Coefficient.} 
+
 Pearson correlation measures the linear relationship between predicted and observed upvote ratios:
 
 \begin{equation}
