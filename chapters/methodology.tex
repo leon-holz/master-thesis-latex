@@ -308,9 +308,7 @@ In addition to textual embeddings, a range of structured features was constructe
 \subsection{Domain Features}
 
 For link posts, the external domain referenced by the submission may influence community reception. To quantify this effect, correlation statistics between domain occurrence and upvote ratio were computed.
-
 Domains appearing at least 100 times were evaluated for correlation with popularity. Based on these statistics, the top and bottom 50 domains (ranked by correlation strength) were identified.
-
 Four types of domain features were constructed:
 
 \begin{itemize}
@@ -325,7 +323,6 @@ These features allow the model to capture systematic community preferences for s
 \subsection{Temporal Features}
 
 User activity and post reception on Reddit exhibit strong temporal patterns. To capture these dynamics, cyclic and categorical time-based features were constructed.
-
 Cyclic variables were encoded using sine and cosine transformations to preserve periodic structure:
 
 \begin{itemize}
@@ -347,7 +344,6 @@ Cyclic encoding prevents artificial discontinuities (e.g., between hour 23 and h
 \subsection{Author Features}
 
 Author-level characteristics may influence post reception, as established users often exhibit different engagement patterns compared to new accounts.
-
 Continuous author features include:
 
 \begin{itemize}
@@ -358,7 +354,6 @@ Continuous author features include:
 \end{itemize}
 
 To reduce skewness and preserve sign information, karma-related features were transformed using a signed logarithmic scaling function.
-
 Binary author features include:
 
 \begin{itemize}
@@ -372,7 +367,6 @@ These features provide the model with signals related to user reputation, experi
 \subsection{TF-IDF Derived Features}
 
 To capture lexical signals beyond dense embeddings, TF-IDF-based features were constructed. Term importance scores were computed based on correlations between word occurrence and upvote ratio.
-
 Three categories of features were derived:
 
 \begin{itemize}
@@ -386,7 +380,6 @@ These features provide interpretable lexical signals complementing embedding-bas
 \subsection{Sentiment Features}
 
 Sentiment information was extracted using the VADER sentiment analysis tool. Depending on configuration, sentiment scores were computed for the title, the selftext, a combined text representation, or treated separately.
-
 For each selected text source, different feature sets were evaluated:
 
 \begin{itemize}
@@ -397,7 +390,6 @@ For each selected text source, different feature sets were evaluated:
 \end{itemize}
 
 These sentiment features allow the regression model to incorporate affective signals that may influence community approval.
-
 The performance impact of individual feature groups and their combinations is evaluated in the Results chapter. This modular design allows systematic comparison of embedding-only models and extended feature configurations.
 
 \subsection{Pipeline Overview}
