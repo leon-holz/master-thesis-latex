@@ -8,7 +8,7 @@ This chapter describes the data sources, preprocessing steps, feature engineerin
 
 This section establishes the operational definition of popularity used throughout this study and clarifies the relationship between prediction, content selection, and content generation in the experimental pipeline.
 
-\subsection{Defining and Operationalizing Popularity}
+\subsubsection*{Defining and Operationalizing Popularity}
 \label{subsec:defining_popularity}
 
 As established in \autoref{chap:basics}, upvote ratio provides a more robust measure of community approval than absolute score or comment volume, being less sensitive to subreddit size and exposure effects while directly capturing positive reception \cite{hessel2019something,stoddard2015popularity}. 
@@ -17,7 +17,7 @@ This thesis operationalizes popularity as a \emph{continuous, relative measure o
 
 Given the intended application to newly generated posts, only features available at creation time are used. Engagement-derived features such as early votes \cite{terentiev2014predicting,wigsnes2019predicting} are excluded to avoid information leakage.
 
-\subsection{Problem Formulation: Prediction, Selection, and Generation}
+\subsubsection*{Problem Formulation: Prediction, Selection, and Generation}
 \label{subsec:problem_formulation}
 
 The experimental pipeline developed in this thesis comprises three conceptually distinct stages: \textbf{prediction}, \textbf{selection}, and \textbf{generation}. Each stage addresses a separate aspect of the overall system, and their separation allows for modular evaluation and interpretation.
@@ -39,19 +39,13 @@ The specific implementation details, design constraints, and ethical considerati
 
 This study relies on large-scale historical Reddit data to analyze community behavior and train predictive models for post reception. Two primary data sources were used: the Pushshift Reddit archive and the official Reddit API accessed via the Python Reddit API Wrapper (PRAW). The combination of these sources provides broad historical coverage while ensuring accurate and up-to-date popularity metrics.
 
-\paragraph{Pushshift Archive}
-
 The Pushshift dataset is a large-scale archival project that collected and stored Reddit submissions and comments over extended time periods. It provides structured JSON dumps that enable efficient retrieval of historical subreddit activity.
 For this study, posts spanning the period from 2008 to 2022 were retrieved from Pushshift. The archive provides access to essential metadata fields such as title, selftext, author, creation timestamp, and domain information. Its extensive temporal coverage makes it well suited for large-scale computational analysis.
 However, Pushshift captures posts at specific archival moments. As a result, engagement metrics such as score and upvote ratio may not reflect the final state of a post after additional voting activity. Additionally, while the dataset does not include the most recent Reddit activity, it was chosen over more current data dumps due to its comprehensive subreddit coverage. Pushshift allows for complete retrieval of entire subreddits in a single archive, whereas more recent sources would require aggregating data across multiple fragmented dumps, significantly increasing collection complexity.
 
-\paragraph{Reddit API}
-
 To ensure accurate popularity labels and additional metadata, the official Reddit API was used in conjunction with Pushshift data. As discussed in \autoref{subsec:defining_popularity}, the upvote ratio is used as the primary target variable for this study. The API provides up-to-date values for engagement metrics and allows retrieval of author-level metadata such as account age and karma statistics.
 
 The Reddit API enforces strict rate limits for standard applications, permitting approximately 100 requests per minute without a dedicated research agreement. Requests for extended research access were submitted but did not receive a response. Consequently, data retrieval was performed within the default rate constraints. Despite these limitations, the API provides authoritative engagement metrics, making it the preferred source for popularity labels used in the regression task.
-
-\paragraph{Data Limitations}
 
 Several limitations arise from the use of archived and live API data. Posts may be deleted after archival, user accounts may become inaccessible, and engagement metrics may evolve over time. While these factors introduce unavoidable noise, combining Pushshift for historical breadth with the Reddit API for accurate labels provides a robust foundation for predictive modeling.
 
@@ -60,13 +54,11 @@ Several limitations arise from the use of archived and live API data. Posts may 
 
 The objective of this study is to analyze community-specific behavior on Reddit and evaluate whether post reception can be predicted within distinct subreddit environments. Subreddits were therefore selected to represent different political orientations as well as non-political communities, enabling comparison across varying discourse norms and moderation practices.
 
-\paragraph{Political Orientation Categories}
-
 To capture ideological diversity, subreddits were grouped into four categories: left-leaning political communities, right-leaning political communities, politically neutral discussion communities, and non-political comparison communities. The classification of subreddits into these four categories follows prior empirical research on ideological clustering in online communities by Waller et al.\cite{waller2021quantifying}, who infer subreddit-level political alignment based on user overlap networks, posting behavior, and discourse patterns. For the subset of subreddits overlapping with their dataset, the inferred ideological positions largely correspond to the self-descriptions and moderation policies articulated by subreddit moderators. While moderator descriptions do not constitute an objective ground truth, the observed correspondence provides additional face validity for the adopted categorization.
 
 The present grouping is therefore not intended as a normative labeling, but as an operational categorization grounded in established patterns of ideological self-selection and community interaction. This approach allows for structured comparison while acknowledging that political identity in online spaces is fluid and multi-dimensional. Including both explicitly political and non-political communities allows the analysis to distinguish between ideological effects and more general subreddit-specific behavioral patterns.
 
-\paragraph{Selection Criteria}
+\subsubsection*{Selection Criteria}
 
 Several criteria guided the selection of subreddits:
 
@@ -80,11 +72,7 @@ Several criteria guided the selection of subreddits:
     \item \textbf{Computational Feasibility:} Extremely large subreddits were excluded when their size would have resulted in disproportionately high storage and processing requirements for embedding generation and model training.
 \end{itemize}
 
-In addition, several historically influential but banned or quarantined subreddits were considered but ultimately excluded due to limited accessibility through the Reddit API at the time of data collection.
-
-\paragraph{Final Subreddit Set}
-
-The final dataset consists of the subreddits listed in \autoref{tab:subreddit_set}. Further information on the selected communities, including their subreddit rules, is provided in \autoref{app:subreddit_rules}.
+In addition, several historically influential but banned or quarantined subreddits were considered but ultimately excluded due to limited accessibility through the Reddit API at the time of data collection. The final dataset consists of the subreddits listed in \autoref{tab:subreddit_set}. Further information on the selected communities, including their subreddit rules, is provided in \autoref{app:subreddit_rules}.
 
 \begin{table}[htbp]
 \centering
@@ -105,11 +93,9 @@ Non-political & \verb!r/DecidingToBeBetter!, \verb!r/truegaming!, \verb!r/Fantas
 The subreddit \verb!r/NeutralPolitics! was excluded from model training due to an insufficient post count after preprocessing.
 The impact of preprocessing and filtering steps on each subreddit is analyzed in Section~\ref{sec:construction_final_dataset}. Model training is performed both on individual subreddit datasets and on a combined dataset aggregating posts from multiple communities.
 
-\paragraph{Adjustment Due to Data Availability Constraints}
+\subsubsection*{Adjustment Due to Data Availability Constraints}
 
-During preprocessing, it was observed that the subreddit \verb!r/NeutralPolitics! contained substantially fewer posts than anticipated after applying the minimum engagement filtering criterion discribed later in this chapter. This reduction was primarily due to the removal of low-interaction posts and missing metadata.
-
-At the time this issue was identified, access to the Pushshift archive was temporarily unavailable, preventing additional data retrieval to compensate for the reduced sample size. As a result, the experimental evaluations were conducted using the remaining 19 subreddits.
+During preprocessing, it was observed that the subreddit \verb!r/NeutralPolitics! contained substantially fewer posts than anticipated after applying the minimum engagement filtering criterion discribed later in this chapter. This reduction was primarily due to the removal of low-interaction posts and missing metadata. At the time this issue was identified, access to the Pushshift archive was temporarily unavailable, preventing additional data retrieval to compensate for the reduced sample size. As a result, the experimental evaluations were conducted using the remaining 19 subreddits.
 
 Although Pushshift access was later restored, repeating the full embedding generation and model training pipeline was not feasible within the available time frame. The exclusion of \verb!r/NeutralPolitics! does not materially affect the overall conclusions, as the dataset retains representation from politically neutral discussion communities through other included subreddits.
 
@@ -118,21 +104,13 @@ Although Pushshift access was later restored, repeating the full embedding gener
 
 Data collection was performed in two stages: an initial bulk retrieval of historical submissions from the Pushshift archive, followed by metadata enrichment via the official Reddit API to obtain current engagement metrics and author-level features. This two-stage approach balanced the efficiency of large-scale archival access with the accuracy requirements for popularity labels and predictive features.
 
-\subsection{Initial Retrieval from Pushshift}
+\subsection{Initial Retrieval and Metadata Enrichment}
 
-Historical Reddit submissions were first retrieved from the Pushshift archive for each selected subreddit. The dataset spans posts from 2008 to 2022 and includes both link posts and self posts. For each submission, the title, selftext (post body), author, creation timestamp, domain (for link posts), and preliminary engagement metadata were extracted
+Historical Reddit submissions were first retrieved from the Pushshift archive for each selected subreddit. The dataset spans posts from 2008 to 2022 and includes both link posts and self posts. For each submission, the title, selftext (post body), author, creation timestamp, domain (for link posts), and preliminary engagement metadata were extracted.
 
-Pushshift provides large-scale access to archived Reddit data, enabling efficient retrieval of millions of submissions across multiple communities. However, because Pushshift captures posts at discrete points in time, engagement metrics may not reflect their final state. For this reason, additional metadata enrichment was performed using the official Reddit API.
+Pushshift provides large-scale access to archived Reddit data, enabling efficient retrieval of millions of submissions across multiple communities. However, because Pushshift captures posts at discrete points in time, engagement metrics may not reflect their final state. To address this limitation, each post was queried via the official Reddit API using PRAW in order to retrieve up-to-date popularity metrics and additional metadata. The primary objective of this step was to obtain accurate upvote ratio values, which serve as the regression target in this study. In addition to the upvote ratio, author-level features were retrieved, including account age, link karma, comment karma, and related attributes used in feature engineering.
 
-\subsection{Metadata Enrichment via Reddit API}
-
-After initial retrieval from Pushshift, each post was queried via the official Reddit API using PRAW in order to retrieve up-to-date popularity metrics and additional metadata. The primary objective of this step was to obtain accurate upvote ratio values, which serve as the regression target in this study.
-
-In addition to the upvote ratio, author-level features were retrieved, including account age, link karma, comment karma, and related attributes used in feature engineering.
-
-The Reddit API enforces strict rate limits for standard applications, allowing approximately 100 requests per minute without a special research agreement. Requests for extended research access were submitted but did not receive a response. Consequently, metadata retrieval was performed under default rate-limit constraints.
-
-Given the scale of the dataset, which exceeded two million posts prior to filtering, the enrichment process required careful batching and long-running retrieval scripts operating over extended periods. Despite these constraints, all retained posts were successfully enriched with up-to-date popularity labels and relevant metadata.
+The Reddit API enforces strict rate limits for standard applications, allowing approximately 100 requests per minute without a special research agreement. Requests for extended research access were submitted but did not receive a response. Consequently, metadata retrieval was performed under default rate-limit constraints. Given the scale of the dataset, which exceeded two million posts prior to filtering, the enrichment process required careful batching and long-running retrieval scripts operating over extended periods. Despite these constraints, all retained posts were successfully enriched with up-to-date popularity labels and relevant metadata.
 
 \subsection{Construction of the Final Dataset}
 \label{sec:construction_final_dataset}
@@ -249,11 +227,9 @@ However, link posts substantially increase the size of the available dataset and
 \section{Exploratory Analysis of Subreddit Differences}
 \label{sec:exploratory_analysis}
 
-Before developing predictive models for post popularity, an exploratory analysis was conducted to examine whether textual embeddings capture meaningful distinctions between subreddit communities. This section describes the dimensionality reduction techniques used for visualization, a supervised classification experiment to quantify subreddit separability, and the implications of these findings for the downstream regression task.
+Before developing predictive models for post popularity, an exploratory analysis was conducted to examine whether transformer-based text embeddings capture distinguishable structural patterns across different subreddit communities. The objective of this analysis is not to provide a comprehensive study of embedding space geometry, but rather to verify that linguistic and stylistic differences between communities are reflected in the embedding representations. If subreddit communities exhibit distinct embedding distributions, this suggests that textual features contain structured information that may be predictive of community-specific reception and popularity outcomes.
 
-\subsection{Objective of the Exploratory Analysis}
-
-Before constructing predictive models, an exploratory analysis was conducted to examine whether transformer-based text embeddings capture distinguishable structural patterns across different subreddits. The objective of this analysis is not to provide a comprehensive study of embedding space geometry, but rather to verify that linguistic and stylistic differences between communities are reflected in the embedding representations. If subreddit communities exhibit distinct embedding distributions, this suggests that textual features contain structured information that may be predictive of community-specific reception and popularity outcomes.
+This section describes the dimensionality reduction techniques used for visualization, a supervised classification experiment to quantify subreddit separability, and the implications of these findings for the downstream regression task.
 
 \subsection{Dimensionality Reduction}
 
@@ -493,24 +469,16 @@ In addition to the regression-based approach, a classification formulation of th
 
 To assess whether observed performance differences between experimental configurations are statistically meaningful rather than attributable to random variation, Wilcoxon signed-rank tests with Benjamini-Hochberg correction were applied. The general procedures are described in \autoref{sec:statistical_testing}; this section details their application in this study.
 
-\paragraph{Test Design.}
-
 For each comparison of interest, two model configurations were evaluated on identical validation data, producing per-subreddit metric values (MAE and Pearson correlation) for both configurations. 
 The Wilcoxon signed-rank test was then applied to the vector of per-subreddit differences, treating each subreddit as a paired observation. 
 This paired design controls for subreddit-level baseline differences in post popularity and community size, isolating the effect of the configuration change.
 The test was applied in its two-sided form, assessing whether the median of the paired differences differs significantly from zero. 
 No assumption of normality is required, making the test appropriate for the relatively small number of subreddits ($n = 19$) used as the unit of analysis.
 
-\paragraph{Multiple Comparison Correction.}
-
 Since multiple pairwise comparisons were conducted across different experimental groups (encoders, prompts, feature types, aggregation strategies), the Benjamini-Hochberg (BH) procedure was applied to control the false discovery rate (FDR) at the $\alpha = 0.05$ level. Adjusted $p$-values are reported throughout the Results chapter, and significance is indicated in summary tables using \checkmark~(significant) and $\times$~(not significant). Configurations for which no formal test was conducted are marked with ---\ in the significance columns.
-
-\paragraph{Scope of Testing.}
 
 Statistical testing was applied selectively to the primary experimental comparisons of interest: embedding model selection, prompt conditioning, embedding aggregation strategy (mean and smart mean variants only), domain feature contribution, and author feature contribution. Configurations exhibiting near-zero or negative effects relative to baseline, such as TF-IDF and sentiment features, were not subjected to formal testing as their practical relevance was considered negligible based on the observed metric values.
 For the dataset composition comparison, the test was applied specifically to predictions on the shared subset of self posts in order to ensure a fair paired comparison between the self-only and combined training configurations. This avoids confounding the result with differences in post-type distribution between the two models.
-
-\subsection{Experimental Configurations}
 
 To assess the contribution of different feature groups, multiple model configurations were evaluated. These include embedding-only models, embedding models augmented with domain, temporal, author, TF-IDF, and sentiment features, as well as combinations thereof. This modular design enables systematic comparison of feature contributions and aggregation strategies, as reported in the Results chapter.
 
@@ -554,7 +522,6 @@ To limit the real-world influence of the experiment, candidate posts were genera
 For each subreddit included in the experiment, 200 candidate posts were generated. Generation was performed through the ChatGPT interface in batches of 40 posts per prompt, with each prompt executed in a separate conversation to avoid cross-context influence between generations. The prompts were designed to produce discussion-oriented self posts aligned with the thematic scope of each subreddit. The generation process did not attempt to promote specific political positions or advance particular viewpoints. Instead, the prompts focused on generating neutral discussion questions or topic prompts consistent with the typical posting style observed in the target communities.
 
 \subsection{Prediction and Ranking Pipeline}
-
 All generated candidate posts were evaluated using the regression model that achieved the best performance during the model evaluation phase described earlier in this methodology. 
 Each candidate post was processed through the same preprocessing pipeline used during training. 
 This included text embedding generation and feature extraction using the previously selected feature configuration. 
@@ -567,9 +534,7 @@ For each subreddit, the 200 generated posts were then sorted according to their 
 The resulting predictions and rankings were computed once and stored in the experimental dataset to ensure that the subsequent post selection process remained deterministic and reproducible (see the "Ranking \& Storage" stage in Figure~\ref{fig:live_experiment_pipeline}). 
 Crucially, this also means that no real-time feedback loop between posting outcomes and candidate selection was active during the experiment — the system operated as a one-shot pipeline rather than an adaptive influence agent.
 
-\paragraph{Experimental Posting Procedure}
-
-The experiment aimed to evaluate whether model-guided selection improves post reception compared to random selection.
+With the ranked candidate posts prepared, the experiment evaluated whether model-guided selection improves post reception compared to random selection.
 For each subreddit and posting day, a coin flip determined the selection strategy: With probability 0.5, a post was selected randomly from the entire ranked candidate pool. 
 With probability 0.5, a post was selected randomly from the top 10\% of the predicted ranking.
 This procedure created a simple randomized A/B setup comparing random candidate selection against model-guided high-score selection, as illustrated in the "Daily A/B Selection" stage of Figure~\ref{fig:live_experiment_pipeline}.
@@ -581,13 +546,11 @@ To reduce the risk of additional bans, the posting frequency was subsequently re
 Because many subreddits require a minimum account age for participation, the experiment relied on a single Reddit account that satisfied the age requirements across communities.
 To reduce temporal posting bias, submission times were randomized across the full 24-hour day, with a minimum spacing of five minutes between consecutive posts.
 
-\section{Performance Measurement}
+\subsection{Performance Measurement and Reproducibility}
 
 Post performance was measured using the upvote ratio reported by Reddit. To ensure that all posts had sufficient time to accumulate community feedback, performance metrics were collected one week after the conclusion of the posting phase.
 Because the experiment ran for 30 days, the final evaluation was performed on day 37. 
 This approach ensured that even the last submitted posts had at least one week to accumulate engagement signals, although earlier posts naturally had longer exposure windows.
-
-\section{Reproducibility Considerations}
 
 Traditional notions of reproducibility used in machine learning experiments do not fully apply to live platform experiments involving human interaction. 
 While the data processing and prediction components of the pipeline are fully reproducible, the resulting engagement outcomes depend on inherently stochastic social dynamics such as user activity patterns, moderator decisions, and platform ranking algorithms.

@@ -213,7 +213,7 @@ Models trained exclusively on link posts exhibit substantially weaker performanc
 
 The superior performance of the combined dataset suggests that including both post types provides a larger and more diverse training set, enabling the model to learn more robust engagement patterns. Although the live experiment generates only self posts, link posts were retained during training because their inclusion improves overall predictive performance.
 
-\paragraph{Effect of Training Data on Self Post Predictions.}
+\subsubsection*{Effect of Training Data on Self Post Predictions.}
 
 To assess whether the inclusion of link posts during training affects predictive quality specifically on self posts, predictions from the combined model and the self-only model were compared on the subset of shared self posts. This isolates the effect of training data composition from any confound introduced by evaluating different post populations.
 
@@ -408,7 +408,7 @@ The present analysis cannot distinguish between these explanations. It demonstra
 
 Because approximately 40\% of posts lacked retrievable author metadata due to account deletion or archival limitations, the author-based experiments were conducted on a reduced sample. Direct comparison to full-dataset experiments is therefore not appropriate. However, the embedding-only baseline trained on the identical filtered subset provides an internally consistent reference, ensuring that the observed performance differences are attributable to the inclusion of author features rather than changes in sample composition.
 
-\paragraph{Feature Contribution Summary.}
+\subsubsection*{Feature Contribution Summary.}
 
 Taken together, the preceding feature analyses reveal distinct differences in predictive contribution across feature groups.
 
@@ -634,19 +634,19 @@ All other hyperparameters, including regularization terms (\texttt{min\_child\_w
  
 Based on the experiments reported in this chapter, the final model deployed in the live Reddit experiment was configured as follows:
  
-\paragraph{Text Embedding.}
+\subsubsection*{Text Embedding.}
 The Stella 400M v5 model was used with the default ``content'' prompt configuration. Title and selftext embeddings were generated independently and aggregated via concatenation without dimensionality reduction, yielding a 2048-dimensional feature vector per post.
  
-\paragraph{Additional Features.}
+\subsubsection*{Additional Features.}
 Domain overlap features were included, encoding the frequency with which the post's linked domain appears in the training data for the target subreddit. Domain features were only applied to link posts; for self posts, the domain feature was masked to zero to avoid introducing spurious noise from the universal \texttt{reddit.com} domain. No author, time-of-posting, sentiment, or TF-IDF features were used, as these either showed negligible performance gains or introduced dependencies on metadata unavailable at generation time.
  
-\paragraph{Dataset Composition.}
+\subsubsection*{Dataset Composition.}
 The model was trained on the combined \texttt{self\_link} dataset, which includes both self posts and link posts from 2008 to 2022, filtered to subreddits with at least three posts per day on average. This dataset composition was selected based on its superior regression performance compared to self-only datasets (Section~\ref{sec:dataset_composition_results}).
  
-\paragraph{Model Architecture.}
+\subsubsection*{Model Architecture.}
 XGBoost regression with the optimized hyperparameters from Table~\ref{tab:hyperparameter_tuning}: \texttt{n\_estimators=2000}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, \texttt{colsample\_bytree=0.85}. Regularization parameters were kept at \texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, and \texttt{reg\_lambda=1.0}.
  
-\paragraph{Training Configuration.}
+\subsubsection*{Training Configuration.}
 Each subreddit's model was trained independently using an 80/20 train/validation split. The subreddit identifier was not included as a feature, as posts were generated and scored on a per-subreddit basis.
  
 This configuration represents the culmination of the experimental findings, balancing predictive performance with practical constraints on feature availability during the live posting phase.

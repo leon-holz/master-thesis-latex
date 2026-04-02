@@ -64,7 +64,7 @@ Unlike traditional bag-of-words or n-gram models, Transformer-based approaches p
 
 For downstream tasks, Transformer models are often used as encoders that map variable-length text into fixed-dimensional vector representations, commonly referred to as \emph{embeddings}. These embeddings can serve as input features for task-specific models, enabling a separation between representation learning and predictive modeling.
 
-\paragraph{Large Language Models and Text Embeddings}
+\subsubsection*{Large Language Models and Text Embeddings}
 
 Large Language Models (LLMs) are Transformer-based models trained on large-scale text corpora using self-supervised learning objectives. While many LLMs are optimized for text generation, a growing class of models is specifically designed to produce high-quality embeddings for downstream tasks. Sentence-BERT~\cite{Reimers2019}, for example, demonstrated that embedding-specialized architectures can outperform generic language models on semantic similarity and clustering tasks.
 
@@ -80,7 +80,7 @@ While embeddings capture semantic properties of text, they do not encode platfor
 
 Gradient Boosting is an ensemble learning technique that constructs a predictive model by iteratively combining multiple weak learners, typically decision trees, into a single strong learner. Rather than training all models independently, Gradient Boosting builds models sequentially, where each new learner is trained to correct the errors made by the ensemble thus far. This is achieved by fitting each learner to the negative gradient of a loss function with respect to the current model predictions, hence the term \emph{gradient} boosting.
 
-\paragraph{Mathematical Formulation}
+\subsubsection*{Mathematical Formulation}
 
 Gradient boosting constructs an ensemble model $F(\mathbf{x})$ as an additive combination of $M$ base learners $f_m(\mathbf{x})$:
 
@@ -135,7 +135,7 @@ This modular design simplifies analysis, enables controlled ablation studies, an
 
 Regression models are typically assessed using multiple complementary metrics that capture different aspects of prediction quality. The following metrics are commonly employed to evaluate continuous predictions against observed outcomes.
 
-\paragraph{Mean Absolute Error (MAE).}
+\subsubsection*{Mean Absolute Error (MAE).}
 
 MAE measures the average absolute difference between predicted and observed
 upvote ratios. It provides a direct interpretation of prediction error magnitude
@@ -148,7 +148,7 @@ MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
 
 where $y_i$ denotes the observed upvote ratio and $\hat{y}_i$ the predicted value.
 
-\paragraph{Root Mean Squared Error (RMSE).}
+\subsubsection*{Root Mean Squared Error (RMSE).}
 
 RMSE measures the square root of the average squared prediction error and
 penalizes larger prediction deviations more strongly than MAE.
@@ -157,7 +157,7 @@ penalizes larger prediction deviations more strongly than MAE.
 RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
 \end{equation}
 
-\paragraph{Coefficient of Determination ($R^2$).} 
+\subsubsection*{Coefficient of Determination ($R^2$).} 
 
 The coefficient of determination indicates the proportion of variance in the observed upvote ratios that can be explained by the model predictions:
 
@@ -167,7 +167,7 @@ R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})
 
 where $\bar{y} = \frac{1}{n}\sum_{i=1}^{n}y_i$ is the mean of the observed values.
 
-\paragraph{Pearson Correlation Coefficient.} 
+\subsubsection*{Pearson Correlation Coefficient.} 
 
 Pearson correlation measures the linear relationship between predicted and observed upvote ratios:
 
@@ -217,7 +217,7 @@ One widely used approach is the Benjamini-Hochberg (BH) procedure~\cite{benjamin
 
 The false discovery rate is defined as the expected proportion of false positives among all rejected null hypotheses. 
 Controlling FDR at level $\alpha$ means that, on average, no more than $\alpha \times 100\%$ of the discoveries are expected to be false positives. 
-This approach is less conservative than FWER-controlling methods such as the Bonferroni correction, making it more appropriate when some false positives are acceptable in exchange for greater statistical power.
+This approach is less conservative than FWER-controlling methods such as the Bonferroni correction\cite{bonferroni1936teoria}, making it more appropriate when some false positives are acceptable in exchange for greater statistical power.
 
 The Benjamini-Hochberg procedure operates as follows. Given $m$ hypothesis tests with $p$-values $p_1, \ldots, p_m$:
 
