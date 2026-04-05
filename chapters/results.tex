@@ -11,15 +11,9 @@
 
 This chapter presents the empirical evaluation of the popularity prediction models and the associated experimental analyses. The goal of these experiments is to assess how well different modeling choices capture the factors influencing post reception on Reddit.
 
-The evaluation proceeds in several stages. First, the influence of text representation is examined by comparing different embedding models, prompt configurations, and aggregation strategies. These experiments establish the baseline text encoding used for subsequent analyses.
+The evaluation proceeds in several stages. First, the influence of text representation is examined by comparing different embedding models, prompt configurations, and aggregation strategies. These experiments establish the baseline text encoding used for subsequent analyses. Next, the impact of dataset composition and additional feature groups is evaluated, including experiments analyzing the effects of combining self and link posts during training as well as incorporating temporal, domain, sentiment, TF-IDF, and author-related features. The chapter then investigates the generalizability of popularity prediction across communities by comparing different training strategies, including subreddit-specific models, leaning-group models, and a combined model trained across all subreddits. Finally, the regression framework is compared with a classification-based formulation of the task.
 
-Next, the impact of dataset composition and additional feature groups is evaluated. This includes experiments analyzing the effects of combining self and link posts during training as well as incorporating temporal, domain, sentiment, TF-IDF, and author-related features.
-
-The chapter then investigates the generalizability of popularity prediction across communities. Different training strategies are compared, including subreddit-specific models, leaning-group models, and a combined model trained across all subreddits.
-
-Finally, the regression framework is compared with a classification-based formulation of the task. The chapter concludes with a live experiment in which generated posts are scored using the trained models and selectively published to evaluate whether model-guided post selection leads to improved real-world engagement outcomes.
-
-Taken together, the experiments aim to determine how accurately publicly available data can be used to predict post popularity, and whether such predictions are sufficient to guide automated content selection in a live deployment. The broader implication assessed here is whether the barrier to constructing such a pipeline is low enough to warrant serious attention from a platform integrity perspective.
+The chapter concludes with a live experiment in which generated posts are scored using the trained models and selectively published to evaluate whether model-guided post selection leads to improved real-world engagement outcomes. Taken together, the experiments aim to determine how accurately publicly available data can be used to predict post popularity, and whether such predictions are sufficient to guide automated content selection in a live deployment. The broader implication assessed here is whether the barrier to constructing such a pipeline is low enough to warrant serious attention from a platform integrity perspective.
 
 \section{Embedding Model Comparison}
 
@@ -27,23 +21,13 @@ The choice of text embedding model influences both the semantic quality of post 
 
 \subsection{Embedding Model Selection Criteria}
 
-Embedding models were selected based on a combination of computational feasibility and representational performance. Since embeddings are stored for more than 1.5 million posts, embedding dimensionality directly impacts storage requirements and training efficiency of downstream regression models.
+Embedding models were selected based on a combination of computational feasibility and representational performance. Since embeddings are stored for more than 1.5 million posts, embedding dimensionality directly impacts storage requirements and training efficiency of downstream regression models. To balance representational capacity with computational constraints, models producing embeddings of approximately 1024 dimensions were preferred. Higher-dimensional embeddings would substantially increase dataset size and model training cost without guaranteed performance gains. In addition, models with fewer than one billion parameters were prioritized to ensure feasible local execution within available hardware resources. All embedding models were run locally to maintain full control over preprocessing and avoid reliance on external APIs.
 
-To balance representational capacity with computational constraints, models producing embeddings of approximately 1024 dimensions were preferred. Higher-dimensional embeddings would substantially increase dataset size and model training cost without guaranteed performance gains.
-
-In addition, models with fewer than one billion parameters were prioritized to ensure feasible local execution within available hardware resources. All embedding models were run locally to maintain full control over preprocessing and avoid reliance on external APIs.
-
-Among models meeting these constraints, selection was further guided by reported performance on semantic similarity and classification benchmarks. Since the task involves distinguishing linguistic and stylistic differences between subreddit communities, embedding models with strong semantic discrimination capabilities were considered suitable candidates.
-
-The following section evaluates the selected models empirically within the popularity prediction framework.
+Among models meeting these constraints, selection was further guided by reported performance on semantic similarity and classification benchmarks. Since the task involves distinguishing linguistic and stylistic differences between subreddit communities, embedding models with strong semantic discrimination capabilities were considered suitable candidates. The following section evaluates the selected models empirically within the popularity prediction framework.
 
 \subsection{Evaluation Setup}
 
-To evaluate the impact of embedding model choice on popularity prediction performance, several transformer-based encoder models satisfying the above criteria were compared.
-
-For all experiments in this section, the aggregation strategy was fixed to concatenation of title and selftext embeddings. No dimensionality reduction was applied. All other model components, including the XGBoost regression configuration and training/validation split, were kept constant to ensure a controlled comparison.
-
-Performance metrics are reported as mean values across all subreddits.
+To evaluate the impact of embedding model choice on popularity prediction performance, several transformer-based encoder models satisfying the above criteria were compared. For all experiments in this section, the aggregation strategy was fixed to concatenation of title and selftext embeddings with no dimensionality reduction applied. All other model components, including the XGBoost regression configuration and training/validation split, were kept constant to ensure a controlled comparison. Performance metrics are reported as mean values across all subreddits.
 
 
 \subsection{Results and Interpretation}
@@ -65,23 +49,15 @@ Gwen                   & 0.1180 & 0.1490 & 0.1361 & 0.3658 & \checkmark & \check
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:embedding_comparison} reports regression performance across different embedding models. Stella achieves the best overall performance, with the lowest MAE (0.1153), lowest RMSE (0.1459), highest $R^2$ (0.1700), and highest Pearson correlation (0.4086).
+Table~\ref{tab:embedding_comparison} reports regression performance across different embedding models. Stella achieves the best overall performance, with the lowest MAE (0.1153), lowest RMSE (0.1459), highest $R^2$ (0.1700), and highest Pearson correlation (0.4086). The performance differences between Stella and e5 Large Instruct are relatively small, and a Wilcoxon signed-rank test reveals no statistically significant difference in either MAE or Pearson correlation after multiple-comparison correction. In contrast, the performance gaps for Kalm Mini Instruct, Bilingual, and Gwen are all statistically significant, confirming that these models provide meaningfully weaker representations for the popularity prediction task. Kalm Mini Instruct and Bilingual embeddings perform moderately worse, while Gwen exhibits the lowest predictive performance across all reported metrics.
 
-The performance differences between Stella and e5 Large Instruct are relatively small, and a Wilcoxon signed-rank test reveals no statistically significant difference in either MAE or Pearson correlation after multiple-comparison correction. In contrast, the performance gaps for Kalm Mini Instruct, Bilingual, and Gwen are all statistically significant, confirming that these models provide meaningfully weaker representations for the popularity prediction task.
-
-Kalm Mini Instruct and Bilingual embeddings perform moderately worse, while Gwen exhibits the lowest predictive performance across all reported metrics.
-
-The observed differences across embedding models suggest that higher-quality semantic representations contribute positively to popularity prediction. However, improvements remain moderate, indicating that embeddings alone explain only a limited portion of variance in upvote ratio.
-
-The relatively small gap between the top-performing models also suggests diminishing returns from purely improving semantic encoding without incorporating additional structured features.
+The observed differences across embedding models suggest that higher-quality semantic representations contribute positively to popularity prediction. However, improvements remain moderate, indicating that embeddings alone explain only a limited portion of variance in upvote ratio. The relatively small gap between the top-performing models also suggests diminishing returns from purely improving semantic encoding without incorporating additional structured features.
 
 Given its consistently superior performance across evaluation metrics, Stella was selected as the baseline embedding model for subsequent experiments. All further aggregation and feature engineering evaluations use Stella embeddings unless otherwise stated.
 
 \subsection{Prompt Conditioning for Stella Embeddings}
 
-To assess whether task-specific prompt conditioning influences embedding quality for popularity prediction, multiple prompt variants were evaluated using the Stella model. All other components of the pipeline were held constant, including aggregation strategy (concatenation), feature configuration (embeddings only), regression model, and training split.
-
-Each prompt variant modifies the instruction context under which embeddings are generated, emphasizing different aspects such as popularity, writing quality, engagement, political leaning, or general content description.
+To assess whether task-specific prompt conditioning influences embedding quality for popularity prediction, multiple prompt variants were evaluated using the Stella model. All other components of the pipeline were held constant, including aggregation strategy (concatenation), feature configuration (embeddings only), regression model, and training split. Each prompt variant modifies the instruction context under which embeddings are generated, emphasizing different aspects such as popularity, writing quality, engagement, political leaning, or general content description.
 
 \begin{table}[ht]
 \centering
@@ -101,13 +77,7 @@ Stella Engagement            & 0.1152 & 0.1459 & 0.1708 & 0.4099 & \checkmark & 
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:prompt_comparison} reports the impact of prompt conditioning on regression performance. Differences between prompt variants are relatively small but consistent.
-
-The \textit{Content} prompt achieves the highest performance overall, with the lowest MAE (0.1148), highest $R^2$ (0.1762), and highest Pearson correlation (0.4164). The \textit{Writing Quality} prompt performs nearly identically, while the baseline prompt yields slightly lower performance across all metrics.
-
-Prompts emphasizing popularity or political leaning provide modest improvements over the baseline but do not outperform the more general content-focused variants. Wilcoxon signed-rank tests confirm that all prompt variants produce statistically significant improvements over the no-prompt baseline in both MAE and Pearson correlation after Benjamini-Hochberg correction. Despite reaching statistical significance, the magnitude of improvement remains marginal, indicating that embedding quality is relatively robust to prompt phrasing within the tested range.
-
-The superior performance of the content-oriented prompts may indicate that general semantic alignment provides a stronger signal for predicting community approval than narrowly framed task instructions.
+Table~\ref{tab:prompt_comparison} reports the impact of prompt conditioning on regression performance. Differences between prompt variants are relatively small but consistent. The \textit{Content} prompt achieves the highest performance overall, with the lowest MAE (0.1148), highest $R^2$ (0.1762), and highest Pearson correlation (0.4164), while the \textit{Writing Quality} prompt performs nearly identically. Prompts emphasizing popularity or political leaning provide modest improvements over the baseline but do not outperform the more general content-focused variants. Wilcoxon signed-rank tests confirm that all prompt variants produce statistically significant improvements over the no-prompt baseline in both MAE and Pearson correlation after Benjamini-Hochberg correction. Despite reaching statistical significance, the magnitude of improvement remains marginal, indicating that embedding quality is relatively robust to prompt phrasing within the tested range. The superior performance of the content-oriented prompts may indicate that general semantic alignment provides a stronger signal for predicting community approval than narrowly framed task instructions.
 
 Given the negligible performance differences observed across configurations, the Stella model without prompt augmentation continues to serve as the baseline embedding setup for all subsequent aggregation and feature engineering experiments.
 
@@ -117,9 +87,7 @@ Given that Reddit posts contain multiple text fields (title and selftext), the m
 
 \subsection{Evaluation Setup}
 
-To evaluate the impact of embedding aggregation strategy on popularity prediction performance, multiple methods for combining title and selftext embeddings were compared.
-
-All experiments in this section use the Stella Content embedding configuration. No dimensionality reduction was applied. The XGBoost regression model and train/validation split were kept constant to ensure controlled comparison.
+To evaluate the impact of embedding aggregation strategy on popularity prediction performance, multiple methods for combining title and selftext embeddings were compared. All experiments in this section use the Stella Content embedding configuration with no dimensionality reduction applied. The XGBoost regression model and train/validation split were kept constant to ensure controlled comparison.
 
 \subsection{Results and Interpretation}
 
@@ -143,25 +111,15 @@ Title Only               & 0.1173 & 0.1483 & 0.1447 & 0.3763 & --- & --- \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:aggregation_comparison} reports regression performance across different aggregation strategies. Mean pooling achieves the lowest MAE (0.1150) and strong correlation (0.4124), while smart mean performs similarly with slightly improved $R^2$ compared to the baseline concatenation approach.
+Table~\ref{tab:aggregation_comparison} reports regression performance across different aggregation strategies. Mean pooling achieves the lowest MAE (0.1150) and strong correlation (0.4124), while smart mean performs similarly with slightly improved $R^2$ compared to the baseline concatenation approach. Concatenation (baseline Stella) achieves competitive performance but does not outperform mean pooling, and the multi-feature aggregation, which includes an additional similarity score between title and body embeddings, performs similarly to concatenation without providing measurable improvement. Using only the title embedding results in noticeably lower performance compared to combined representations, confirming that body text contributes meaningful signal for popularity prediction.
 
-Concatenation (baseline Stella) achieves competitive performance but does not outperform mean pooling. The multi-feature aggregation, which includes an additional similarity score between title and body embeddings, performs similarly to concatenation but does not provide measurable improvement.
+Hadamard product aggregation performs substantially worse than all other methods, with a marked decrease in $R^2$ (0.0918) and correlation (0.2843). This suggests that multiplicative interaction alone is insufficient to preserve predictive information contained in separate title and body embeddings. Statistical significance was assessed for the mean and smart mean strategies relative to the concatenation baseline. Mean pooling yields a statistically significant improvement in MAE but not in Pearson correlation after Benjamini-Hochberg correction. Smart mean does not reach significance on either metric, despite its slightly higher $R^2$. The remaining aggregation strategies were not subjected to formal testing.
 
-Hadamard product aggregation performs substantially worse than all other methods, with a marked decrease in $R^2$ (0.0918) and correlation (0.2843). This suggests that multiplicative interaction alone is insufficient to preserve predictive information contained in separate title and body embeddings.
-
-Using only the title embedding results in noticeably lower performance compared to combined representations, confirming that body text contributes meaningful signal for popularity prediction.
-
-Statistical significance was assessed for the mean and smart mean strategies relative to the concatenation baseline. Mean pooling yields a statistically significant improvement in MAE but not in Pearson correlation after Benjamini-Hochberg correction. Smart mean does not reach significance on either metric, despite its slightly higher $R^2$. The remaining aggregation strategies were not subjected to formal testing.
-
-Although performance differences among pooling-based strategies remain moderate, the results indicate that preserving balanced information from both title and body text is preferable to interaction-only representations.
-
-Given its consistent and stable performance, mean pooling or smart mean aggregation provide practical aggregation strategies with the latter having a minimal dimensionality increase.
+Although performance differences among pooling-based strategies remain moderate, the results indicate that preserving balanced information from both title and body text is preferable to interaction-only representations. Given its consistent and stable performance, mean pooling or smart mean aggregation provide practical aggregation strategies with the latter having a minimal dimensionality increase.
 
 \subsection{Effect of Dimensionality Reduction}
 
-To assess whether dimensionality reduction can improve computational efficiency without degrading predictive performance, Principal Component Analysis (PCA) was applied to embedding representations prior to regression.
-
-Both per-subreddit PCA and global PCA (computed across all subreddits) were evaluated. Reduced dimensionalities of 512, 256, and 128 components were tested. All other model components, including aggregation strategy and regression configuration, were kept constant.
+To assess whether dimensionality reduction can improve computational efficiency without degrading predictive performance, Principal Component Analysis (PCA) was applied to embedding representations prior to regression. Both per-subreddit PCA and global PCA (computed across all subreddits) were evaluated at reduced dimensionalities of 512, 256, and 128 components. All other model components, including aggregation strategy and regression configuration, were kept constant.
 
 \begin{table}[ht]
 \centering
@@ -180,11 +138,8 @@ Global PCA 512 & 0.1207 & 0.1519 & 0.0976 & 0.2630  \\
 \end{table}
 
 Table~\ref{tab:dimensionality_reduction} reports regression performance under different dimensionality reduction settings.
-
 Per-subreddit PCA with 512 components yields performance identical to the baseline configuration, indicating that a moderate reduction in dimensionality can preserve predictive signal when applied within individual communities.
-
 Global PCA with 256 and 128 components results in only minor performance degradation, suggesting that substantial dimensionality reduction is possible without dramatically impacting regression quality.
-
 However, global PCA with 512 components exhibits a significant drop in performance, with $R^2$ decreasing to 0.0976 and correlation falling to 0.2630. This suggests that globally computed principal components may fail to preserve community-specific variance patterns critical for predicting popularity.
 
 \section{Dataset Composition Effects}
@@ -207,9 +162,7 @@ Link Posts Only & 0.1155 & 0.1482 & -0.0809 & 0.2869 & 170,641 \\
 \end{tabular}
 \end{table}
 
-Training on the combined dataset consistently yields the best overall performance, achieving the highest Pearson correlation ($r=0.4086$) and the strongest $R^2$ value. Models trained only on self posts perform slightly worse across all metrics.
-
-Models trained exclusively on link posts exhibit substantially weaker performance, particularly in terms of correlation and explained variance. One possible explanation is that link posts contain less textual information directly available to the model, as only the title text is encoded while the content of the linked article is not included.
+Training on the combined dataset consistently yields the best overall performance, achieving the highest Pearson correlation ($r=0.4086$) and the strongest $R^2$ value, while models trained only on self posts perform slightly worse across all metrics. Models trained exclusively on link posts exhibit substantially weaker performance, particularly in terms of correlation and explained variance. One possible explanation is that link posts contain less textual information directly available to the model, as only the title text is encoded while the content of the linked article is not included.
 
 The superior performance of the combined dataset suggests that including both post types provides a larger and more diverse training set, enabling the model to learn more robust engagement patterns. Although the live experiment generates only self posts, link posts were retained during training because their inclusion improves overall predictive performance.
 
@@ -228,7 +181,6 @@ Beyond text embeddings, various structured metadata features may provide additio
 \subsection{Temporal Feature Contribution}
 
 To evaluate the contribution of temporal information, time-related features were added individually to the baseline embedding model (Stella embeddings with concatenation). All other model components, including regression configuration and training split, were kept constant.
-
 Each temporal feature group was evaluated independently to isolate its marginal predictive contribution.
 
 \begin{table}[ht]
@@ -251,23 +203,16 @@ Weekend Indicator & 0.1153 & 0.1459 & 0.1699 & 0.4085 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:temporal_features} reports the effect of individual temporal features on popularity prediction performance.
+Table~\ref{tab:temporal_features} reports the effect of individual temporal features on popularity prediction performance. Adding the complete timestamp encoding yields the strongest improvement among temporal features, increasing $R^2$ from 0.1700 to 0.1722 and Pearson correlation from 0.4086 to 0.4115. Cyclic encodings of hour, month, and time-of-day buckets provide modest but consistent gains over the baseline. Day-of-week and holiday-related features show minimal impact on predictive performance, and detailed holiday encodings (minor, major, or all holidays) do not improve performance relative to embeddings alone.
 
-Adding the complete timestamp encoding yields the strongest improvement among temporal features, increasing $R^2$ from 0.1700 to 0.1722 and Pearson correlation from 0.4086 to 0.4115. Cyclic encodings of hour, month, and time-of-day buckets provide modest but consistent gains over the baseline.
-
-Day-of-week and holiday-related features show minimal impact on predictive performance. In particular, detailed holiday encodings (minor, major, or all holidays) do not improve performance relative to embeddings alone.
-
-Overall, temporal features provide measurable but moderate improvements in predictive performance. This suggests that posting time influences community reception to some extent, but textual features remain the dominant signal for upvote ratio prediction.
+Overall, temporal features provide measurable but moderate improvements in predictive performance. This suggests that posting time influences community reception to some extent, but textual features remain the dominant signal for upvote ratio prediction. The relatively small magnitude of improvement indicates that temporal context acts as a secondary factor rather than a primary driver of community approval.
 
 % TODO: things like post time might be very relevant for how many likes, views etc post gets, but with our focus on upvote ratio, its doesnt affect how people receive the post itself
-
-The relatively small magnitude of improvement indicates that temporal context acts as a secondary factor rather than a primary driver of community approval.
 
 
 \subsection{Domain Feature Contribution}
 
 To evaluate the impact of external content source information, domain-based features were added to the baseline embedding model (Stella embeddings with concatenation). 
-
 Three configurations were tested: continuous correlation scores, binary indicators for top and bottom domains, and a combined configuration including all domain-related features. All other model components were kept constant.
 
 \begin{table}[ht]
@@ -288,19 +233,14 @@ Domain Binary              & 0.1153 & 0.1459 & 0.1709 & 0.4097 & --- & --- \\
 
 Table~\ref{tab:domain_features} reports the effect of domain-based features on popularity prediction performance.
 
-Adding domain features yields a noticeable improvement over the embedding-only baseline. Both the full domain feature set and the continuous domain score configuration increase $R^2$ from 0.1700 to approximately 0.1793 and improve Pearson correlation from 0.4086 to 0.4201. Wilcoxon signed-rank tests confirm that these improvements are statistically significant after Benjamini-Hochberg correction for both MAE and Pearson correlation.
+Table~\ref{tab:domain_features} reports the effect of domain-based features on popularity prediction performance. Adding domain features yields a noticeable improvement over the embedding-only baseline. Both the full domain feature set and the continuous domain score configuration increase $R^2$ from 0.1700 to approximately 0.1793 and improve Pearson correlation from 0.4086 to 0.4201. Wilcoxon signed-rank tests confirm that these improvements are statistically significant after Benjamini-Hochberg correction for both MAE and Pearson correlation. In contrast, the binary domain indicators alone do not provide meaningful improvement over the baseline and were not formally tested.
 
-In contrast, the binary domain indicators alone do not provide meaningful improvement over the baseline and were not formally tested.
-
-The strong performance of continuous domain score features suggests that subreddit communities exhibit systematic differences in how linked external content is received. However, domain features should not be interpreted purely as reputation signals. 
-
-For link posts, only the title text is embedded, while the full article content remains unobserved by the model. Domain information may therefore act as a proxy for latent characteristics of the linked articles, such as writing style, topical framing, or ideological alignment, which are not captured by title embeddings alone.
+The strong performance of continuous domain score features suggests that subreddit communities exhibit systematic differences in how linked external content is received. However, domain features should not be interpreted purely as reputation signals. For link posts, only the title text is embedded, while the full article content remains unobserved by the model. Domain information may therefore act as a proxy for latent characteristics of the linked articles, such as writing style, topical framing, or ideological alignment, which are not captured by title embeddings alone.
 
 
 \subsection{Sentiment Feature Contribution}
 
 To evaluate whether affective signals contribute to popularity prediction, sentiment features derived from VADER were added to the baseline embedding model (Stella embeddings with concatenation). 
-
 Multiple configurations were tested, varying both the text source (title, body, combined, or max-pooled) and the type of sentiment representation (raw scores, binary indicator, categorical encoding, or combined features).
 
 \begin{table}[ht]
@@ -321,20 +261,13 @@ Combined Text (All Sentiment Features) & 0.1153 & 0.1459 & 0.1700 & 0.4088  \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:sentiment_features} reports the effect of sentiment features on prediction performance.
+Table~\ref{tab:sentiment_features} reports the effect of sentiment features on prediction performance. Across configurations, sentiment features provide only marginal improvements over the embedding-only baseline. The strongest configuration (separate sentiment scores for title and body) increases $R^2$ from 0.1700 to approximately 0.1710 and Pearson correlation from 0.4086 to roughly 0.4101, while other configurations yield nearly identical performance to the baseline.
 
-Across configurations, sentiment features provide only marginal improvements over the embedding-only baseline. The strongest configuration (separate sentiment scores for title and body) increases $R^2$ from 0.1700 to approximately 0.1710 and Pearson correlation from 0.4086 to roughly 0.4101.
-
-Other configurations yield nearly identical performance to the baseline.
-
-These results suggest that coarse-grained sentiment signals contribute limited additional predictive value beyond transformer-based embeddings. Since modern embeddings already encode contextual and affective information implicitly, explicit sentiment scores appear largely redundant in this setting.
-
-The relatively small magnitude of improvement indicates that community approval is not strongly determined by simple positive or negative sentiment alone, but rather by more complex linguistic, contextual, and structural factors.
+These results suggest that coarse-grained sentiment signals contribute limited additional predictive value beyond transformer-based embeddings. Since modern embeddings already encode contextual and affective information implicitly, explicit sentiment scores appear largely redundant in this setting. The relatively small magnitude of improvement indicates that community approval is not strongly determined by simple positive or negative sentiment alone, but rather by more complex linguistic, contextual, and structural factors.
 
 \subsection{TF-IDF Feature Contribution}
 
 To assess whether lexical frequency-based signals provide additional predictive value beyond transformer embeddings, TF-IDF-derived features were added to the baseline embedding model (Stella embeddings with concatenation).
-
 Three categories were evaluated: coverage features, correlation-based TF-IDF scores, and binary indicators for high-impact terms. A combined configuration including all TF-IDF features was also tested. All other model components were kept constant.
 
 \begin{table}[ht]
@@ -354,23 +287,15 @@ TF-IDF Coverage & 0.1153 & 0.1459 & 0.1700 & 0.4086 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:tfidf_features} reports the effect of TF-IDF-derived features on regression performance.
+Table~\ref{tab:tfidf_features} reports the effect of TF-IDF-derived features on regression performance. Across all configurations, TF-IDF features do not yield measurable improvement over the embedding-only baseline. Performance metrics remain effectively unchanged, with $R^2$ and Pearson correlation identical to or slightly below baseline values. Even the correlation-based TF-IDF score features, which encode term-level relationships with popularity, fail to provide additional predictive signal beyond what is already captured by transformer embeddings.
 
-Across all configurations, TF-IDF features do not yield measurable improvement over the embedding-only baseline. Performance metrics remain effectively unchanged, with $R^2$ and Pearson correlation identical to or slightly below baseline values.
-
-Even the correlation-based TF-IDF score features, which encode term-level relationships with popularity, fail to provide additional predictive signal beyond what is already captured by transformer embeddings.
-
-These findings suggest that dense transformer embeddings already encode the majority of useful lexical information relevant for predicting upvote ratio. The explicit inclusion of TF-IDF-based lexical statistics appears largely redundant in this setting.
-
-This result highlights the representational strength of contextual embeddings compared to traditional bag-of-words approaches, particularly when large-scale pretrained models are used.
+These findings suggest that dense transformer embeddings already encode the majority of useful lexical information relevant for predicting upvote ratio. The explicit inclusion of TF-IDF-based lexical statistics appears largely redundant in this setting. This result highlights the representational strength of contextual embeddings compared to traditional bag-of-words approaches, particularly when large-scale pretrained models are used.
 
 
 \subsection{Author Feature Contribution}
 
 To evaluate the impact of author-level information, author metadata features were added to the baseline embedding model. Due to missing or inaccessible author accounts (e.g., deleted or unavailable users), complete author metadata was not available for all posts.
-
 As a result, experiments involving author features were conducted on a reduced subset of 220,855 posts. Approximately 40\% of posts were excluded because required author metadata could not be retrieved.
-
 To ensure fair comparison, the baseline model reported in this section (``Embeddings Only – Author Filtered'') was evaluated on the same reduced subset without incorporating author features.
 
 \begin{table}[ht]
@@ -394,25 +319,15 @@ Embeddings Only (Author-Available Subset)  & 0.1126 & 0.1429 & 0.1571 & 0.3923 &
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:author_features} reports regression performance with individual and combined author features.
+Table~\ref{tab:author_features} reports regression performance with individual and combined author features. Incorporating all author-related features yields a substantial improvement in predictive performance, increasing $R^2$ from 0.1571 (baseline on filtered subset) to 0.2016 and Pearson correlation from 0.3923 to 0.4444. A Wilcoxon signed-rank test confirms that this improvement is statistically significant after Benjamini-Hochberg correction. Among individual features, account age and total karma provide the strongest gains, while moderator status and premium (Gold) status contribute comparatively little predictive value. Individual feature configurations were not subjected to formal significance testing.
 
-Incorporating all author-related features yields a substantial improvement in predictive performance, increasing $R^2$ from 0.1571 (baseline on filtered subset) to 0.2016 and Pearson correlation from 0.3923 to 0.4444. A Wilcoxon signed-rank test confirms that this improvement is statistically significant after Benjamini-Hochberg correction.
-
-Among individual features, account age and total karma provide the strongest gains, while moderator status and premium (Gold) status contribute comparatively little predictive value. Individual feature configurations were not subjected to formal significance testing.
-
-The magnitude of improvement indicates that author-related variables are strongly associated with post reception. However, this association should not be interpreted as evidence that users directly reward reputation or account status.
-
-At least two plausible explanations exist. First, more experienced users—reflected in higher account age or accumulated karma—may better understand subreddit norms and audience expectations, resulting in higher-quality or better-aligned submissions. Second, reputation-related signals may influence how posts are perceived within the community, independent of intrinsic content quality.
-
-The present analysis cannot distinguish between these explanations. It demonstrates only that author-level characteristics are statistically associated with upvote ratio and improve predictive performance within the regression framework relative to embeddings alone on the same data subset.
+The magnitude of improvement indicates that author-related variables are strongly associated with post reception. However, this association should not be interpreted as evidence that users directly reward reputation or account status. At least two plausible explanations exist. First, more experienced users—reflected in higher account age or accumulated karma—may better understand subreddit norms and audience expectations, resulting in higher-quality or better-aligned submissions. Second, reputation-related signals may influence how posts are perceived within the community, independent of intrinsic content quality. The present analysis cannot distinguish between these explanations. It demonstrates only that author-level characteristics are statistically associated with upvote ratio and improve predictive performance within the regression framework relative to embeddings alone on the same data subset.
 
 Because approximately 40\% of posts lacked retrievable author metadata due to account deletion or archival limitations, the author-based experiments were conducted on a reduced sample. Direct comparison to full-dataset experiments is therefore not appropriate. However, the embedding-only baseline trained on the identical filtered subset provides an internally consistent reference, ensuring that the observed performance differences are attributable to the inclusion of author features rather than changes in sample composition.
 
 \subsubsection*{Feature Contribution Summary.}
 
-Taken together, the preceding feature analyses reveal distinct differences in predictive contribution across feature groups.
-
-Overall, author-level and domain-based features provide the largest predictive gains, while temporal effects are moderate and sentiment and TF-IDF features contribute minimally beyond embeddings.
+Taken together, the preceding feature analyses reveal distinct differences in predictive contribution across feature groups. Overall, author-level and domain-based features provide the largest predictive gains, while temporal effects are moderate and sentiment and TF-IDF features contribute minimally beyond embeddings.
 
 \section{Combined Feature Configurations}
 
@@ -425,17 +340,7 @@ Results will be reported separately for:
 
 \section{Cross-Subreddit Generalization}
 
-To evaluate the extent to which popularity dynamics transfer across communities, three alternative training strategies were compared:
-
-(1) \textit{Subreddit-specific models}, where a separate regression model is trained for each subreddit.
-
-(2) \textit{Leaning-group models}, where one model is trained per political leaning category.
-
-(3) \textit{Combined model}, where a single model is trained on all subreddits jointly.
-
-In addition, a variant of the combined model was evaluated that includes an explicit subreddit indicator feature.
-
-All configurations use identical embedding and regression settings to ensure comparability.
+To evaluate the extent to which popularity dynamics transfer across communities, three alternative training strategies were compared: (1) \textit{Subreddit-specific models}, where a separate regression model is trained for each subreddit; (2) \textit{Leaning-group models}, where one model is trained per political leaning category; and (3) \textit{Combined model}, where a single model is trained on all subreddits jointly. In addition, a variant of the combined model was evaluated that includes an explicit subreddit indicator feature. All configurations use identical embedding and regression settings to ensure comparability.
 
 
 \begin{table}[ht]
@@ -454,15 +359,9 @@ Combined            & 0.1298 & -0.0027 & 0.2887 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:model_grouping} reports average performance across subreddits for each training strategy.
+Table~\ref{tab:model_grouping} reports average performance across subreddits for each training strategy. Subreddit-specific models achieve the strongest performance, with mean Pearson correlation of 0.4086 and $R^2$ of 0.1700. Leaning-group models exhibit a noticeable performance drop, while the fully combined model performs substantially worse, with mean $R^2$ approaching zero. Introducing an explicit subreddit feature into the combined model partially recovers performance but remains clearly below subreddit-specific training.
 
-Subreddit-specific models achieve the strongest performance, with mean Pearson correlation of 0.4086 and $R^2$ of 0.1700. Leaning-group models exhibit a noticeable performance drop, while the fully combined model performs substantially worse, with mean $R^2$ approaching zero.
-
-Introducing an explicit subreddit feature into the combined model partially recovers performance but remains clearly below subreddit-specific training.
-
-These results indicate that popularity dynamics are strongly community-dependent. Training a global model across heterogeneous subreddits introduces substantial noise that reduces predictive accuracy. Even grouping subreddits by political leaning is insufficient to fully capture community-specific variation.
-
-The partial recovery achieved by adding a subreddit indicator feature suggests that shared structural patterns exist across communities, but these patterns require explicit conditioning on community identity to be effectively leveraged.
+These results indicate that popularity dynamics are strongly community-dependent. Training a global model across heterogeneous subreddits introduces substantial noise that reduces predictive accuracy. Even grouping subreddits by political leaning is insufficient to fully capture community-specific variation. The partial recovery achieved by adding a subreddit indicator feature suggests that shared structural patterns exist across communities, but these patterns require explicit conditioning on community identity to be effectively leveraged.
 
 \clearpage
 
@@ -514,13 +413,9 @@ Subreddit & Specific & Leaning & Combined & Combined + Sub. \\
 % \textbf{Mean}             & \textbf{0.4086} & \textbf{0.3540} & \textbf{0.2887} & \textbf{0.3270} \\
 \end{longtable}
 
-Table~\ref{tab:per_subreddit_pearson} provides a per-subreddit comparison of Pearson correlation across training strategies.
+Table~\ref{tab:per_subreddit_pearson} provides a per-subreddit comparison of Pearson correlation across training strategies. Across nearly all communities, subreddit-specific models achieve the strongest performance, with the performance gap particularly pronounced for politically active subreddits such as PoliticalDiscussion, Libertarian, and democrats.
 
-Across nearly all communities, subreddit-specific models achieve the strongest performance. The performance gap is particularly pronounced for politically active subreddits such as PoliticalDiscussion, Libertarian, and democrats.
-
-Leaning-group models typically outperform the fully combined model, indicating that grouping by ideological orientation preserves some transferable structure. However, leaning-level training remains consistently below subreddit-specific performance. Adding a subreddit indicator feature to the combined model improves results across most communities but does not close the gap.
-
-These findings suggest that while some shared engagement patterns exist across ideologically similar communities, substantial variation persists at the individual subreddit level. Popularity dynamics therefore appear to be shaped by both broader ideological alignment and localized community norms.
+Leaning-group models typically outperform the fully combined model, indicating that grouping by ideological orientation preserves some transferable structure. However, leaning-level training remains consistently below subreddit-specific performance. Adding a subreddit indicator feature to the combined model improves results across most communities but does not close the gap. These findings suggest that while some shared engagement patterns exist across ideologically similar communities, substantial variation persists at the individual subreddit level. Popularity dynamics therefore appear to be shaped by both broader ideological alignment and localized community norms.
 
 \subsection{Leaning-Level Transferability}
 
@@ -542,22 +437,14 @@ Apolitical model & 0.1862 & 0.1625 & 0.1449 & \textbf{0.3308} \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:cross_leaning_pearson} reports cross-leaning generalisation performance. Each cell shows the mean Pearson correlation when a leaning-group model is evaluated on subreddits belonging to a particular ideological category. Diagonal entries represent within-group performance, while off-diagonal entries capture cross-group transfer.
+Table~\ref{tab:cross_leaning_pearson} reports cross-leaning generalisation performance. Each cell shows the mean Pearson correlation when a leaning-group model is evaluated on subreddits belonging to a particular ideological category. Diagonal entries represent within-group performance, while off-diagonal entries capture cross-group transfer. A clear diagonal structure is visible: models trained within a given ideological category perform substantially better on subreddits of the same category than on those of different leanings. For example, the right-leaning model achieves a mean $r$ of 0.3447 on right-leaning subreddits but drops markedly when evaluated on left-leaning (0.2180), neutral (0.1699), or apolitical (0.1571) communities.
 
-A clear diagonal structure is visible. Models trained within a given ideological category perform substantially better on subreddits of the same category than on those of different leanings. For example, the right-leaning model achieves a mean $r$ of 0.3447 on right-leaning subreddits but drops markedly when evaluated on left-leaning (0.2180), neutral (0.1699), or apolitical (0.1571) communities.
-
-This pattern holds consistently across all leaning categories, indicating that engagement dynamics exhibit partial ideological clustering. However, even within-group performance remains below subreddit-specific training, demonstrating that ideological similarity alone does not fully account for community-specific popularity patterns.
-
-Taken together, these results suggest a hierarchical structure of generalizability: subreddit-specific models perform best, leaning-group models capture intermediate transferable structure, and fully combined models without explicit community conditioning perform worst.
+This pattern holds consistently across all leaning categories, indicating that engagement dynamics exhibit partial ideological clustering. However, even within-group performance remains below subreddit-specific training, demonstrating that ideological similarity alone does not fully account for community-specific popularity patterns. Taken together, these results suggest a hierarchical structure of generalizability: subreddit-specific models perform best, leaning-group models capture intermediate transferable structure, and fully combined models without explicit community conditioning perform worst.
 
 
 \section{Regression vs Classification}
 
-To evaluate whether directly modeling popularity as a binary classification task provides advantages over regression, a classification model was trained to predict whether a post belongs to the “popular” class. The popularity threshold was defined using the median upvote ratio of the training split.
-
-For comparability, regression predictions were also converted into binary labels using the same training median threshold. Performance was evaluated on the validation split using standard classification metrics.
-
-Because the median threshold was computed on the training split only, the validation split does not contain exactly 50\% popular posts. As a result, the positive class proportion differs slightly from 50\% in evaluation.
+To evaluate whether directly modeling popularity as a binary classification task provides advantages over regression, a classification model was trained to predict whether a post belongs to the "popular" class, with the popularity threshold defined using the median upvote ratio of the training split. For comparability, regression predictions were also converted into binary labels using the same training median threshold. Performance was evaluated on the validation split using standard classification metrics. Because the median threshold was computed on the training split only, the validation split does not contain exactly 50\% popular posts, and the positive class proportion differs slightly from 50\% in evaluation.
 
 \begin{table}[ht] 
     \centering 
@@ -569,15 +456,9 @@ Because the median threshold was computed on the training split only, the valida
     \end{tabular} 
 \end{table}
 
-Table~\ref{tab:classification} compares direct classification with regression-based thresholding. Precision and recall values refer to the positive (“popular”) class unless otherwise specified. Macro F1-score is reported to account for both classes symmetrically.
+Table~\ref{tab:classification} compares direct classification with regression-based thresholding, with precision and recall values referring to the positive ("popular") class and macro F1-score reported to account for both classes symmetrically. Direct classification achieves a higher macro F1-score (0.6513) compared to regression-derived classification (0.6341). However, regression-based classification yields higher recall and comparable overall accuracy, while predicting a larger share of posts as popular (54.05\%), reflecting the transfer of the training median threshold to a slightly shifted validation distribution. Importantly, the deployment objective of this thesis is asymmetric: in the live experiment, posts predicted as popular are actively published, whereas posts predicted as unpopular are discarded and can be replaced with newly generated candidates. Consequently, false positives (predicting a post as popular when it is not) are more costly than false negatives.
 
-Direct classification achieves a higher macro F1-score (0.6513) compared to regression-derived classification (0.6341). However, regression-based classification yields higher recall and comparable overall accuracy, while predicting a larger share of posts as popular (54.05\%), reflecting the transfer of the training median threshold to a slightly shifted validation distribution.
-
-Importantly, the deployment objective of this thesis is asymmetric. In the live experiment, posts predicted as popular are actively published, whereas posts predicted as unpopular are discarded and can be replaced with newly generated candidates. Consequently, false positives (predicting a post as popular when it is not) are more costly than false negatives.
-
-From this perspective, precision on the positive class is more critical than recall. Although direct classification achieves marginally better F1-score, regression preserves a continuous prediction scale that enables flexible threshold adjustment to prioritize precision when required.
-
-Because regression supports ranking and precision-oriented filtering without retraining, it provides a more suitable framework for the generation-and-selection pipeline used in the live experiment.
+From this perspective, precision on the positive class is more critical than recall. Although direct classification achieves marginally better F1-score, regression preserves a continuous prediction scale that enables flexible threshold adjustment to prioritize precision when required. Because regression supports ranking and precision-oriented filtering without retraining, it provides a more suitable framework for the generation-and-selection pipeline used in the live experiment.
 
 \section{Hyperparameter Optimization}
 \label{sec:hyperparam_optimization}
@@ -611,19 +492,11 @@ The hyperparameter optimization was conducted via grid search over four key para
 \end{threeparttable}
 \end{table}
 
-The grid search evaluated all 24 combinations of the four tuned hyperparameters. During the search phase, \texttt{n\_estimators} was fixed at 500 and \texttt{DETERMINISTIC} mode was enabled to ensure reproducible comparison of configurations. Models were evaluated using Mean Absolute Error (MAE) on the validation set, averaged across all subreddits.
-
-The best performing configuration from the grid search used \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, and \texttt{colsample\_bytree=0.85}, achieving an average MAE of 0.113135. Within the grid search itself, the improvement over the least optimal configuration (MAE of 0.115786) represents a 2.3\% relative improvement, confirming that the hyperparameter selection had measurable impact.
-
-Compared to the initial baseline configuration used in early experiments (\texttt{n\_estimators=100}, \texttt{learning\_rate=0.1}, no subsampling), which achieved an average MAE of 0.115338, the optimized configuration represents a 1.91\% improvement in MAE and a 7.14\% improvement in Pearson correlation (from 0.409 to 0.438). However, it should be noted that the experimental results reported in this chapter were obtained using the intermediate baseline configuration shown in Table~\ref{tab:xgb_baseline_params} (\texttt{n\_estimators=500}, \texttt{subsample=0.8}, \texttt{colsample\_bytree=0.8}), not the early baseline, ensuring fair comparison across all ablation studies.
+The grid search evaluated all 24 combinations of the four tuned hyperparameters. During the search phase, \texttt{n\_estimators} was fixed at 500 and \texttt{DETERMINISTIC} mode was enabled to ensure reproducible comparison of configurations. Models were evaluated using Mean Absolute Error (MAE) on the validation set, averaged across all subreddits. The best performing configuration from the grid search used \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, and \texttt{colsample\_bytree=0.85}, achieving an average MAE of 0.113135. Within the grid search itself, the improvement over the least optimal configuration (MAE of 0.115786) represents a 2.3\% relative improvement, confirming that the hyperparameter selection had measurable impact. Compared to the initial baseline configuration used in early experiments (\texttt{n\_estimators=100}, \texttt{learning\_rate=0.1}, no subsampling), which achieved an average MAE of 0.115338, the optimized configuration represents a 1.91\% improvement in MAE and a 7.14\% improvement in Pearson correlation (from 0.409 to 0.438). However, it should be noted that the experimental results reported in this chapter were obtained using the intermediate baseline configuration shown in Table~\ref{tab:xgb_baseline_params} (\texttt{n\_estimators=500}, \texttt{subsample=0.8}, \texttt{colsample\_bytree=0.8}), not the early baseline, ensuring fair comparison across all ablation studies.
 
 \subsection{Early Stopping Calibration}
 
-The grid search was conducted with \texttt{n\_estimators} fixed at 500 to ensure computational feasibility across 24 configurations. To determine the optimal number of trees for the selected hyperparameter values, a calibration run was performed with early stopping enabled (\texttt{early\_stopping\_rounds=50}) and \texttt{DETERMINISTIC=False}.
-
-This calibration identified that 2000 estimators provided the best validation performance with the selected learning rate of 0.05. The final deployed model therefore used \texttt{n\_estimators=2000} while keeping all other hyperparameters at their grid-search-optimal values.
-
-All other hyperparameters, including regularization terms (\texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, \texttt{reg\_lambda=1.0}), remained at the values used throughout the experimental phase.
+The grid search was conducted with \texttt{n\_estimators} fixed at 500 to ensure computational feasibility across 24 configurations. To determine the optimal number of trees for the selected hyperparameter values, a calibration run was performed with early stopping enabled (\texttt{early\_stopping\_rounds=50}) and \texttt{DETERMINISTIC=False}. This calibration identified that 2000 estimators provided the best validation performance with the selected learning rate of 0.05. The final deployed model therefore used \texttt{n\_estimators=2000} while keeping all other hyperparameters at their grid-search-optimal values. All other hyperparameters, including regularization terms (\texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, \texttt{reg\_lambda=1.0}), remained at the values used throughout the experimental phase.
 
 
 
@@ -632,24 +505,13 @@ All other hyperparameters, including regularization terms (\texttt{min\_child\_w
 % - 
 \section{Final Model Configuration}
  
-Based on the experiments reported in this chapter, the final model deployed in the live Reddit experiment was configured as follows:
- 
-\subsubsection*{Text Embedding.}
-The Stella 400M v5 model was used with the default ``content'' prompt configuration. Title and selftext embeddings were generated independently and aggregated via concatenation without dimensionality reduction, yielding a 2048-dimensional feature vector per post.
- 
-\subsubsection*{Additional Features.}
-Domain overlap features were included, encoding the frequency with which the post's linked domain appears in the training data for the target subreddit. Domain features were only applied to link posts; for self posts, the domain feature was masked to zero to avoid introducing spurious noise from the universal \texttt{reddit.com} domain. No author, time-of-posting, sentiment, or TF-IDF features were used, as these either showed negligible performance gains or introduced dependencies on metadata unavailable at generation time.
- 
-\subsubsection*{Dataset Composition.}
-The model was trained on the combined \texttt{self\_link} dataset, which includes both self posts and link posts from 2008 to 2022, filtered to subreddits with at least three posts per day on average. This dataset composition was selected based on its superior regression performance compared to self-only datasets (Section~\ref{sec:dataset_composition_results}).
- 
-\subsubsection*{Model Architecture.}
-XGBoost regression with the optimized hyperparameters from Table~\ref{tab:hyperparameter_tuning}: \texttt{n\_estimators=2000}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, \texttt{colsample\_bytree=0.85}. Regularization parameters were kept at \texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, and \texttt{reg\_lambda=1.0}.
- 
-\subsubsection*{Training Configuration.}
-Each subreddit's model was trained independently using an 80/20 train/validation split. The subreddit identifier was not included as a feature, as posts were generated and scored on a per-subreddit basis.
- 
-This configuration represents the culmination of the experimental findings, balancing predictive performance with practical constraints on feature availability during the live posting phase.
+Based on the experiments reported in this chapter, the final model deployed in the live Reddit experiment was configured as follows.
+
+The model was trained on the combined \texttt{self\_link} dataset, which includes both self posts and link posts from 2008 to 2022, filtered to subreddits with at least three posts per day on average. This dataset composition was selected based on its superior regression performance compared to self-only datasets (Section~\ref{sec:dataset_composition_results}). Each subreddit's model was trained independently using an 80/20 train/validation split, with the subreddit identifier excluded as a feature since posts were generated and scored on a per-subreddit basis.
+
+Text representation was based on the Stella 400M v5 model with the default ``content'' prompt configuration. Title and selftext embeddings were generated independently and aggregated via concatenation without dimensionality reduction, yielding a 2048-dimensional feature vector per post. Domain overlap features were included, encoding the frequency with which the post's linked domain appears in the training data for the target subreddit. Domain features were only applied to link posts; for self posts, the domain feature was masked to zero to avoid introducing spurious noise from the universal \texttt{reddit.com} domain. No author, time-of-posting, sentiment, or TF-IDF features were used, as these either showed negligible performance gains or introduced dependencies on metadata unavailable at generation time.
+
+The model architecture uses XGBoost regression with the optimized hyperparameters from Table~\ref{tab:hyperparameter_tuning}: \texttt{n\_estimators=2000}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, and \texttt{colsample\_bytree=0.85}. Regularization parameters were set to \texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, and \texttt{reg\_lambda=1.0}. This configuration represents the culmination of the experimental findings, balancing predictive performance with practical constraints on feature availability during the live posting phase.
 
 \section{Live Experiment Evaluation}
 
@@ -683,23 +545,17 @@ truegaming           & 0.212 & 0.576 & 0.496 & 0.651 \\
 \end{tabular}
 \end{table}
 
-Across subreddits, predicted scores generally fall between approximately 0.21 and 0.68. The top-10\% selection threshold typically lies between 0.49 and 0.63. In comparison, the median upvote ratios observed in the training data are substantially higher for most communities.
+Across subreddits, predicted scores generally fall between approximately 0.21 and 0.68, with the top-10\% selection threshold typically lying between 0.49 and 0.63. In comparison, the median upvote ratios observed in the training data are substantially higher for most communities. This difference indicates that even the highest-ranked generated posts rarely reach the typical median performance of historical posts in the dataset. However, this does not necessarily imply that generated posts are unusually poor. The training dataset was filtered to include only posts that received a minimum level of engagement and excluded deleted or removed content, and consequently it likely overrepresents relatively successful posts compared to the full distribution of submissions on Reddit.
 
-This difference indicates that even the highest-ranked generated posts rarely reach the typical median performance of historical posts in the dataset. However, this does not necessarily imply that generated posts are unusually poor. The training dataset was filtered to include only posts that received a minimum level of engagement and excluded deleted or removed content. Consequently, it likely overrepresents relatively successful posts compared to the full distribution of submissions on Reddit.
-
-For this reason, the live experiment focuses primarily on the relative ranking of generated posts rather than their absolute predicted scores. Even if generated posts do not reach the historical median threshold, the model may still correctly identify which posts are more likely to perform well relative to other generated candidates.
+For this reason, the live experiment focuses primarily on the relative ranking of generated posts rather than their absolute predicted scores. Even if generated posts do not reach the historical median threshold, the model may still correctly identify which posts are more likely to perform well relative to other generated candidates. A secondary objective of this evaluation is to contextualize the pipeline's feasibility. Regardless of whether the model-guided arm outperforms random selection at a statistically significant level, the experiment demonstrates that the end-to-end pipeline — data collection, model training, candidate generation, and automated posting — is operational with minimal resources. The significance of the result is therefore not limited to the A/B comparison: a null result would still constitute evidence that such systems can be constructed and deployed by actors without specialized infrastructure.
 
 A secondary objective of this evaluation is to contextualize the pipeline's feasibility. Regardless of whether the model-guided arm outperforms random selection at a statistically significant level, the experiment demonstrates that the end-to-end pipeline — data collection, model training, candidate generation, and automated posting — is operational with minimal resources. The significance of the result is therefore not limited to the A/B comparison: a null result would still constitute evidence that such systems can be constructed and deployed by actors without specialized infrastructure.
 
 \subsection{Baseline Subreddit Statistics}
 
-To provide context for evaluating the live experiment results, baseline engagement statistics were calculated for each subreddit. Only self posts were included in this analysis, as the generation pipeline produces discussion posts rather than link submissions.
+To provide context for evaluating the live experiment results, baseline engagement statistics were calculated for each subreddit. Only self posts were included in this analysis, as the generation pipeline produces discussion posts rather than link submissions. Unlike the training dataset, no minimum engagement filter was applied for this baseline calculation, providing a broader view of typical community engagement patterns and better comparability.
 
-Unlike the training dataset, no minimum engagement filter was applied for this baseline calculation. This provides a broader view of typical community engagement patterns and better comparability.
-
-To reduce the influence of highly active users who may post frequently, engagement statistics were aggregated at the user level. For each user, average and median values for upvote ratio, score, and comment count were computed before averaging across users.
-
-This approach ensures that a small number of highly popular or highly active users do not disproportionately skew the subreddit-level statistics. In practice, the difference between user-level aggregation and raw post averages was minimal.
+To reduce the influence of highly active users who may post frequently, engagement statistics were aggregated at the user level. For each user, average and median values for upvote ratio, score, and comment count were computed before averaging across users. This approach ensures that a small number of highly popular or highly active users do not disproportionately skew the subreddit-level statistics. In practice, the difference between user-level aggregation and raw post averages was minimal.
 
 % TODO add table
 % TODO maybe do use engagement filter..., but adjust mentions of no engagement filter then too
@@ -710,9 +566,7 @@ Table~X summarizes these baseline engagement statistics across the subreddits in
 
 \subsection{Experiment Constraints}
 
-During the live experiment, the account used for posting was banned from several subreddits. Specifically, \verb!r/anarchism! banned the account after the first post, \verb!r/truegaming! after the third post, and \verb!r/Fantasy! after the sixth post.
-
-These bans reduced the number of observations available for those communities and limited the ability to evaluate long-term posting behavior within those subreddits. The reasons for the bans are not directly observable — subreddit moderators do not provide detailed explanations, and it is not possible to determine whether removals were triggered by content style, account history, automated spam filters, or other community-specific policies. Rather than treating the bans as a methodological failure, they are documented here as an empirical observation: automated posting by a newly created account encountered moderation resistance in a subset of communities, which is itself relevant context for assessing the practical constraints of such a pipeline.
+During the live experiment, the account used for posting was banned from several subreddits: \verb!r/anarchism! after the first post, \verb!r/truegaming! after the third post, and \verb!r/Fantasy! after the sixth post. These bans reduced the number of observations available for those communities and limited the ability to evaluate long-term posting behavior within those subreddits. The reasons for the bans are not directly observable — subreddit moderators do not provide detailed explanations, and it is not possible to determine whether removals were triggered by content style, account history, automated spam filters, or other community-specific policies. Rather than treating the bans as a methodological failure, they are documented here as an empirical observation: automated posting by a newly created account encountered moderation resistance in a subset of communities, which is itself relevant context for assessing the practical constraints of such a pipeline.
 
 \subsection{Post Results}
 
