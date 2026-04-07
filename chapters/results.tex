@@ -552,25 +552,234 @@ For this reason, the live experiment focuses primarily on the relative ranking o
 A secondary objective of this evaluation is to contextualize the pipeline's feasibility. Regardless of whether the model-guided arm outperforms random selection at a statistically significant level, the experiment demonstrates that the end-to-end pipeline — data collection, model training, candidate generation, and automated posting — is operational with minimal resources. The significance of the result is therefore not limited to the A/B comparison: a null result would still constitute evidence that such systems can be constructed and deployed by actors without specialized infrastructure.
 
 \subsection{Baseline Subreddit Statistics}
+\label{subsec:baseline_statistics}
 
-To provide context for evaluating the live experiment results, baseline engagement statistics were calculated for each subreddit. Only self posts were included in this analysis, as the generation pipeline produces discussion posts rather than link submissions. Unlike the training dataset, no minimum engagement filter was applied for this baseline calculation, providing a broader view of typical community engagement patterns and better comparability.
+To provide context for evaluating the live experiment results, baseline engagement statistics were calculated for each subreddit using historical data from the training dataset. Only self posts were included in this analysis, as the generation pipeline produces discussion posts rather than link submissions. Unlike the training dataset, no minimum engagement filter was applied for this baseline calculation, providing a broader view of typical community engagement patterns.
 
 To reduce the influence of highly active users who may post frequently, engagement statistics were aggregated at the user level. For each user, average and median values for upvote ratio, score, and comment count were computed before averaging across users. This approach ensures that a small number of highly popular or highly active users do not disproportionately skew the subreddit-level statistics. In practice, the difference between user-level aggregation and raw post averages was minimal.
 
-% TODO add table
-% TODO maybe do use engagement filter..., but adjust mentions of no engagement filter then too
+Table~\ref{tab:baseline_subreddit_stats} summarizes these baseline engagement statistics for the nine subreddits initially targeted in the live experiment. The statistics reveal substantial heterogeneity in engagement patterns across communities. \verb!r/DebateReligion! and \verb!r/PoliticalDiscussion! exhibit the highest discussion activity, with median comment counts of 71.0 and 32.0 respectively, substantially exceeding other communities. However, these subreddits also show relatively low upvote ratios (median 0.710 and 0.690), suggesting that content in these communities is more likely to receive mixed or negative responses. In contrast, \verb!r/progun! achieves both high scores (median 20.0, mean 106.04) and high upvote ratios (median 0.840), indicating strong consensus-based engagement. \verb!r/TrueAtheism! similarly shows high median scores (29.0) with substantial discussion activity (median 37.0 comments). Among the smaller communities, \verb!r/TrueChristian! and \verb!r/DebateReligion! show comparable median scores (6.0 and 7.0), but \verb!r/TrueChristian! receives substantially fewer comments (median 15.0 vs. 71.0).
 
-TODO
+\begin{table}[htbp]
+\centering
+\caption{Baseline engagement statistics for subreddits in the live experiment. Statistics calculated from historical self posts in the training dataset using user-level aggregation. No minimum engagement filter applied.}
+\label{tab:baseline_subreddit_stats}
+\begin{tabular}{lrrrrrr}
+\toprule
+Subreddit & \makecell{Mean\\Upvote\\Ratio} & \makecell{Median\\Upvote\\Ratio} & \makecell{Mean\\Score} & \makecell{Median\\Score} & \makecell{Mean\\Comments} & \makecell{Median\\Comments} \\
+\midrule
+anarchism & 0.784 & 0.817 & 28.13 & 9.0 & 18.09 & 9.7 \\
+DebateReligion & 0.676 & 0.710 & 16.70 & 7.0 & 104.00 & 71.0 \\
+Fantasy & 0.774 & 0.800 & 36.61 & 11.0 & 35.17 & 20.0 \\
+mensrights & 0.760 & 0.800 & 62.59 & 16.0 & 30.81 & 15.0 \\
+PoliticalDiscussion & 0.662 & 0.690 & 49.24 & 7.0 & 90.05 & 32.0 \\
+progun & 0.776 & 0.840 & 106.04 & 20.0 & 42.60 & 18.0 \\
+TrueAtheism & 0.783 & 0.820 & 62.79 & 29.0 & 57.01 & 37.0 \\
+TrueChristian & 0.797 & 0.820 & 17.71 & 6.0 & 24.62 & 15.0 \\
+truegaming & 0.653 & 0.680 & 66.91 & 13.0 & 59.56 & 28.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-Table~X summarizes these baseline engagement statistics across the subreddits included in the live experiment.
+The gap between mean and median scores is substantial across all subreddits, indicating right-skewed distributions in which most posts receive modest engagement while a small fraction achieves substantially higher scores. This pattern is particularly pronounced in \verb!r/progun! (mean 106.04 vs. median 20.0) and \verb!r/mensrights! (mean 62.59 vs. median 16.0), where viral posts appear to drive mean statistics upward. The relatively high baseline upvote ratios observed in most communities (median values ranging from 0.680 to 0.840) suggest that the majority of submissions in these subreddits receive more positive than negative votes, though the lower ratios in \verb!r/DebateReligion!, \verb!r/PoliticalDiscussion!, and \verb!r/truegaming! (median 0.710, 0.690, and 0.680 respectively) indicate more polarized or critical audiences in discussion-focused communities.
+
+These baseline statistics establish the performance context against which live experiment results are evaluated. The generated posts in the live experiment are compared not only to each other (model-approved vs. random baseline) but also implicitly to these historical engagement patterns, which represent the typical reception of organic content submitted by established community members over multiple years.
 
 \subsection{Experiment Constraints}
 
-During the live experiment, the account used for posting was banned from several subreddits: \verb!r/anarchism! after the first post, \verb!r/truegaming! after the third post, and \verb!r/Fantasy! after the sixth post. These bans reduced the number of observations available for those communities and limited the ability to evaluate long-term posting behavior within those subreddits. The reasons for the bans are not directly observable — subreddit moderators do not provide detailed explanations, and it is not possible to determine whether removals were triggered by content style, account history, automated spam filters, or other community-specific policies. Rather than treating the bans as a methodological failure, they are documented here as an empirical observation: automated posting by a newly created account encountered moderation resistance in a subset of communities, which is itself relevant context for assessing the practical constraints of such a pipeline.
+During the live experiment, the account used for posting was banned from several subreddits: \verb!r/anarchism! after the first post, \verb!r/truegaming! after the third post, \verb!r/Fantasy! after the sixth post, and \verb!r/progun! after the fifth post. These bans reduced the number of observations available for those communities and limited the ability to evaluate long-term posting behavior within those subreddits. The reasons for the bans are not directly observable — subreddit moderators do not provide detailed explanations, and it is not possible to determine whether removals were triggered by content style, account history, automated spam filters, or other community-specific policies. Rather than treating the bans as a methodological failure, they are documented here as an empirical observation: automated posting by a newly created account encountered moderation resistance in a subset of communities, which is itself relevant context for assessing the practical constraints of such a pipeline.
 
-\subsection{Post Results}
+\subsection{Data Filtering and Retention}
+\label{subsec:live_filtering}
 
-For each posting opportunity, a coin flip determined whether the post would be selected from the top 10\% of predicted posts or randomly from the generated pool. This randomized selection process allows comparison between model-guided and random posting strategies under similar conditions.
+Beyond the account bans documented above, individual post removals further reduced the available dataset. The experiment initially posted 98 submissions across nine subreddits. However, the account bans in four subreddits (\verb!r/truegaming!, \verb!r/anarchism!, \verb!r/Fantasy!, and \verb!r/progun!) resulted in the automatic removal of all 15 posts in those communities. Additionally, 17 individual posts were removed by moderators in the five remaining subreddits: 10 model-approved posts and 7 random baseline posts.
 
+To ensure a fair comparison, we excluded both the subreddits where the account was banned and the individually removed posts from the analysis. Table~\ref{tab:removal_breakdown} shows the filtering stages, and Table~\ref{tab:subreddit_filtering} provides per-subreddit removal rates for the retained communities. The final dataset consisted of 66 live posts: 40 model-approved and 26 random baseline posts across five subreddits (\verb!r/DebateReligion!, \verb!r/PoliticalDiscussion!, \verb!r/TrueAtheism!, \verb!r/TrueChristian!, and \verb!r/mensrights!).
 
-[Results and statistical analysis of realized post performance will be presented here.]
+\begin{table}[htbp]
+\centering
+\caption{Post removal breakdown across filtering stages for the live experiment. The filtering pipeline proceeds from all submitted posts (98 total) through account ban exclusions (15 posts) to individual removal exclusions (17 posts), yielding 66 posts for analysis.}
+\label{tab:removal_breakdown}
+\begin{tabular}{lrrrr}
+\toprule
+Stage & \makecell{Model\\Posts} & \makecell{Random\\Posts} & \makecell{Total\\Posts} & \makecell{Cumulative\\Retention} \\
+\midrule
+Initial submissions & 55 & 43 & 98 & 100.0\% \\
+\midrule
+\textit{Excluded: Account banned} & \textit{(5)} & \textit{(10)} & \textit{(15)} & \\
+After banning exclusion & 50 & 33 & 83 & 84.7\% \\
+\midrule
+\textit{Excluded: Individual removals} & \textit{(10)} & \textit{(7)} & \textit{(17)} & \\
+Final dataset (live posts only) & 40 & 26 & 66 & 67.3\% \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Post filtering breakdown by subreddit for the five retained communities where the posting account was not banned. Banned subreddits (truegaming, anarchism, Fantasy, progun) not shown. Total posts are those submitted; removed posts were excluded from analysis.}
+\label{tab:subreddit_filtering}
+\begin{tabular}{llrrrr}
+\toprule
+Subreddit & Treatment & Total & Removed & Live & \makecell{Removal\\\%} \\
+\midrule
+DebateReligion & Model & 10 & 1 & 9 & 10.0 \\
+ & Random & 7 & 1 & 6 & 14.3 \\
+\midrule
+PoliticalDiscussion & Model & 9 & 5 & 4 & 55.6 \\
+ & Random & 8 & 6 & 2 & 75.0 \\
+\midrule
+TrueAtheism & Model & 14 & 4 & 10 & 28.6 \\
+ & Random & 3 & 0 & 3 & 0.0 \\
+\midrule
+TrueChristian & Model & 12 & 0 & 12 & 0.0 \\
+ & Random & 5 & 0 & 5 & 0.0 \\
+\midrule
+mensrights & Model & 5 & 0 & 5 & 0.0 \\
+ & Random & 10 & 0 & 10 & 0.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The differential removal rates between model-approved and random posts within retained subreddits (20.0\% vs. 21.2\%, Table~\ref{tab:removal_breakdown}) were comparable, suggesting that moderator filtering did not systematically favor one treatment arm. The higher removal rate in \verb!r/PoliticalDiscussion! (55.6\% for model-approved, 75.0\% for random baseline) reflects particularly strict moderation in that community, though the small sample size limits interpretation. In the other four subreddits, removal rates ranged from 0.0\% to 28.6\%, with no consistent pattern distinguishing the two treatment groups.
+
+\subsection{Overall Treatment Comparison}
+\label{subsec:overall_treatment}
+
+Table~\ref{tab:treatment_comparison} presents the primary result of the live experiment. Model-approved posts (predicted percentile $\geq 70$) did not significantly outperform the random baseline on the primary metric of upvote ratio. Model-approved posts achieved a mean upvote ratio of 0.808 (median = 0.870) compared to the random baseline's mean of 0.872 (median = 0.940). This difference of -0.063 was not statistically significant (Mann-Whitney U = 451.50, $p = 0.3678$, Cohen's $d = -0.297$).
+
+\begin{table}[htbp]
+\centering
+\caption{Live experiment results comparing model-approved posts (predicted percentile $\geq 70$) with random baseline posts. Training baseline shows weighted average performance of historical organic content from the five retained subreddits. Excludes subreddits where account was banned and individually removed posts ($n=66$ live posts).}
+\label{tab:treatment_comparison}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Treatment & $n$ & \makecell{Mean\\Upvote\\Ratio} & \makecell{Median\\Upvote\\Ratio} & \makecell{Median\\Score} & \makecell{Median\\Comments} & \makecell{Mean\\Predicted} & \makecell{Mean\\Percentile} \\
+\midrule
+Model-approved & 40 & 0.808 & 0.870 & 5.0 & 10.5 & 0.626 & 98.0 \\
+Random baseline & 26 & 0.872 & 0.940 & 11.0 & 13.5 & 0.507 & 47.5 \\
+\midrule
+Training baseline & -- & 0.729 & 0.761 & 11.1 & 29.8 & -- & -- \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\begin{tablenotes}
+\small
+\item Mann-Whitney U test on upvote ratio: $U=451.50$, $p=0.3678$, Cohen's $d=-0.297$.
+\item Training baseline: weighted average across 5 retained subreddits from Table~\ref{tab:baseline_subreddit_stats}, weighted by unique user counts.
+\item Upvote ratio is the primary popularity metric. Score and comments shown for context.
+\end{tablenotes}
+\end{table}
+
+The direction of the effect was opposite to the model's training objective: model-approved posts received lower upvote ratios on average than randomly selected posts, though the difference fell short of statistical significance. This pattern also extended to secondary engagement metrics. Model-approved posts achieved a median score of 5.0 compared to the random baseline's 11.0, and a median comment count of 10.5 compared to 13.5.
+
+Comparing live experiment performance to the training baseline reveals that both generated post treatments exhibited mixed outcomes relative to historical organic content. For upvote ratios, both model-approved (mean 0.808) and random (mean 0.872) posts exceeded the training baseline (mean 0.729), indicating that generated content was not systematically rejected by voters. However, both treatments substantially underperformed the training baseline on engagement metrics: median scores of 5.0 and 11.0 compared to the baseline's 11.1, and median comment counts of 10.5 and 13.5 compared to 29.8. This performance gap is expected given that both datasets represent filtered distributions. The training dataset excludes posts removed by moderators, deleted by users, or filtered during data collection, while the live experiment dataset similarly excludes the 32 posts removed during deployment (15 from account bans, 17 from individual moderator action). Both baselines therefore overrepresent posts that successfully navigated moderation and remained visible, making direct comparison to the full population of submissions difficult. The training baseline additionally benefits from established user credibility and longer observation periods, factors unavailable to newly generated content from an unfamiliar account.
+
+The model's predictions did not align with observed outcomes. Model-approved posts had a mean predicted upvote ratio of 0.626 (mean percentile = 98.0) compared to the random baseline's 0.507 (mean percentile = 47.5). Across all three engagement metrics, randomly selected posts outperformed model-approved posts: random posts achieved 7.9\% higher upvote ratios (0.872 vs. 0.808), 2.2x higher median scores (11.0 vs. 5.0), and 1.3x more median comments (13.5 vs. 10.5).
+
+\subsection{Per-Subreddit Analysis}
+\label{subsec:per_subreddit_live}
+
+Table~\ref{tab:subreddit_breakdown} reveals heterogeneity in treatment effects across communities. In \verb!r/DebateReligion!, model-approved posts achieved a mean upvote ratio of 0.864 compared to the random baseline's 0.947, with median scores of 9.0 versus 11.0. The pattern was most pronounced in \verb!r/TrueAtheism!, where model-approved posts achieved a mean upvote ratio of 0.518 compared to 0.587 for random posts, though the extremely small random sample size ($n=3$) limits interpretation. In \verb!r/mensrights!, both treatments achieved high upvote ratios (0.974 vs. 0.953), though the random baseline scored higher on median score (89.5 vs. 53.0) and comments (20.0 vs. 7.0).
+
+\begin{table}[htbp]
+\centering
+\caption{Per-subreddit breakdown of live posts compared to training baseline from historical organic content seen in \autoref{tab:baseline_subreddit_stats}. Excludes subreddits where account was banned and removed posts.}
+\label{tab:subreddit_breakdown}
+\begin{tabular}{llrrrr}
+\toprule
+Subreddit & Treatment & $n$ & \makecell{Mean\\Upvote\\Ratio} & \makecell{Median\\Score} & \makecell{Median\\Comments} \\
+\midrule
+DebateReligion & Model & 9 & 0.864 & 9.0 & 18.0 \\
+ & Random & 6 & 0.947 & 11.0 & 51.5 \\
+ & Training baseline & -- & 0.676 & 7.0 & 71.0 \\
+\midrule
+PoliticalDiscussion & Model & 4 & 0.695 & 3.0 & 3.0 \\
+ & Random & 2 & 0.470 & 2.5 & 3.5 \\
+ & Training baseline & -- & 0.662 & 7.0 & 32.0 \\
+\midrule
+TrueAtheism & Model & 10 & 0.518 & 2.0 & 21.0 \\
+ & Random & 3 & 0.587 & 7.0 & 11.0 \\
+ & Training baseline & -- & 0.783 & 29.0 & 37.0 \\
+\midrule
+TrueChristian & Model & 12 & 0.977 & 3.0 & 4.5 \\
+ & Random & 5 & 0.950 & 4.0 & 3.0 \\
+ & Training baseline & -- & 0.797 & 6.0 & 15.0 \\
+\midrule
+mensrights & Model & 5 & 0.974 & 53.0 & 7.0 \\
+ & Random & 10 & 0.953 & 89.5 & 20.0 \\
+ & Training baseline & -- & 0.760 & 16.0 & 15.0 \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\end{table}
+
+The two subreddits where model-approved posts performed comparably or slightly better were \verb!r/PoliticalDiscussion! (0.695 vs. 0.470 upvote ratio) and \verb!r/TrueChristian! (0.977 vs. 0.950). However, sample sizes in these communities were particularly limited (4 and 12 model-approved posts, respectively), and the heavy removal rates in \verb!r/PoliticalDiscussion! further constrain interpretation. Across the five subreddits, no community showed a statistically significant advantage for model-approved posts, and the overall pattern favored random selection in three of five communities when considering both upvote ratio and secondary engagement metrics.
+
+Comparing to training baselines reveals substantial heterogeneity across communities. In \verb!r/DebateReligion! and \verb!r/TrueChristian!, both generated post treatments achieved higher upvote ratios than the historical baseline (0.864--0.977 vs. 0.676--0.797), though comment engagement remained below historical levels (18.0--51.5 vs. 71.0 and 3.0--4.5 vs. 15.0, respectively). In \verb!r/TrueAtheism!, both treatments substantially underperformed the training baseline across all metrics: upvote ratios of 0.518--0.587 compared to 0.783, and median scores of 2.0--7.0 compared to 29.0. In \verb!r/mensrights!, both treatments achieved exceptionally high upvote ratios (0.95+) far exceeding the historical baseline (0.760), with scores also surpassing historical medians (53.0--89.5 vs. 16.0), though comment engagement remained comparable. \verb!r/PoliticalDiscussion! showed similar upvote ratios to the training baseline (0.470--0.695 vs. 0.662) but substantially lower scores and comments, consistent with the heavy moderation observed in that community. The consistent pattern across most subreddits is that generated content achieved comparable or higher upvote ratios than historical organic posts but attracted substantially less discussion activity, suggesting that while voters did not systematically reject generated content, users were less motivated to engage deeply with it.
+
+\subsection{Prediction Accuracy in Deployment}
+\label{subsec:prediction_accuracy_live}
+
+Table~\ref{tab:statistical_tests} summarizes the relationship between predictions and actual outcomes. The Spearman correlation between predicted upvote ratio and actual upvote ratio was significantly negative ($\rho = -0.374$, $p = 0.0020$), indicating that higher predicted scores were inversely associated with actual performance. The percentile ranking showed no significant relationship with upvote ratio ($\rho = -0.035$, $p = 0.7810$). When examining score as a secondary metric, predictions also showed a significant negative correlation ($\rho = -0.294$, $p = 0.0166$).
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of statistical tests on live posts only.}
+\label{tab:statistical_tests}
+\begin{tabular}{llr}
+\toprule
+Test & Result & $p$-value \\
+\midrule
+Mann-Whitney U (upvote ratio) & $U=451.50$, $d=-0.297$ & 0.3678 \\
+Spearman $\rho$ (predicted vs. upvote ratio) & $\rho=-0.374$ & 0.0020 \\
+Spearman $\rho$ (percentile vs. upvote ratio) & $\rho=-0.035$ & 0.7810 \\
+\midrule
+Spearman $\rho$ (predicted vs. score) & $\rho=-0.294$ & 0.0166 \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\begin{tablenotes}
+\small
+\item All tests two-tailed. Significance threshold $\alpha=0.05$.
+\item Upvote ratio is the primary metric; score shown as secondary metric.
+\end{tablenotes}
+\end{table}
+
+Table~\ref{tab:prediction_accuracy} decomposes this pattern by treatment arm. Within the model-approved posts, predictions showed a strong negative correlation with outcomes ($\rho = -0.596$, $p < 0.0001$): posts with higher predicted upvote ratios systematically achieved lower actual upvote ratios. The mean predicted upvote ratio for model-approved posts was 0.626, while the mean observed upvote ratio was 0.808, indicating that predictions underestimated actual performance on average. However, this underestimation was not uniform—the negative correlation indicates that the model's ranking was inverted: posts it rated most highly performed worst.
+
+\begin{table}[htbp]
+\centering
+\caption{Prediction accuracy analysis on live posts only.}
+\label{tab:prediction_accuracy}
+\begin{tabular}{lrrrrr}
+\toprule
+Treatment & $n$ & \makecell{Spearman\\$\rho$\\(upvote\\ratio)} & $p$-value & \makecell{Mean\\Predicted} & \makecell{Mean\\Upvote\\Ratio} \\
+\midrule
+Model-approved & 40 & -0.596 & 0.0000 & 0.626 & 0.808 \\
+Random baseline & 26 & -0.275 & 0.1734 & 0.507 & 0.872 \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\begin{tablenotes}
+\small
+\item Correlation between predicted score and actual upvote ratio.
+\item Model-approved posts show strong negative correlation: higher predictions correspond to lower upvote ratios.
+\end{tablenotes}
+\end{table}
+
+For the random baseline, predictions showed no significant correlation with outcomes ($\rho = -0.275$, $p = 0.1734$). The mean predicted upvote ratio for random posts was 0.507, while the mean observed upvote ratio was 0.872. This gap reflects the fact that random selection sampled posts across the full prediction distribution, including many posts the model rated poorly, yet these posts performed comparetively well on average.
+
+The within-treatment correlations demonstrate that the model's ranking mechanism failed in deployment. Among model-approved posts, the model could not distinguish which posts would perform better or worse—in fact, its rankings were inversely related to actual outcomes. This inversion suggests systematic miscalibration rather than merely noisy predictions. The model did not simply fail to predict absolute performance levels; it actively selected posts in the wrong order.
+
+\subsection{Summary}
+\label{subsec:live_summary}
+
+The live experiment did not demonstrate a statistically significant advantage for model-guided post selection. Model-approved posts achieved numerically lower upvote ratios, scores, and comment counts compared to random baseline posts, though the primary comparison (upvote ratio) did not reach statistical significance ($p = 0.3678$, Cohen's $d = -0.297$). More critically, predictions showed a significant negative correlation with actual upvote ratios ($\rho = -0.374$, $p = 0.0020$), and within the model-approved subset, this correlation was strongly negative ($\rho = -0.596$, $p < 0.0001$).
+
+However, the random baseline treatment revealed that the content generation pipeline itself produced viable posts. Random selection achieved a mean upvote ratio of 0.872, substantially exceeding both the model-approved posts (0.808) and the training baseline (0.729). This indicates that randomly selected generated content was more favorably received by voters than typical historical organic posts from established users. While both treatments underperformed the training baseline on engagement metrics (scores and comments), the random baseline's strong upvote ratio performance demonstrates that the generation component of the pipeline successfully produced content that communities did not systematically reject. The model-guided selection component, rather than the content generation itself, appears to be the primary point of failure.
+
+This outcome stands in contrast to the model's moderate predictive accuracy in offline cross-validation experiments (\autoref{sec:baseline_model}), where Spearman correlations between predictions and actual upvote ratios exceeded 0.20 across multiple subreddits. The gap between offline validation performance and live deployment outcomes points to a distribution shift between historical training data and generated content. Several factors may contribute to this failure. Generated posts may differ systematically from historical submissions in ways the model cannot detect from text embeddings and temporal features alone. The model may have overfit to spurious correlations in the training set that do not generalize to newly created content. Alternatively, moderators and users may respond differently to content from an unfamiliar account compared to established community members, introducing dynamics not captured during training.
+
+The account bans and post removals further illustrate practical constraints on automated posting. Four of nine targeted subreddits banned the posting account, and an additional 17 posts were individually removed across the remaining communities. These moderation responses occurred despite the generated content being topically relevant and stylistically similar to organic community discussions. The combination of null predictive performance and substantial moderation resistance suggests that the deployment of such systems faces both technical and social barriers beyond model accuracy alone. Nevertheless, the random baseline's performance relative to historical organic content indicates that the technical barrier to generating plausible community-appropriate content is lower than the barrier to accurately predicting which generated posts will succeed.
