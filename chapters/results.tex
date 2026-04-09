@@ -9,28 +9,17 @@
 \chapter{Results}
 \label{chap:results}
 
-This chapter presents the empirical evaluation of the popularity prediction models and the associated experimental analyses. The goal of these experiments is to assess how well different modeling choices capture the factors influencing post reception on Reddit.
-
-The evaluation proceeds in several stages. First, the influence of text representation is examined by comparing different embedding models, prompt configurations, and aggregation strategies. These experiments establish the baseline text encoding used for subsequent analyses. Next, the impact of dataset composition and additional feature groups is evaluated, including experiments analyzing the effects of combining self and link posts during training as well as incorporating temporal, domain, sentiment, TF-IDF, and author-related features. The chapter then investigates the generalizability of popularity prediction across communities by comparing different training strategies, including subreddit-specific models, leaning-group models, and a combined model trained across all subreddits. Finally, the regression framework is compared with a classification-based formulation of the task.
+This chapter presents the empirical evaluation of the popularity prediction models and the associated experimental analyses. The goal of these experiments is to assess how well different modeling choices capture the factors influencing post reception on Reddit. The evaluation proceeds in several stages. First, the influence of text representation is examined by comparing different embedding models, prompt configurations, and aggregation strategies. These experiments establish the baseline text encoding used for subsequent analyses. Next, the impact of dataset composition and additional feature groups is evaluated, including experiments analyzing the effects of combining self and link posts during training as well as incorporating temporal, domain, sentiment, TF-IDF, and author-related features. The chapter then investigates the generalizability of popularity prediction across communities by comparing different training strategies, including subreddit-specific models, leaning-group models, and a combined model trained across all subreddits. Finally, the regression framework is compared with a classification-based formulation of the task.
 
 The chapter concludes with a live experiment in which generated posts are scored using the trained models and selectively published to evaluate whether model-guided post selection leads to improved real-world engagement outcomes. Taken together, the experiments aim to determine how accurately publicly available data can be used to predict post popularity, and whether such predictions are sufficient to guide automated content selection in a live deployment. The broader implication assessed here is whether the barrier to constructing such a pipeline is low enough to warrant serious attention from a platform integrity perspective.
 
 \section{Embedding Model Comparison}
 
-The choice of text embedding model influences both the semantic quality of post representations and the computational efficiency of the pipeline. This section evaluates several transformer-based encoder models to determine which provides the best balance between predictive performance and resource constraints. The evaluation criteria, experimental setup, and results are presented below.
-
-\subsection{Embedding Model Selection Criteria}
+The choice of text embedding model influences both the semantic quality of post representations and the computational efficiency of the pipeline. This section evaluates several transformer-based encoder models to determine which provides the best balance between predictive performance and resource constraints.
 
 Embedding models were selected based on a combination of computational feasibility and representational performance. Since embeddings are stored for more than 1.5 million posts, embedding dimensionality directly impacts storage requirements and training efficiency of downstream regression models. To balance representational capacity with computational constraints, models producing embeddings of approximately 1024 dimensions were preferred. Higher-dimensional embeddings would substantially increase dataset size and model training cost without guaranteed performance gains. In addition, models with fewer than one billion parameters were prioritized to ensure feasible local execution within available hardware resources. All embedding models were run locally to maintain full control over preprocessing and avoid reliance on external APIs.
 
-Among models meeting these constraints, selection was further guided by reported performance on semantic similarity and classification benchmarks. Since the task involves distinguishing linguistic and stylistic differences between subreddit communities, embedding models with strong semantic discrimination capabilities were considered suitable candidates. The following section evaluates the selected models empirically within the popularity prediction framework.
-
-\subsection{Evaluation Setup}
-
-To evaluate the impact of embedding model choice on popularity prediction performance, several transformer-based encoder models satisfying the above criteria were compared. For all experiments in this section, the aggregation strategy was fixed to concatenation of title and selftext embeddings with no dimensionality reduction applied. All other model components, including the XGBoost regression configuration and training/validation split, were kept constant to ensure a controlled comparison. Performance metrics are reported as mean values across all subreddits.
-
-
-\subsection{Results and Interpretation}
+Among models meeting these constraints, selection was further guided by reported performance on semantic similarity and classification benchmarks. Since the task involves distinguishing linguistic and stylistic differences between subreddit communities, embedding models with strong semantic discrimination capabilities were considered suitable candidates. For all experiments in this section, the aggregation strategy was fixed to concatenation of title and selftext embeddings with no dimensionality reduction applied. All other model components, including the XGBoost regression configuration and training/validation split, were kept constant to ensure a controlled comparison. Performance metrics are reported as mean values across all subreddits.
 
 \begin{table}[ht]
 \centering
@@ -55,7 +44,7 @@ The observed differences across embedding models suggest that higher-quality sem
 
 Given its consistently superior performance across evaluation metrics, Stella was selected as the baseline embedding model for subsequent experiments. All further aggregation and feature engineering evaluations use Stella embeddings unless otherwise stated.
 
-\subsection{Prompt Conditioning for Stella Embeddings}
+\subsubsection*{Prompt Conditioning for Stella Embeddings}
 
 To assess whether task-specific prompt conditioning influences embedding quality for popularity prediction, multiple prompt variants were evaluated using the Stella model. All other components of the pipeline were held constant, including aggregation strategy (concatenation), feature configuration (embeddings only), regression model, and training split. Each prompt variant modifies the instruction context under which embeddings are generated, emphasizing different aspects such as popularity, writing quality, engagement, political leaning, or general content description.
 
@@ -83,13 +72,7 @@ Given the negligible performance differences observed across configurations, the
 
 \section{Aggregation Strategy Evaluation}
 
-Given that Reddit posts contain multiple text fields (title and selftext), the method for combining their embeddings may affect downstream prediction performance. This section compares different aggregation strategies to determine the most effective approach for representing complete posts. The evaluation setup, configurations tested, and results are detailed below.
-
-\subsection{Evaluation Setup}
-
-To evaluate the impact of embedding aggregation strategy on popularity prediction performance, multiple methods for combining title and selftext embeddings were compared. All experiments in this section use the Stella Content embedding configuration with no dimensionality reduction applied. The XGBoost regression model and train/validation split were kept constant to ensure controlled comparison.
-
-\subsection{Results and Interpretation}
+Given that Reddit posts contain multiple text fields (title and selftext), the method for combining their embeddings may affect downstream prediction performance. This section compares different aggregation strategies to determine the most effective approach for representing complete posts. All experiments use the Stella Content embedding configuration with no dimensionality reduction applied, and the XGBoost regression model and train/validation split were kept constant to ensure controlled comparison.
 
 \begin{table}[ht]
 \centering
@@ -117,11 +100,11 @@ Hadamard product aggregation performs substantially worse than all other methods
 
 Although performance differences among pooling-based strategies remain moderate, the results indicate that preserving balanced information from both title and body text is preferable to interaction-only representations. Given its consistent and stable performance, mean pooling or smart mean aggregation provide practical aggregation strategies with the latter having a minimal dimensionality increase.
 
-\subsection{Effect of Dimensionality Reduction}
+\subsubsection*{Effect of Dimensionality Reduction}
 
 To assess whether dimensionality reduction can improve computational efficiency without degrading predictive performance, Principal Component Analysis (PCA) was applied to embedding representations prior to regression. Both per-subreddit PCA and global PCA (computed across all subreddits) were evaluated at reduced dimensionalities of 512, 256, and 128 components. All other model components, including aggregation strategy and regression configuration, were kept constant.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction results for popularity regressor with different dimensionality reductions. Results show mean performance across all subreddits.}
 \label{tab:dimensionality_reduction}
@@ -329,15 +312,6 @@ Because approximately 40\% of posts lacked retrievable author metadata due to ac
 
 Taken together, the preceding feature analyses reveal distinct differences in predictive contribution across feature groups. Overall, author-level and domain-based features provide the largest predictive gains, while temporal effects are moderate and sentiment and TF-IDF features contribute minimally beyond embeddings.
 
-\section{Combined Feature Configurations}
-
-This section evaluates regression performance when multiple feature groups are combined. The goal is to determine whether predictive gains observed for individual feature groups accumulate when integrated into a single model.
-
-Results will be reported separately for:
-(i) the full dataset without author features, and 
-(ii) the author-available subset including user-level variables.
-
-
 \section{Cross-Subreddit Generalization}
 
 To evaluate the extent to which popularity dynamics transfer across communities, three alternative training strategies were compared: (1) \textit{Subreddit-specific models}, where a separate regression model is trained for each subreddit; (2) \textit{Leaning-group models}, where one model is trained per political leaning category; and (3) \textit{Combined model}, where a single model is trained on all subreddits jointly. In addition, a variant of the combined model was evaluated that includes an explicit subreddit indicator feature. All configurations use identical embedding and regression settings to ensure comparability.
@@ -417,7 +391,7 @@ Table~\ref{tab:per_subreddit_pearson} provides a per-subreddit comparison of Pea
 
 Leaning-group models typically outperform the fully combined model, indicating that grouping by ideological orientation preserves some transferable structure. However, leaning-level training remains consistently below subreddit-specific performance. Adding a subreddit indicator feature to the combined model improves results across most communities but does not close the gap. These findings suggest that while some shared engagement patterns exist across ideologically similar communities, substantial variation persists at the individual subreddit level. Popularity dynamics therefore appear to be shaped by both broader ideological alignment and localized community norms.
 
-\subsection{Leaning-Level Transferability}
+\subsubsection*{Leaning-Level Transferability}
 
 \begin{table}[ht]
 \centering
@@ -463,11 +437,7 @@ From this perspective, precision on the positive class is more critical than rec
 \section{Hyperparameter Optimization}
 \label{sec:hyperparam_optimization}
 
-Initial experiments were conducted using a fixed XGBoost configuration (Table~\ref{tab:xgb_baseline_params}) to enable controlled comparison of embedding and feature effects. After identifying promising model configurations, hyperparameter optimization was performed to determine the best configuration for live deployment.
-
-\subsection{Grid Search}
-
-The hyperparameter optimization was conducted via grid search over four key parameters, while holding other configuration settings constant. The search space and selected values are shown in Table~\ref{tab:hyperparameter_tuning}.
+Initial experiments were conducted using a fixed XGBoost configuration (Table~\ref{tab:xgb_baseline_params}) to enable controlled comparison of embedding and feature effects. After identifying promising model configurations, a grid search over four key parameters was conducted to optimize hyperparameters for live deployment (Table~\ref{tab:hyperparameter_tuning}).
 
 \begin{table}[htbp]
 \centering
@@ -494,24 +464,42 @@ The hyperparameter optimization was conducted via grid search over four key para
 
 The grid search evaluated all 24 combinations of the four tuned hyperparameters. During the search phase, \texttt{n\_estimators} was fixed at 500 and \texttt{DETERMINISTIC} mode was enabled to ensure reproducible comparison of configurations. Models were evaluated using Mean Absolute Error (MAE) on the validation set, averaged across all subreddits. The best performing configuration from the grid search used \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, and \texttt{colsample\_bytree=0.85}, achieving an average MAE of 0.113135. Within the grid search itself, the improvement over the least optimal configuration (MAE of 0.115786) represents a 2.3\% relative improvement, confirming that the hyperparameter selection had measurable impact. Compared to the initial baseline configuration used in early experiments (\texttt{n\_estimators=100}, \texttt{learning\_rate=0.1}, no subsampling), which achieved an average MAE of 0.115338, the optimized configuration represents a 1.91\% improvement in MAE and a 7.14\% improvement in Pearson correlation (from 0.409 to 0.438). However, it should be noted that the experimental results reported in this chapter were obtained using the intermediate baseline configuration shown in Table~\ref{tab:xgb_baseline_params} (\texttt{n\_estimators=500}, \texttt{subsample=0.8}, \texttt{colsample\_bytree=0.8}), not the early baseline, ensuring fair comparison across all ablation studies.
 
-\subsection{Early Stopping Calibration}
+\subsubsection*{Early Stopping Calibration}
 
 The grid search was conducted with \texttt{n\_estimators} fixed at 500 to ensure computational feasibility across 24 configurations. To determine the optimal number of trees for the selected hyperparameter values, a calibration run was performed with early stopping enabled (\texttt{early\_stopping\_rounds=50}) and \texttt{DETERMINISTIC=False}. This calibration identified that 2000 estimators provided the best validation performance with the selected learning rate of 0.05. The final deployed model therefore used \texttt{n\_estimators=2000} while keeping all other hyperparameters at their grid-search-optimal values. All other hyperparameters, including regularization terms (\texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, \texttt{reg\_lambda=1.0}), remained at the values used throughout the experimental phase.
 
 
 
-% TODO
-% - adjust the Sections Text Embedding, Additional Features and Model Architecture
-% - 
 \section{Final Model Configuration}
- 
-Based on the experiments reported in this chapter, the final model deployed in the live Reddit experiment was configured as follows.
 
-The model was trained on the combined \texttt{self\_link} dataset, which includes both self posts and link posts from 2008 to 2022, filtered to subreddits with at least three posts per day on average. This dataset composition was selected based on its superior regression performance compared to self-only datasets (Section~\ref{sec:dataset_composition_results}). Each subreddit's model was trained independently using an 80/20 train/validation split, with the subreddit identifier excluded as a feature since posts were generated and scored on a per-subreddit basis.
+Based on the experiments reported in this chapter, the final model configurations are summarized below. Two pairs of comparisons are presented: one evaluating the impact of domain and author features on the author-filtered dataset, and another evaluating the live experiment model against its corresponding baseline on the full dataset.
 
-Text representation was based on the Stella 400M v5 model with the default ``content'' prompt configuration. Title and selftext embeddings were generated independently and aggregated via concatenation without dimensionality reduction, yielding a 2048-dimensional feature vector per post. Domain overlap features were included, encoding the frequency with which the post's linked domain appears in the training data for the target subreddit. Domain features were only applied to link posts; for self posts, the domain feature was masked to zero to avoid introducing spurious noise from the universal \texttt{reddit.com} domain. No author, time-of-posting, sentiment, or TF-IDF features were used, as these either showed negligible performance gains or introduced dependencies on metadata unavailable at generation time.
+\begin{table}[ht]
+\centering
+\caption{Final model configurations after hyperparameter tuning}
+\label{tab:final_model_configs}
+\begin{tabular}{lrrrrr}
+\toprule
+Configuration & MAE & RMSE & R² & Pearson r & Training Posts \\
+\midrule
+Best overall model & 0.1065 & 0.1361 & 0.2347 & 0.4800 & 220,855 \\
+Baseline (author-filtered) & 0.1109 & 0.1411 & 0.1785 & 0.4183 & 220,855 \\
+\midrule
+Live experiment model & 0.1126 & 0.1430 & 0.2021 & 0.4456 & 369,834 \\
+Baseline (full dataset) & 0.1131 & 0.1437 & 0.1953 & 0.4378 & 369,834 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-The model architecture uses XGBoost regression with the optimized hyperparameters from Table~\ref{tab:hyperparameter_tuning}: \texttt{n\_estimators=2000}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, and \texttt{colsample\_bytree=0.85}. Regularization parameters were set to \texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, and \texttt{reg\_lambda=1.0}. This configuration represents the culmination of the experimental findings, balancing predictive performance with practical constraints on feature availability during the live posting phase.
+The \textbf{best overall model} incorporates text embeddings using the Stella 400M model with mean aggregation and the ``content'' prompt, supplemented by domain features and author features. Trained on the 220,855 posts where author data is available, this configuration achieves the strongest performance across all metrics: MAE of 0.1065, RMSE of 0.1361, R² of 0.2347, and Pearson r of 0.4800. Compared to the baseline trained on the same author-filtered dataset, the inclusion of domain and author features reduces MAE by approximately 4.0\% and increases Pearson r by 14.7\%, demonstrating measurable predictive gains.
+
+The \textbf{baseline on the author-filtered dataset} uses text embeddings alone with concatenation aggregation and the default prompt. Trained on the same 220,855 posts, it provides a controlled comparison to isolate the contribution of domain and author features.
+
+The \textbf{live experiment model} retains the beneficial text representation choices from the best overall model---mean aggregation and the ``content'' prompt---but excludes domain and author features due to operational constraints. Domain features are inapplicable because only self posts are generated (all posts resolve to reddit.com), and author features cannot be used since the experimental account itself is the author. Trained on the full dataset of 369,834 posts, this configuration achieves MAE of 0.1126, RMSE of 0.1430, R² of 0.2021, and Pearson r of 0.4456.
+
+The \textbf{baseline on the full dataset} mirrors the live experiment model's training set but uses concatenation aggregation and the default prompt. This comparison isolates the impact of the improved text representation strategy. The live experiment model achieves a 0.4\% reduction in MAE and a 1.8\% increase in Pearson r compared to this baseline, indicating that the prompt and aggregation choices provide modest but consistent improvements.
+
+All four configurations use the optimized XGBoost hyperparameters from Table~\ref{tab:hyperparameter_tuning}: \texttt{n\_estimators=2000}, \texttt{max\_depth=6}, \texttt{learning\_rate=0.05}, \texttt{subsample=0.85}, \texttt{colsample\_bytree=0.85}, \texttt{min\_child\_weight=5}, \texttt{reg\_alpha=0.1}, and \texttt{reg\_lambda=1.0}. The live experiment model was selected for deployment as it represents the best achievable performance under the constraints of automated content generation while benefiting from the largest available training set.
 
 \section{Live Experiment Evaluation}
 
