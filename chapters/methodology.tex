@@ -542,7 +542,12 @@ To reduce temporal posting bias, submission times were randomized across the ful
 
 Post performance was measured using the upvote ratio reported by Reddit. To ensure that all posts had sufficient time to accumulate community feedback, performance metrics were collected one week after the conclusion of the posting phase.
 Because the experiment ran for 30 days, the final evaluation was performed on day 37. 
-This approach ensured that even the last submitted posts had at least one week to accumulate engagement signals, although earlier posts naturally had longer exposure windows.
+This approach ensured that even the last submitted posts had at least one week to accumulate engagement signals, although earlier posts naturally had longer exposure windows. 
+
+Statistical analysis of the live experiment outcomes employed different tests than the offline cross-validation experiments due to the unpaired nature of the data. 
+Since posts were assigned to treatment conditions (model-approved vs. random baseline) independently rather than in matched pairs, the Mann-Whitney U test was used to compare distributions of upvote ratios and scores between treatments. 
+Spearman rank correlation was used to assess the relationship between predicted upvote ratios and actual outcomes. 
+Both tests are described in \autoref{sec:statistical_testing}.
 
 Traditional notions of reproducibility used in machine learning experiments do not fully apply to live platform experiments involving human interaction. 
 While the data processing and prediction components of the pipeline are fully reproducible, the resulting engagement outcomes depend on inherently stochastic social dynamics such as user activity patterns, moderator decisions, and platform ranking algorithms.

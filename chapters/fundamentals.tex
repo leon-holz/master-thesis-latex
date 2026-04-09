@@ -207,6 +207,40 @@ Given $n$ paired observations $(x_1, y_1), \ldots, (x_n, y_n)$, the test procedu
 Under the null hypothesis that the median difference is zero, the distribution of the test statistic is known and can be used to compute a $p$-value. A small $p$-value provides evidence against the null hypothesis, suggesting that the observed difference is unlikely to have occurred by chance.
 The Wilcoxon signed-rank test is particularly well-suited for experiments with a modest number of paired observations, where normality assumptions may not hold but where the paired design allows for effective control of baseline variability.
 
+\subsection{Mann-Whitney U Test}
+\label{subsec:mann_whitney}
+
+The Mann-Whitney U test (also known as the Wilcoxon rank-sum test) is a non-parametric statistical test used to assess whether two independent samples are drawn from distributions with the same median~\cite{mann1947test}. Unlike the paired Wilcoxon signed-rank test, the Mann-Whitney U test does not require paired observations and instead compares two separate groups. This makes it appropriate for A/B testing scenarios where observations are assigned to different treatment conditions without paired matching.
+
+The test operates by pooling all observations from both groups and ranking them from smallest to largest. For each group, the sum of ranks is computed. Under the null hypothesis that both groups are sampled from identical distributions, the rank sums should be approximately equal after accounting for group size. Large deviations from the expected rank sum provide evidence against the null hypothesis.
+
+Given two independent samples of sizes $n_1$ and $n_2$, the test statistic $U$ can be computed as:
+
+\begin{equation}
+U = n_1 n_2 + \frac{n_1(n_1 + 1)}{2} - R_1
+\end{equation}
+
+where $R_1$ is the sum of ranks for the first group. The distribution of $U$ under the null hypothesis is well-characterized, allowing for the computation of $p$-values even with modest sample sizes.
+
+The Mann-Whitney U test makes no assumptions about the shape of the underlying distributions and is robust to outliers and heavy-tailed data, making it well-suited for engagement metrics such as upvote ratios and scores, which are often heavily skewed in social media contexts.
+
+\subsection{Spearman Rank Correlation}
+\label{subsec:spearman}
+
+Spearman's rank correlation coefficient $\rho$ is a non-parametric measure of the monotonic relationship between two variables~\cite{spearman1904proof}. Unlike Pearson correlation, which measures linear association, Spearman correlation assesses whether one variable tends to increase or decrease as the other increases, without requiring the relationship to be linear. This makes it more appropriate for ordinal data or continuous variables with non-linear relationships.
+
+The coefficient is computed by first converting both variables to ranks and then calculating the Pearson correlation between the rank-transformed variables. If there are no tied ranks, Spearman's $\rho$ can be computed using the simplified formula:
+
+\begin{equation}
+\rho = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}
+\end{equation}
+
+where $d_i$ is the difference between the ranks of corresponding observations, and $n$ is the number of observations.
+
+The coefficient ranges from $-1$ to $+1$, where $+1$ indicates a perfect monotonic increasing relationship, $-1$ indicates a perfect monotonic decreasing relationship, and $0$ suggests no monotonic association. 
+
+Spearman correlation is particularly useful for evaluating the relationship between predicted and actual outcomes when the predictions may be mis-calibrated in absolute terms but preserve relative ordering. In the context of popularity prediction, a strong positive Spearman correlation indicates that the model successfully ranks posts in order of expected community reception, even if the predicted scores themselves are systematically biased.
+
 \subsection{Multiple Comparison Correction}
 \label{subsec:multiple_testing}
 
