@@ -21,7 +21,7 @@ Embedding models were selected based on a combination of computational feasibili
 
 Among models meeting these constraints, selection was further guided by reported performance on semantic similarity and classification benchmarks. Since the task involves distinguishing linguistic and stylistic differences between subreddit communities, embedding models with strong semantic discrimination capabilities were considered suitable candidates. For all experiments in this section, the aggregation strategy was fixed to concatenation of title and selftext embeddings with no dimensionality reduction applied. All other model components, including the XGBoost regression configuration and training/validation split, were kept constant to ensure a controlled comparison. Performance metrics are reported as mean values across all subreddits.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction results for popularity regressor with different encoder models. Results show mean performance across all subreddits. Significance columns indicate whether the difference from Stella (baseline) is statistically significant at the $\alpha=0.05$ level after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant).}
 \label{tab:embedding_comparison}
@@ -48,7 +48,7 @@ Given its consistently superior performance across evaluation metrics, Stella wa
 
 To assess whether task-specific prompt conditioning influences embedding quality for popularity prediction, multiple prompt variants were evaluated using the Stella model. All other components of the pipeline were held constant, including aggregation strategy (concatenation), feature configuration (embeddings only), regression model, and training split. Each prompt variant modifies the instruction context under which embeddings are generated, emphasizing different aspects such as popularity, writing quality, engagement, political leaning, or general content description.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction results for popularity regressor with different encoder prompts. Results show mean performance across all subreddits. Significance columns indicate whether the difference from the no-prompt baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant).}
 \label{tab:prompt_comparison}
@@ -74,7 +74,7 @@ Given the negligible performance differences observed across configurations, the
 
 Given that Reddit posts contain multiple text fields (title and selftext), the method for combining their embeddings may affect downstream prediction performance. This section compares different aggregation strategies to determine the most effective approach for representing complete posts. All experiments use the Stella Content embedding configuration with no dimensionality reduction applied, and the XGBoost regression model and train/validation split were kept constant to ensure controlled comparison.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction results for popularity regressor with different aggregation methods. Results show mean performance across all subreddits. Significance columns indicate whether the difference from the concatenation baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant, ---~= not tested).}
 \label{tab:aggregation_comparison}
@@ -166,7 +166,7 @@ Beyond text embeddings, various structured metadata features may provide additio
 To evaluate the contribution of temporal information, time-related features were added individually to the baseline embedding model (Stella embeddings with concatenation). All other model components, including regression configuration and training split, were kept constant.
 Each temporal feature group was evaluated independently to isolate its marginal predictive contribution.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction results for popularity regressor with different author feature combinations. Results show mean performance across all subreddits.}
 \label{tab:temporal_features}
@@ -198,7 +198,7 @@ Overall, temporal features provide measurable but moderate improvements in predi
 To evaluate the impact of external content source information, domain-based features were added to the baseline embedding model (Stella embeddings with concatenation). 
 Three configurations were tested: continuous correlation scores, binary indicators for top and bottom domains, and a combined configuration including all domain-related features. All other model components were kept constant.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction results for popularity regressor with different domain feature combinations. Results show mean performance across all subreddits. Significance columns indicate whether the difference from the embedding-only baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, $\times$~= not significant, ---~= not tested).}
 \label{tab:domain_features}
@@ -226,7 +226,7 @@ The strong performance of continuous domain score features suggests that subredd
 To evaluate whether affective signals contribute to popularity prediction, sentiment features derived from VADER were added to the baseline embedding model (Stella embeddings with concatenation). 
 Multiple configurations were tested, varying both the text source (title, body, combined, or max-pooled) and the type of sentiment representation (raw scores, binary indicator, categorical encoding, or combined features).
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction performance with different sentiment feature configurations. Baseline corresponds to Stella embeddings with concatenation and no additional structured features. Results show mean performance across all subreddits.}
 \label{tab:sentiment_features}
@@ -253,7 +253,7 @@ These results suggest that coarse-grained sentiment signals contribute limited a
 To assess whether lexical frequency-based signals provide additional predictive value beyond transformer embeddings, TF-IDF-derived features were added to the baseline embedding model (Stella embeddings with concatenation).
 Three categories were evaluated: coverage features, correlation-based TF-IDF scores, and binary indicators for high-impact terms. A combined configuration including all TF-IDF features was also tested. All other model components were kept constant.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction performance with TF-IDF-derived feature additions. Baseline corresponds to Stella embeddings with concatenation and no additional structured features. Results show mean performance across all subreddits.}
 \label{tab:tfidf_features}
@@ -281,7 +281,7 @@ To evaluate the impact of author-level information, author metadata features wer
 As a result, experiments involving author features were conducted on a reduced subset of 220,855 posts. Approximately 40\% of posts were excluded because required author metadata could not be retrieved.
 To ensure fair comparison, the baseline model reported in this section (``Embeddings Only – Author Filtered'') was evaluated on the same reduced subset without incorporating author features.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Popularity prediction performance with author-related feature additions. Results are reported on the subset of posts for which complete author metadata was available. Baseline corresponds to embeddings only on the same filtered subset. The significance column indicates whether the difference from the filtered baseline is statistically significant after Benjamini-Hochberg correction (\checkmark~= significant, ---~= not tested); only the combined author feature configuration was formally tested.}
 \label{tab:author_features}
@@ -317,7 +317,7 @@ Taken together, the preceding feature analyses reveal distinct differences in pr
 To evaluate the extent to which popularity dynamics transfer across communities, three alternative training strategies were compared: (1) \textit{Subreddit-specific models}, where a separate regression model is trained for each subreddit; (2) \textit{Leaning-group models}, where one model is trained per political leaning category; and (3) \textit{Combined model}, where a single model is trained on all subreddits jointly. In addition, a variant of the combined model was evaluated that includes an explicit subreddit indicator feature. All configurations use identical embedding and regression settings to ensure comparability.
 
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Regression performance by model grouping strategy. MAE and $r$ are averaged across subreddits. For the leaning-group models, only the subreddits matching each leaning category are included before averaging.}
 \label{tab:model_grouping}
@@ -336,8 +336,6 @@ Combined            & 0.1298 & -0.0027 & 0.2887 \\
 Table~\ref{tab:model_grouping} reports average performance across subreddits for each training strategy. Subreddit-specific models achieve the strongest performance, with mean Pearson correlation of 0.4086 and $R^2$ of 0.1700. Leaning-group models exhibit a noticeable performance drop, while the fully combined model performs substantially worse, with mean $R^2$ approaching zero. Introducing an explicit subreddit feature into the combined model partially recovers performance but remains clearly below subreddit-specific training.
 
 These results indicate that popularity dynamics are strongly community-dependent. Training a global model across heterogeneous subreddits introduces substantial noise that reduces predictive accuracy. Even grouping subreddits by political leaning is insufficient to fully capture community-specific variation. The partial recovery achieved by adding a subreddit indicator feature suggests that shared structural patterns exist across communities, but these patterns require explicit conditioning on community identity to be effectively leveraged.
-
-\clearpage
 
 \begin{longtable}[c]{lrrrr}
 \caption{Per-subreddit Pearson $r$ by training strategy. \textit{Specific} trains a separate model per subreddit; \textit{Leaning} trains one model per political leaning group; \textit{Combined} trains a single model on all subreddits; \textit{Combined + Sub.} adds a subreddit indicator feature to the combined model.}
@@ -393,7 +391,7 @@ Leaning-group models typically outperform the fully combined model, indicating t
 
 \subsubsection*{Leaning-Level Transferability}
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Cross-leaning generalisation: mean Pearson $r$ when a leaning-group model is evaluated on subreddits from each leaning category. Diagonal (bold) shows within-group performance; off-diagonal shows cross-group transfer.}
 \label{tab:cross_leaning_pearson}
@@ -420,7 +418,7 @@ This pattern holds consistently across all leaning categories, indicating that e
 
 To evaluate whether directly modeling popularity as a binary classification task provides advantages over regression, a classification model was trained to predict whether a post belongs to the "popular" class, with the popularity threshold defined using the median upvote ratio of the training split. For comparability, regression predictions were also converted into binary labels using the same training median threshold. Performance was evaluated on the validation split using standard classification metrics. Because the median threshold was computed on the training split only, the validation split does not contain exactly 50\% popular posts, and the positive class proportion differs slightly from 50\% in evaluation.
 
-\begin{table}[ht] 
+\begin{table}[htbp] 
     \centering 
     \caption{Popularity prediction performance using classification. Baseline corresponds to embeddings only on the same filtered subset.} 
     \label{tab:classification} 
@@ -474,7 +472,7 @@ The grid search was conducted with \texttt{n\_estimators} fixed at 500 to ensure
 
 Based on the experiments reported in this chapter, the final model configurations are summarized below. Two pairs of comparisons are presented: one evaluating the impact of domain and author features on the author-filtered dataset, and another evaluating the live experiment model against its corresponding baseline on the full dataset.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Final model configurations after hyperparameter tuning}
 \label{tab:final_model_configs}
@@ -511,7 +509,7 @@ Before evaluating the performance of published posts, we first examine the range
 
 Table~\ref{tab:generated_prediction_ranges} summarizes the predicted score ranges for generated posts across the evaluated subreddits, together with the median upvote ratio observed in the training data.
 
-\begin{table}[ht]
+\begin{table}[htbp]
 \centering
 \caption{Predicted upvote ratio ranges for generated posts across subreddits. For each subreddit, 200 candidate posts were generated and scored using the regression model. The table also reports the median upvote ratio observed in the training data for comparison.}
 \label{tab:generated_prediction_ranges}
