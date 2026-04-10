@@ -1,0 +1,104 @@
+\section{Per-Subreddit Cross-Validation Results}
+\label{app:subreddit_results}
+
+This section presents detailed cross-validation performance metrics for each subreddit under two key model configurations: the best overall model (incorporating domain and author features) and the live experiment model (text embeddings only). These results complement the aggregate statistics reported in Table~\ref{tab:final_model_configs} by revealing the distribution of performance across individual communities.
+
+\subsection{Best Overall Model}
+
+Table~\ref{tab:best_overall_subreddit} reports per-subreddit regression performance for the best overall model configuration, which incorporates Stella 400M embeddings with mean aggregation and content prompt, supplemented by domain features and author features. This model was trained on the author-filtered dataset containing 220,855 posts across 19 subreddits.
+
+\begin{longtable}[c]{lrrrr}
+\caption{Per-subreddit cross-validation results for best overall model (with domain and author features). Model trained on 220,855 posts where author data is available.}
+\label{tab:best_overall_subreddit} \\
+\toprule
+Subreddit & MAE & RMSE & R² & Pearson $r$ \\
+\midrule
+\endfirsthead
+\multicolumn{5}{c}{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+\toprule
+Subreddit & MAE & RMSE & R² & Pearson $r$ \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\textit{Continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\verb!r/Conservative! & 0.0839 & 0.1059 & 0.2452 & 0.4952 \\
+\verb!r/TrueChristian! & 0.1176 & 0.1508 & 0.2212 & 0.4706 \\
+\verb!r/Libertarian! & 0.1142 & 0.1450 & 0.3405 & 0.5837 \\
+\verb!r/mensrights! & 0.0965 & 0.1252 & 0.3448 & 0.5872 \\
+\verb!r/progun! & 0.0970 & 0.1358 & 0.3058 & 0.5549 \\
+\midrule
+\verb!r/Liberal! & 0.0943 & 0.1215 & 0.2055 & 0.4538 \\
+\verb!r/democrats! & 0.0874 & 0.1094 & 0.2110 & 0.4603 \\
+\verb!r/racism! & 0.0937 & 0.1171 & 0.1976 & 0.4459 \\
+\verb!r/anarchism! & 0.0957 & 0.1246 & 0.2427 & 0.4927 \\
+\verb!r/TrueAtheism! & 0.1114 & 0.1449 & 0.2299 & 0.4802 \\
+\midrule
+\verb!r/PoliticalDiscussion! & 0.1339 & 0.1680 & 0.3307 & 0.5752 \\
+\verb!r/changemyview! & 0.1259 & 0.1558 & 0.1751 & 0.4189 \\
+\verb!r/geopolitics! & 0.0970 & 0.1256 & 0.1587 & 0.3985 \\
+\verb!r/DebateReligion! & 0.1281 & 0.1584 & 0.3107 & 0.5586 \\
+\verb!r/DecidingToBeBetter! & 0.0764 & 0.1017 & 0.1494 & 0.3877 \\
+\midrule
+\verb!r/truegaming! & 0.1348 & 0.1667 & 0.2317 & 0.4819 \\
+\verb!r/Fantasy! & 0.0899 & 0.1186 & 0.2803 & 0.5295 \\
+\verb!r/Frugal! & 0.1133 & 0.1448 & 0.1540 & 0.3925 \\
+\verb!r/Coffee! & 0.1331 & 0.1665 & 0.1246 & 0.3534 \\
+\midrule
+Mean & 0.1065 & 0.1361 & 0.2347 & 0.4800 \\
+\end{longtable}
+
+Performance varies considerably across communities. The strongest predictive accuracy is achieved in \verb!r/Libertarian! and \verb!r/mensrights!, both reaching Pearson correlations near 0.59 and R² values exceeding 0.34. These subreddits may exhibit more consistent patterns in post reception relative to the features captured by the model. In contrast, \verb!r/Coffee!, \verb!r/Frugal!, and \verb!r/DecidingToBeBetter! show weaker performance, with Pearson correlations below 0.40 and R² values under 0.16. This suggests that popularity in these communities may depend more heavily on factors not represented in the available feature set, such as visual content quality, product recommendations, or personal narrative appeal.
+
+\subsection{Live Experiment Model}
+
+Table~\ref{tab:live_experiment_subreddit} reports per-subreddit regression performance for the live experiment model, which uses Stella 400M embeddings with mean aggregation and content prompt but excludes domain and author features. This model was trained on the full dataset of 369,834 posts across all 19 subreddits.
+
+\begin{longtable}[c]{lrrrr}
+\caption{Per-subreddit cross-validation results for live experiment model (text embeddings only). Model trained on 369,834 posts across all subreddits.}
+\label{tab:live_experiment_subreddit} \\
+\toprule
+Subreddit & MAE & RMSE & R² & Pearson $r$ \\
+\midrule
+\endfirsthead
+\multicolumn{5}{c}{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+\toprule
+Subreddit & MAE & RMSE & R² & Pearson $r$ \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\textit{Continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\verb!r/Conservative! & 0.0880 & 0.1097 & 0.1944 & 0.4412 \\
+\verb!r/TrueChristian! & 0.1209 & 0.1540 & 0.2097 & 0.4579 \\
+\verb!r/Libertarian! & 0.1232 & 0.1558 & 0.3066 & 0.5538 \\
+\verb!r/mensrights! & 0.1125 & 0.1422 & 0.2178 & 0.4668 \\
+\verb!r/progun! & 0.1010 & 0.1409 & 0.2281 & 0.4784 \\
+\midrule
+\verb!r/Liberal! & 0.0994 & 0.1274 & 0.1938 & 0.4415 \\
+\verb!r/democrats! & 0.0915 & 0.1137 & 0.2044 & 0.4528 \\
+\verb!r/racism! & 0.1038 & 0.1286 & 0.1463 & 0.3830 \\
+\verb!r/anarchism! & 0.1030 & 0.1329 & 0.1955 & 0.4424 \\
+\verb!r/TrueAtheism! & 0.1205 & 0.1561 & 0.1823 & 0.4285 \\
+\midrule
+\verb!r/PoliticalDiscussion! & 0.1390 & 0.1735 & 0.3199 & 0.5657 \\
+\verb!r/changemyview! & 0.1292 & 0.1607 & 0.1630 & 0.4039 \\
+\verb!r/geopolitics! & 0.1011 & 0.1305 & 0.1327 & 0.3651 \\
+\verb!r/DebateReligion! & 0.1368 & 0.1692 & 0.2485 & 0.4985 \\
+\verb!r/DecidingToBeBetter! & 0.0783 & 0.1025 & 0.1389 & 0.3729 \\
+\midrule
+\verb!r/truegaming! & 0.1392 & 0.1715 & 0.2461 & 0.4962 \\
+\verb!r/Fantasy! & 0.0941 & 0.1239 & 0.2631 & 0.5131 \\
+\verb!r/Frugal! & 0.1187 & 0.1514 & 0.1383 & 0.3720 \\
+\verb!r/Coffee! & 0.1384 & 0.1726 & 0.1104 & 0.3324 \\
+\midrule
+Mean & 0.1126 & 0.1430 & 0.2021 & 0.4456 \\
+\end{longtable}
+
+The live experiment model exhibits similar performance patterns across subreddits, though with generally lower absolute values due to the absence of domain and author features. Performance remains strongest in \verb!r/PoliticalDiscussion!, \verb!r/Libertarian!, and \verb!r/DebateReligion!, where Pearson correlations exceed 0.49. As with the best overall model, \verb!r/Coffee!, \verb!r/Frugal!, and \verb!r/DecidingToBeBetter! show the weakest predictive performance, suggesting that text-based features alone are insufficient to capture the factors driving popularity in these communities.
+
+The relatively consistent ranking of subreddit performance across both configurations indicates that community-specific factors play a significant role in determining predictability. Communities focused on political or philosophical discussion tend to show stronger performance, while lifestyle and hobby communities exhibit weaker predictive accuracy. This pattern may reflect differences in how content is evaluated: debate-oriented subreddits may prioritize argumentation quality and topical relevance, which are partially captured by text embeddings, whereas lifestyle communities may place greater weight on subjective preferences, visual appeal, or practical utility.
