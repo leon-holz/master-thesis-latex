@@ -25,7 +25,7 @@ Temporal instability presents an additional limitation. Reddit communities evolv
 
 The findings of this thesis have implications for online platform integrity and content moderation, though the implications are more nuanced than the feasibility framing alone suggests. The live experiment demonstrated both that an end-to-end pipeline can be constructed with minimal resources and that model-guided post selection failed catastrophically in deployment. These two findings must be interpreted together.
 
-\subsection{Demonstrated Capabilities and Limitations}
+\subsubsection*{Demonstrated Capabilities and Limitations}
 
 The pipeline demonstrated several capabilities that remain relevant to platform integrity concerns:
 
@@ -33,15 +33,13 @@ The pipeline demonstrated several capabilities that remain relevant to platform 
 
 \textbf{Viable content generation.} The random baseline treatment revealed that generated content can achieve favorable reception: randomly selected posts achieved a mean upvote ratio of 0.872, exceeding the historical training baseline of 0.729. This indicates that language models can produce posts that communities do not systematically reject, even when those posts come from unfamiliar accounts. The generation component succeeded where the prediction component failed.
 
-\textbf{Evading content-based detection.} Generated posts were topically relevant, grammatically correct, and stylistically similar to organic community discussions. Moderators and community members occasionally identified the account as suspicious based on posting patterns and lack of comment engagement, but the content itself was not flagged as spam or off-topic in most cases. This suggests that content-based detection systems designed to identify low-quality or irrelevant submissions may not reliably detect model-generated posts optimized for community fit.
-
-However, the live experiment also revealed critical limitations:
+\textbf{Evading content-based detection.} Generated posts were topically relevant, grammatically correct, and stylistically similar to organic community discussions. Moderators and community members occasionally identified the account as suspicious based on posting patterns and lack of comment engagement, but the content itself was not flagged as spam or off-topic in most cases. This suggests that content-based detection systems designed to identify low-quality or irrelevant submissions may not reliably detect model-generated posts optimized for community fit. However, the live experiment also revealed critical limitations:
 
 \textbf{Model-guided selection failed.} Predictions not only failed to improve upon random selection, but actively selected posts in the wrong order. This demonstrates that offline validation performance does not guarantee deployment effectiveness. A malicious actor using a similar approach might achieve no better results than random posting unless they address the distribution shift between historical training data and generated content.
 
 \textbf{Moderation resistance.} Four of nine targeted subreddits banned the posting account, and an additional 17 posts were individually removed. These moderation responses suggest that automated posting faces social and procedural barriers beyond content quality alone. Community members explicitly identified the account as suspicious based on posting patterns, lack of engagement, and behavioral signals that the model could not optimize.
 
-\subsection{Revised Threat Model}
+\subsubsection*{Revised Threat Model}
 
 Given these findings, the threat landscape is more complex than a simple feasibility demonstration would suggest. Several scenarios remain concerning despite the deployment failure:
 
@@ -53,7 +51,7 @@ Given these findings, the threat landscape is more complex than a simple feasibi
 
 \textbf{Coordinated low-precision operations.} Even if individual posts are not optimally selected, coordinated posting across multiple accounts and subreddits could achieve narrative amplification objectives. The goal of such operations may not be to maximize engagement on each post, but to create the appearance of distributed organic discussion on a chosen topic. In this scenario, prediction accuracy is less critical than content plausibility and posting volume.
 
-\subsection{Detection Opportunities}
+\subsubsection*{Detection Opportunities}
 
 The deployment failure and moderation resistance observed in this thesis also suggest several detection opportunities:
 
@@ -65,7 +63,7 @@ The deployment failure and moderation resistance observed in this thesis also su
 
 \textbf{Karma and participation requirements.} Some targeted subreddits could not be posted to at all due to minimum karma thresholds that the newly created account did not meet. These requirements present an effective barrier against low-effort spam and newly created bot accounts. However, such barriers are not insurmountable: a more resourceful operator could circumvent karma requirements by purchasing established accounts, gradually building karma through strategic participation in high-traffic subreddits, or using language models to generate plausible comments on popular posts. While these tactics require additional effort and sophistication, they remain within the technical capabilities demonstrated in this thesis. Karma requirements therefore function as a friction mechanism rather than an absolute barrier, raising the operational cost of automated posting without preventing it entirely.
 
-\subsection{Responsible Disclosure Considerations}
+\subsubsection*{Responsible Disclosure Considerations}
 
 This thesis presents a methodological demonstration rather than a deployed attack system. The decision to publish these methods, including the deployment failure, rests on several considerations:
 

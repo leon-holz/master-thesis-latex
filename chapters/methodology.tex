@@ -104,7 +104,7 @@ Although Pushshift access was later restored, repeating the full embedding gener
 
 Data collection was performed in two stages: an initial bulk retrieval of historical submissions from the Pushshift archive, followed by metadata enrichment via the official Reddit API to obtain current engagement metrics and author-level features. This two-stage approach balanced the efficiency of large-scale archival access with the accuracy requirements for popularity labels and predictive features.
 
-\subsection{Initial Retrieval and Metadata Enrichment}
+\subsubsection*{Initial Retrieval and Metadata Enrichment}
 
 Historical Reddit submissions were first retrieved from the Pushshift archive for each selected subreddit. The dataset spans posts from 2008 to 2022 and includes both link posts and self posts. For each submission, the title, selftext (post body), author, creation timestamp, domain (for link posts), and preliminary engagement metadata were extracted.
 
@@ -112,7 +112,7 @@ Pushshift provides large-scale access to archived Reddit data, enabling efficien
 
 The Reddit API enforces strict rate limits for standard applications, allowing approximately 100 requests per minute without a special research agreement. Requests for extended research access were submitted but did not receive a response. Consequently, metadata retrieval was performed under default rate-limit constraints. Given the scale of the dataset, which exceeded two million posts prior to filtering, the enrichment process required careful batching and long-running retrieval scripts operating over extended periods. Despite these constraints, all retained posts were successfully enriched with up-to-date popularity labels and relevant metadata.
 
-\subsection{Construction of the Final Dataset}
+\subsubsection*{Construction of the Final Dataset}
 \label{sec:construction_final_dataset}
 
 The final dataset was constructed by merging the Pushshift archive data with metadata retrieved via the Reddit API. Posts that could not be accessed during enrichment or for which required metadata was unavailable were excluded prior to model training.
